@@ -2,6 +2,7 @@ package Run;
 
 import MMP.MMPconstructor;
 import MMP.MMPsimulator;
+import Scheme.ServiceCounter;
 import Scheme.ServiceDeployScheme;
 import Simulation.Heuristic;
 
@@ -14,7 +15,7 @@ public class MainSchemeReconfigIntervalMMP {
 
     private static int MAX_HEURISTIC_CHANGE_INTERVAL = 250;
     protected final static int TRAFFIC_CHANGE_INTERVAL = 10; // time interval between run of the heuristic (s)
-    private final static int TOTAL_RUN = 10;
+    private final static int TOTAL_RUN = 200;
 
     public static void main(String[] args) {
 
@@ -29,12 +30,14 @@ public class MainSchemeReconfigIntervalMMP {
         Heuristic heuristicFogDynamicViolation = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.NUM_FOG_NODES, Parameters.NUM_SERVICES, Parameters.NUM_CLOUD_SERVERS);
         Heuristic.initializeStaticVariables();
 
-        double sumContainersDeployedFogDynamic = 0d; // used for getting average
+        double sumFogContainersDeployedFogDynamic = 0d; // used for getting average
+        double sumCloudContainersDeployedFogDynamic = 0d; // used for getting average
         double sumDelayFogDynamic = 0d; // used for getting average
         double sumCostFogDynamic = 0d; // used for getting average
         double sumViolFogDynamic = 0d; // used for getting average
 
-        double sumContainersDeployedFogDynamicViolation = 0d; // used for getting average
+        double sumFogContainersDeployedFogDynamicViolation = 0d; // used for getting average
+        double sumCloudContainersDeployedFogDynamicViolation = 0d; // used for getting average
         double sumDelayFogDynamicViolation = 0d; // used for getting average
         double sumCostFogDynamicViolation = 0d; // used for getting average
         double sumViolFogDynamicViolation = 0d; // used for getting average
@@ -58,12 +61,15 @@ public class MainSchemeReconfigIntervalMMP {
                 heuristicFogDynamic.setTrafficToGlobalTraffic();
                 heuristicFogDynamicViolation.setTrafficToGlobalTraffic();
                 if (i % q == 0) {
-                    double a,b;
-                    a = heuristicFogDynamic.run(Heuristic.COMBINED_APP_REGIONES, false);
-                    b = heuristicFogDynamicViolation.run(Heuristic.COMBINED_APP_REGIONES, true);
+                    ServiceCounter FDserviceCounter,FDVserviceCounter;
+                    FDserviceCounter = heuristicFogDynamic.run(Heuristic.COMBINED_APP_REGIONES, false);
+                    FDVserviceCounter = heuristicFogDynamicViolation.run(Heuristic.COMBINED_APP_REGIONES, true);
 //                    System.out.println(a+" "+b);
-                    sumContainersDeployedFogDynamic += a;
-                    sumContainersDeployedFogDynamicViolation += b;
+                    sumFogContainersDeployedFogDynamic += FDserviceCounter.getDeployedFogServices();
+                    sumCloudContainersDeployedFogDynamic += FDserviceCounter.getDeployedCloudServices();
+                    
+                    sumFogContainersDeployedFogDynamicViolation += FDVserviceCounter.getDeployedFogServices();
+                    sumCloudContainersDeployedFogDynamicViolation += FDVserviceCounter.getDeployedCloudServices();
                 }
                 sumDelayFogDynamic += heuristicFogDynamic.getAvgServiceDelay();
                 sumCostFogDynamic += heuristicFogDynamic.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
@@ -77,21 +83,25 @@ public class MainSchemeReconfigIntervalMMP {
             System.out.println(Parameters.TAU + "\t" + ((sumTrafficPerNodePerApp * Parameters.NUM_FOG_NODES * Parameters.NUM_SERVICES) / (TOTAL_RUN))
                     + "\t" + (sumDelayFogDynamic / TOTAL_RUN)
                     + "\t" + ((sumCostFogDynamic / Parameters.TRAFFIC_CHANGE_INTERVAL) / TOTAL_RUN)
-                    + "\t" + (sumContainersDeployedFogDynamic / TOTAL_RUN * q)
+                    + "\t" + (sumFogContainersDeployedFogDynamic / TOTAL_RUN * q)
+                    + "\t" + (sumCloudContainersDeployedFogDynamic / TOTAL_RUN * q)
                     + "\t" + (sumViolFogDynamic / TOTAL_RUN)
                     + "\t" + (sumDelayFogDynamicViolation / TOTAL_RUN)
                     + "\t" + ((sumCostFogDynamicViolation / Parameters.TRAFFIC_CHANGE_INTERVAL) / TOTAL_RUN)
-                    + "\t" + (sumContainersDeployedFogDynamicViolation / TOTAL_RUN * q)
+                    + "\t" + (sumFogContainersDeployedFogDynamicViolation / TOTAL_RUN * q)
+                    + "\t" + (sumCloudContainersDeployedFogDynamicViolation / TOTAL_RUN * q)
                     + "\t" + (sumViolFogDynamicViolation / TOTAL_RUN)
             );
 
             // reset the average parameters
-            sumContainersDeployedFogDynamic = 0d;
+            sumFogContainersDeployedFogDynamic = 0d;
+            sumCloudContainersDeployedFogDynamic = 0d;
             sumDelayFogDynamic = 0d;
             sumCostFogDynamic = 0d;
             sumViolFogDynamic = 0d;
 
-            sumContainersDeployedFogDynamicViolation = 0d;
+            sumFogContainersDeployedFogDynamicViolation = 0d;
+            sumCloudContainersDeployedFogDynamicViolation = 0d;
             sumDelayFogDynamicViolation = 0d;
             sumCostFogDynamicViolation = 0d;
             sumViolFogDynamicViolation = 0d;

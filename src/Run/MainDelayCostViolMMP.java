@@ -2,6 +2,7 @@ package Run;
 
 import MMP.MMPconstructor;
 import MMP.MMPsimulator;
+import Scheme.ServiceCounter;
 import Scheme.ServiceDeployScheme;
 import Simulation.Heuristic;
 
@@ -19,8 +20,10 @@ public class MainDelayCostViolMMP {
         int q = Parameters.TAU / Parameters.TRAFFIC_CHANGE_INTERVAL; // the number of times that traffic changes between each run of the heuristic
         
         
+        
         MMPconstructor mmpConstructor = new MMPconstructor();
         MMPsimulator trafficRateSetter = new MMPsimulator(mmpConstructor.mmp);
+        
 
         Heuristic heuristicAllCloud = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.ALL_CLOUD), Parameters.NUM_FOG_NODES, Parameters.NUM_SERVICES, Parameters.NUM_CLOUD_SERVERS);
         Heuristic heuristicAllFog = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.ALL_FOG), Parameters.NUM_FOG_NODES, Parameters.NUM_SERVICES, Parameters.NUM_CLOUD_SERVERS);
@@ -33,12 +36,12 @@ public class MainDelayCostViolMMP {
         Heuristic.initializeStaticVariables();
 
         
-        int containersDeployedAllCloud = 0;
-        int containersDeployedAllFog = 0;
-        int containersDeployedFogStatic = 0;
-        int containersDeployedFogDynamic = 0;
-        int containersDeployedFogStaticViolation = 0;
-        int containersDeployedFogDynamicViolation = 0;
+        ServiceCounter containersDeployedAllCloud = null;
+        ServiceCounter containersDeployedAllFog = null;
+        ServiceCounter containersDeployedFogStatic = null;
+        ServiceCounter containersDeployedFogDynamic = null ;
+        ServiceCounter containersDeployedFogStaticViolation = null ;
+        ServiceCounter containersDeployedFogDynamicViolation = null;
 
         double delayAllCloud = 0;
         double delayAllFog = 0;
@@ -112,7 +115,8 @@ public class MainDelayCostViolMMP {
       
             System.out.println((trafficPerNodePerApp * Parameters.NUM_FOG_NODES * Parameters.NUM_SERVICES) + "\t" + delayAllCloud + "\t" + delayAllFog + "\t" + delayFogStatic + "\t" + delayFogDynamic + "\t" + delayFogStaticViolation + "\t" + delayFogDynamicViolation
                     + "\t" + (costAllCloud / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costAllFog / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogStatic / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogDynamic / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogStaticViolation / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogDynamicViolation / Parameters.TRAFFIC_CHANGE_INTERVAL)
-                    + "\t" + containersDeployedAllCloud + "\t" + containersDeployedAllFog + "\t" + containersDeployedFogStatic + "\t" + containersDeployedFogDynamic + "\t" + containersDeployedFogStaticViolation + "\t" + containersDeployedFogDynamicViolation
+                    + "\t" + containersDeployedAllCloud.getDeployedFogServices() + "\t" + containersDeployedAllFog.getDeployedFogServices() + "\t" + containersDeployedFogStatic.getDeployedFogServices() + "\t" + containersDeployedFogDynamic.getDeployedFogServices() + "\t" + containersDeployedFogStaticViolation.getDeployedFogServices() + "\t" + containersDeployedFogDynamicViolation.getDeployedFogServices()
+                    + "\t" + containersDeployedAllCloud.getDeployedCloudServices() + "\t" + containersDeployedAllFog.getDeployedCloudServices() + "\t" + containersDeployedFogStatic.getDeployedCloudServices() + "\t" + containersDeployedFogDynamic.getDeployedCloudServices() + "\t" + containersDeployedFogStaticViolation.getDeployedCloudServices() + "\t" + containersDeployedFogDynamicViolation.getDeployedCloudServices()
                     + "\t" + violAllCloud + "\t" + violAllFog + "\t" + violFogStatic + "\t" + violFogDynamic+ "\t" + violFogStaticViolation + "\t" + violFogDynamicViolation);
 
         }

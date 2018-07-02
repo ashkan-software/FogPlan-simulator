@@ -6,6 +6,7 @@
 package Simulation;
 
 import Run.MainDelayCostViolRealTraceCombinedApp;
+import Run.MainDelayCostViolRealTraceCumulative;
 import Utilities.ArrayFiller;
 
 /**
@@ -45,10 +46,10 @@ public class Cost {
         ArrayFiller.generateFixed1DArray(CLOUD_UNIT_STOR_COST, 0.00000000004d);
 
         FOG_UNIT_PROC_COST = new double[NUM_FOG_NODES];
-        ArrayFiller.generateRandom1DArray(FOG_UNIT_PROC_COST, 0.01d, 0.01d);
+        ArrayFiller.generateRandom1DArray(FOG_UNIT_PROC_COST, 0.02d, 0.02d); // 0.02d for optimal and cumulative and MMP and threshold
 
         FOG_UNIT_STOR_COST = new double[NUM_FOG_NODES];
-        ArrayFiller.generateRandom1DArray(FOG_UNIT_STOR_COST, 0.00000000004d, 0.00000000004d);
+        ArrayFiller.generateRandom1DArray(FOG_UNIT_STOR_COST, 0.00000000008d, 0.00000000008d); // 00000000008d for optimal and cumulative and MMP and threshold
 
         FOG_CLOUD_COMM_UNIT_COST = new double[NUM_FOG_NODES][NUM_CLOUD_SERVERS];
         ArrayFiller.generateFixed2DArray(FOG_CLOUD_COMM_UNIT_COST, 0.0000000002d);
@@ -57,10 +58,10 @@ public class Cost {
         ArrayFiller.generateFixed2DArray(FOG_FOG_COMM_UNIT_COST, 0.0000000002d);
 
         FOG_CONTROLLER_COMM_UNIT_COST = new double[NUM_FOG_NODES];
-        ArrayFiller.generateFixed1DArray(FOG_CONTROLLER_COMM_UNIT_COST, 0.0000000002d);
+        ArrayFiller.generateFixed1DArray(FOG_CONTROLLER_COMM_UNIT_COST, 0.0000000005d);
 
         SERVICE_PENALY = new double[NUM_SERVICES];
-        ArrayFiller.generateRandom1DArray(SERVICE_PENALY, 10d, 20d);
+        ArrayFiller.generateRandom1DArray(SERVICE_PENALY, 2d, 5d); // 2-5 for optimal and cumulative. 40-80 for MMP
     }
 
     /**
@@ -113,8 +114,8 @@ public class Cost {
         return Math.max(0, Vper[a] - (1 - q[a])) * SERVICE_PENALY[a] * time;
     }
 
-    public static double costViolPerFogNode(double time, int a, double Vper_aj, double q[]) {
-        return Math.max(0, Vper_aj - (1 - q[a])) * SERVICE_PENALY[a] * time;
+    public static double costViolPerFogNode(double time, int a, double Vper_aj, double q[], double fogTrafficPercentage) {
+        return Math.max(0, Vper_aj - (1 - q[a])*fogTrafficPercentage) * SERVICE_PENALY[a] * time;
     }
 
     /**
@@ -200,7 +201,7 @@ public class Cost {
             costViol += costViol(time, a, Vper, q);
         }
 
-//        if (MainDelayCostViolRealTraceCombinedApp.printCost) {
+//        if (MainDelayCostViolRealTraceCombinedApp.printCost || MainDelayCostViolRealTraceCumulative.printCost) {
 //            System.out.println("costPC " + (costPC) + " costPF " + (costPF) + " costSC " + (costSC) + " costSF " + (costSF)
 //                    + " costCff " + (costCff) + " costCfc " + (costCfc) + " costViol " + (costViol) + " costDep " + (costDep));
 //        }

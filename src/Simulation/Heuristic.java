@@ -1,6 +1,7 @@
 package Simulation;
 
 import Run.Parameters;
+import Scheme.ServiceCounter;
 import Scheme.ServiceDeployScheme;
 import Utilities.ArrayFiller;
 import java.text.DecimalFormat;
@@ -57,7 +58,7 @@ public class Heuristic {
     // note that the delay of deploying containers is not considered yet, since we don't really need to when the interval of changing traffic is in the order of seconds (e.g. 5s or 60s)
     // this is because, even if we consider the 50ms delay, it will not affect the resutls.  
     private static double rFContr[]; // transmission rate from fog node j to the fog service controller
-    private int fogStaticDeployedContainers;
+    private ServiceCounter fogStaticDeployedContainers;
 
     private static Cost cost;
 
@@ -186,7 +187,6 @@ public class Heuristic {
         h = new int[numFogNodes];
         for (int j = 0; j < numFogNodes; j++) {
             h[j] = (int) (Math.random() * numCloudServers);
-//            h[j] = 0;
         }
 
         h_reverse = new ArrayList<>(numCloudServers);
@@ -206,34 +206,42 @@ public class Heuristic {
         generateServiceTrafficPercentage(); // ServiceTrafficPercentage is initialized
     }
 
-    public int run(int traceType, boolean justMinimizeViolation) {
+    public ServiceCounter run(int traceType, boolean justMinimizeViolation) {
+        backupAllPlacements();
         if (type == ServiceDeployScheme.ALL_CLOUD) {
             // do not change the placement
-            backupAllPlacements();
-            return 0;
+            return new ServiceCounter(0, numCloudServers * numServices);
         } else if (type == ServiceDeployScheme.ALL_FOG) {
             // do not change the placement
-            backupAllPlacements();
-            return (numFogNodes * numServices);
+            return new ServiceCounter(numFogNodes * numServices, 0);
         } else if (type == ServiceDeployScheme.OPTIMAL) {
-            backupAllPlacements();
-            Optimization.init(numServices, numFogNodes, numCloudServers);
-            long numCombinations = (long) Math.pow(2, numServices * (numFogNodes + numCloudServers)); // x_aj and xp_ak
-            double minimumCost = Double.MAX_VALUE;
-            double cost;
-            for (long combination = 0; combination < numCombinations; combination++) {
-                updateDecisionVariablesAccordingToCombination(combination); // updates x, xp
-                calcNormalizedArrivalRateCloud(); // updates lambdap_in
-                if (Optimization.optimizationConstraintsSatisfied(x, xp, numServices, numFogNodes, numCloudServers, L_S, L_M, KS, KM, KpS, KpM, lambdap_in)) {
-                    cost = getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
-                    if (cost < minimumCost) {
-                        minimumCost = cost;
-                        Optimization.updateBestDecisionVaraibles(x, xp, numServices, numFogNodes, numCloudServers);
-                    }
-                }
+            return runOptimal();
+        } else if (type == ServiceDeployScheme.FOG_STATIC) { // FOG_STATIC
+            backupIncomingTraffic();
+            return runFogStatic(traceType, justMinimizeViolation);
+        } else { // FOG_DYNAMIC
+            return runFogDynamic(justMinimizeViolation);
+        }
+    }
 
+    private ServiceCounter runOptimal() {
+        
+        Optimization.init(numServices, numFogNodes, numCloudServers);
+        long numCombinations = (long) Math.pow(2, numServices * (numFogNodes + numCloudServers)); // x_aj and xp_ak
+        double minimumCost = Double.MAX_VALUE, cost;
+        for (long combination = 0; combination < numCombinations; combination++) {
+            updateDecisionVariablesAccordingToCombination(combination); // updates x, xp
+            calcNormalizedArrivalRateFogNodes();
+            calcNormalizedArrivalRateCloudNodes();
+            if (Optimization.optimizationConstraintsSatisfied(x, xp, numServices, numFogNodes, numCloudServers, L_S, L_M, KS, KM, KpS, KpM, lambdap_in)) {
+                cost = getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+                if (cost < minimumCost) {
+                    minimumCost = cost;
+                    Optimization.updateBestDecisionVaraibles(x, xp, numServices, numFogNodes, numCloudServers);
+                }
             }
-            Optimization.updateDecisionVaraiblesAccordingToBest(x, xp, numServices, numFogNodes, numCloudServers);
+        }
+        Optimization.updateDecisionVaraiblesAccordingToBest(x, xp, numServices, numFogNodes, numCloudServers);
 //            System.out.println("Optimal");
 //            for (int a = 0; a < numServices; a++) {
 //                for (int j = 0; j < numFogNodes; j++) {
@@ -245,61 +253,45 @@ public class Heuristic {
 //                }
 //                System.out.println("");
 //            }
-            int DeployedContainers = 0;
+        return ServiceCounter.countServices(numServices, numFogNodes, numCloudServers, x, xp);
+    }
+
+    private ServiceCounter runFogStatic(int traceType, boolean justMinimizeViolation) {
+        if (!firstTimeDone) { // if it is the first time
+
+            firstTimeDone = true; // it does not run the algorithm after the first time
+            if (traceType == NOT_COMBINED) {
+                initializeAvgTrafficForStaticFogPlacementFirstTimePerServicePerFogNode();
+            } else if (traceType == COMBINED_APP_REGIONES) {
+                initializeAvgTrafficForStaticFogPlacementFirstTimeCombined(); // now lambda values are based on average
+            } else { // if (traceType == COMBINED_APP)
+                initializeAvgTrafficForStaticFogPlacementFirstTimePerFogNode();
+            }
+            
             for (int a = 0; a < numServices; a++) {
-                for (int j = 0; j < numFogNodes; j++) {
-                    if (x[a][j] == 1) {
-                        DeployedContainers++;
-                    }
+                if (justMinimizeViolation) {
+                    FogServicePlacementMinViolationHeuristic(a);
+                } else {
+                    FogServicePlacementMinCostHeuristic(a);
                 }
             }
-            return DeployedContainers;
-        } else { // if (type == FOG_STATIC || FOG_DYNAMIC)
+            fogStaticDeployedContainers = ServiceCounter.countServices(numServices, numFogNodes, numCloudServers, x, xp);
+            restoreIncomingTraffic();
+            return fogStaticDeployedContainers;
+        } else {
+            // do not change the placement
+            return fogStaticDeployedContainers;
+        }
+    }
 
-            if (type == ServiceDeployScheme.FOG_STATIC) {
-                backupAllPlacements();
-                if (!firstTimeDone) { // if it is the first time
-                    firstTimeDone = true; // it does not run the algorithm after the first time
-                    if (traceType == NOT_COMBINED) {
-                        initializeAvgTrafficForStaticFogPlacementFirstTimePerServicePerFogNode();
-                    } else if (traceType == COMBINED_APP_REGIONES) {
-                        initializeAvgTrafficForStaticFogPlacementFirstTimeCombined(); // now lambda values are based on average
-                    } else { // if (traceType == COMBINED_APP)
-                        initializeAvgTrafficForStaticFogPlacementFirstTimePerFogNode();
-                    }
-                    fogStaticDeployedContainers = 0;
-                    for (int a = 0; a < numServices; a++) {
-                        if (justMinimizeViolation) {
-                            FogServicePlacementMinViolationHeuristic(a);
-                        } else {
-                            FogServicePlacementMinCostHeuristic(a);
-                        }
-                        for (int j = 0; j < numFogNodes; j++) {
-                            if (x[a][j] == 1) {
-                                fogStaticDeployedContainers++;
-                            }
-                        }
-                    }
-                    return fogStaticDeployedContainers;
-                } else {
-                    // do not change the placement
-                    return fogStaticDeployedContainers;
-                }
-            } else { // FOG_DYNAMIC
-                backupAllPlacements();
-                int DeployedContainers = 0;
-                for (int a = 0; a < numServices; a++) {
-                    if (justMinimizeViolation) {
-                        FogServicePlacementMinViolationHeuristic(a);
-                    } else {
-                        FogServicePlacementMinCostHeuristic(a);
-                    }
-                    for (int j = 0; j < numFogNodes; j++) {
-                        if (x[a][j] == 1) {
-                            DeployedContainers++;
-                        }
-                    }
-                }
+    private ServiceCounter runFogDynamic(boolean justMinimizeViolation) {
+        for (int a = 0; a < numServices; a++) {
+            if (justMinimizeViolation) {
+                FogServicePlacementMinViolationHeuristic(a);
+            } else {
+                FogServicePlacementMinCostHeuristic(a);
+            }
+        }
 //                System.out.println("Dynamic");
 //                for (int a = 0; a < numServices; a++) {
 //                    for (int j = 0; j < numFogNodes; j++) {
@@ -311,9 +303,8 @@ public class Heuristic {
 //                    }
 //                    System.out.println("");
 //                }
-                return DeployedContainers;
-            }
-        }
+        return ServiceCounter.countServices(numServices, numFogNodes, numCloudServers, x, xp);
+
     }
 
     private static void generateServiceTrafficPercentage() {
@@ -321,7 +312,7 @@ public class Heuristic {
 
     }
 
-    public void setFirstTimeBoolean() {
+    public void unsetFirstTimeBoolean() {
         firstTimeDone = false;
     }
 
@@ -455,7 +446,6 @@ public class Heuristic {
 
     private void FogServicePlacementMinViolationHeuristic(int a) {
         calcViolation(a);
-        deployCloudServices();
         List<FogTrafficIndex> fogTrafficIndex = getFogIncomingTraffic(a, false);
         Collections.sort(fogTrafficIndex);
         int listIndex = -1;
@@ -490,12 +480,12 @@ public class Heuristic {
             }
 
         }
+        deployCloudServiceIfNeeded(a);
 
     }
 
     private void FogServicePlacementMinCostHeuristic(int a) {
         calcViolation(a);
-        deployCloudServices();
         List<FogTrafficIndex> fogTrafficIndex = getFogIncomingTraffic(a, false);
         Collections.sort(fogTrafficIndex);
         int listIndex = -1;
@@ -525,6 +515,7 @@ public class Heuristic {
                 }
             }
         }
+        deployCloudServiceIfNeeded(a);
     }
 
     /**
@@ -538,7 +529,6 @@ public class Heuristic {
         double loss = 0;
         double savings = 0;
         double aa, b, c, e;
-        d[a][j] = calcServiceDelay(a, j); // this is just to update the things
         //if not deployiing (X[a][j] == 0) this is the cost we were paying, 
         // but now this is seen as savings
 //        savings += Cost.costCfc(Parameters.TAU, j, a, lambda_out, h);
@@ -548,7 +538,8 @@ public class Heuristic {
         aa = Cost.costCfc(Parameters.TAU, j, a, lambda_out, h);
         b = Cost.costExtraPC(Parameters.TAU, h[j], a, L_P, lambda_out[a][j]);
         c = Cost.costExtraSC(Parameters.TAU, h[j], a, L_S, xp);
-        e = Cost.costViolPerFogNode(Parameters.TAU, a, calcVper(a, j), q);
+        double fogTrafficPercentage = calcFogTrafficPercentage(a, j);
+        e = Cost.costViolPerFogNode(Parameters.TAU, a, calcVper(a, j, fogTrafficPercentage), q, fogTrafficPercentage);
         savings = aa + b + c + e;
 
         // Now if we were to deploy, this is the cost we would pay
@@ -559,7 +550,7 @@ public class Heuristic {
         xx = Cost.costDep(j, a, L_S);
         y = Cost.costPF(Parameters.TAU, j, a, L_P, lambda_in);
         z = Cost.costSF(Parameters.TAU, j, a, L_S);
-        k = Cost.costViolPerFogNode(Parameters.TAU, a, calcVper(a, j), q);
+        k = Cost.costViolPerFogNode(Parameters.TAU, a, calcVper(a, j, fogTrafficPercentage), q, fogTrafficPercentage);
         loss = xx + y + z + k;
 
         x[a][j] = 0; // revert this back to what it was
@@ -584,12 +575,12 @@ public class Heuristic {
     private boolean releaseMakesSense(int a, int j) {
         double loss = 0;
         double savings = 0;
-        d[a][j] = calcServiceDelay(a, j); // this is just to update the things
         //if not releasing (X[a][j] == 1) this is the cost we were paying, 
         // but now this is seen as savings
         savings += Cost.costPF(Parameters.TAU, j, a, L_P, lambda_in);
         savings += Cost.costSF(Parameters.TAU, j, a, L_S);
-        savings += Cost.costViolPerFogNode(Parameters.TAU, a, calcVper(a, j), q);
+        double fogTrafficPercentage = calcFogTrafficPercentage(a, j);
+        savings += Cost.costViolPerFogNode(Parameters.TAU, a, calcVper(a, j, fogTrafficPercentage), q, fogTrafficPercentage);
 
         // Now if we were to release, this is the loss we would pay
         x[a][j] = 0;
@@ -598,7 +589,8 @@ public class Heuristic {
         loss += Cost.costCfc(Parameters.TAU, j, a, lambda_out, h);
         loss += Cost.costExtraPC(Parameters.TAU, h[j], a, L_P, lambda_out[a][j]);
         loss += Cost.costExtraSC(Parameters.TAU, h[j], a, L_S, xp);
-        loss += Cost.costViolPerFogNode(Parameters.TAU, a, calcVper(a, j), q);
+
+        loss += Cost.costViolPerFogNode(Parameters.TAU, a, calcVper(a, j, fogTrafficPercentage), q, fogTrafficPercentage);
 
         x[a][j] = 1; // revert this back to what it was
         d[a][j] = calcServiceDelay(a, j); // revert things back to what they were
@@ -620,14 +612,26 @@ public class Heuristic {
         return L_S[a] / rFContr[j] * 1000 + CONTAINER_INIT_DELAY;
     }
 
-    private double calcVper(int a, int j) {
+    /**
+     * Calculates percentage of traffic in a given fog node for a particular
+     * service to the total traffic to all fpg nodes for taht service
+     *
+     * @param a
+     * @param j
+     * @return
+     */
+    private double calcFogTrafficPercentage(int a, int j) {
+        double denum = 0;
+        for (int fog = 0; fog < numFogNodes; fog++) {
+            denum += lambda_in[a][fog];
+        }
+        return lambda_in[a][j] / denum;
+    }
+
+    private double calcVper(int a, int j, double fogTrafficPercentage) {
         if (d[a][j] > th[a]) {
             v[a][j] = 1;
-            double denum = 0;
-            for (int fog = 0; fog < numFogNodes; fog++) {
-                denum += lambda_in[a][fog];
-            }
-            return lambda_in[a][j] / denum;
+            return fogTrafficPercentage;
         } else {
             v[a][j] = 0;
             return 0;
@@ -643,6 +647,22 @@ public class Heuristic {
     private void backupAllPlacements() {
         for (int a = 0; a < numServices; a++) {
             backupPlacement(a);
+        }
+    }
+
+    private void backupIncomingTraffic() {
+        for (int a = 0; a < numServices; a++) {
+            for (int j = 0; j < numFogNodes; j++) {
+                backup_lambda_in[a][j] = lambda_in[a][j];
+            }
+        }
+    }
+
+    private void restoreIncomingTraffic() {
+        for (int a = 0; a < numServices; a++) {
+            for (int j = 0; j < numFogNodes; j++) {
+                lambda_in[a][j] = backup_lambda_in[a][j];
+            }
         }
     }
 
@@ -739,9 +759,9 @@ public class Heuristic {
      * @return
      */
     private double calcServiceDelay(int a, int j) {
-        calcNormalizedArrivalRateFog(); // will be used in calculating delay below
-        calcNormalizedArrivalRateCloud();
+        calcNormalizedArrivalRateFogNode(j); // will be used in calculating delay below
         int k = h[j];
+        calcNormalizedArrivalRateCloudNode(k);
         if (x[a][j] == 1) {
             if (arrivalFog[j] > KP[j]) {
                 proc_time = 2000d;
@@ -764,48 +784,48 @@ public class Heuristic {
         }
     }
 
-    private void calcNormalizedArrivalRateFog() {
-        double tempSum;
+    private void calcNormalizedArrivalRateFogNodes() {
         for (int j = 0; j < numFogNodes; j++) {
-            tempSum = 0;
-            for (int a = 0; a < numServices; a++) {
-                tempSum += L_P[a] * lambda_in[a][j] * x[a][j];
-            }
-            arrivalFog[j] = tempSum;
+            calcNormalizedArrivalRateFogNode(j);
         }
     }
 
-    private void calcNormalizedArrivalRateCloud() {
-        calcArrivalRateCloud();
-        double tempSum;
-        for (int k = 0; k < numCloudServers; k++) {
-            tempSum = 0;
-            for (int a = 0; a < numServices; a++) {
-                tempSum += L_P[a] * lambdap_in[a][k] * xp[a][k];
-            }
-            arrivalCloud[k] = tempSum;
-        }
-    }
-
-    private void calcArrivalRateCloud() {
-        // calculate lambda^out_aj
-        for (int j = 0; j < numFogNodes; j++) {
-            for (int a = 0; a < numServices; a++) {
-                lambda_out[a][j] = lambda_in[a][j] * (1 - x[a][j]);
-            }
-        }
-
-        // calculate lambda'^in_ak
+    private void calcNormalizedArrivalRateFogNode(int j) {
         double tempSum = 0;
-        for (int k = 0; k < numCloudServers; k++) {
-            for (int a = 0; a < numServices; a++) {
-                for (Integer j : h_reverse.get(k)) {
-                    tempSum += lambda_out[a][j];
-                }
-                lambdap_in[a][k] = tempSum;
-                tempSum = 0;
-            }
+        for (int a = 0; a < numServices; a++) {
+            tempSum += L_P[a] * lambda_in[a][j] * x[a][j];
         }
+        arrivalFog[j] = tempSum;
+    }
+
+    private void calcNormalizedArrivalRateCloudNodes() {
+        for (int k = 0; k < numCloudServers; k++) {
+            calcNormalizedArrivalRateCloudNode(k);
+        }
+    }
+
+    private void calcNormalizedArrivalRateCloudNode(int k) {
+        double tempSum = 0;
+        for (int a = 0; a < numServices; a++) {
+            calcArrivalRateCloudFromFogNodesForService(k, a);
+            tempSum += L_P[a] * lambdap_in[a][k] * xp[a][k];
+        }
+        arrivalCloud[k] = tempSum;
+    }
+
+    /**
+     * calculate lambda^out_aj and lambdap_in_ak for cloud server k for service
+     * a
+     *
+     * @param k
+     */
+    private void calcArrivalRateCloudFromFogNodesForService(int k, int a) {
+        double tempSum = 0;
+        for (Integer j : h_reverse.get(k)) {
+            lambda_out[a][j] = lambda_in[a][j] * (1 - x[a][j]); // calculate lambda^out_aj
+            tempSum += lambda_out[a][j];
+        }
+        lambdap_in[a][k] = tempSum;
     }
 
     /**
@@ -864,17 +884,16 @@ public class Heuristic {
         return true;
     }
 
-    private void deployCloudServices() {
-        for (int a = 0; a < numServices; a++) {
-            for (int k = 0; k < numCloudServers; k++) { // If incoming traffic rate to a cloud server for a particular service is 0, the service could be released to save space. On the other hand, even if there is small traffic incoming to a cloud server for a particular service, the service must not be removed from the cloud server
-                if (lambdap_in[a][k] > 0) {
-                    xp[a][k] = 1;
-                } else { // lambdap_in[a][k] == 0
-                    xp[a][k] = 0;
-                }
-
+    private void deployCloudServiceIfNeeded(int a) {
+        calcNormalizedArrivalRateCloudNodes();
+        for (int k = 0; k < numCloudServers; k++) { // If incoming traffic rate to a cloud server for a particular service is 0, the service could be released to save space. On the other hand, even if there is small traffic incoming to a cloud server for a particular service, the service must not be removed from the cloud server
+            if (lambdap_in[a][k] > 0) {
+                xp[a][k] = 1;
+            } else { // lambdap_in[a][k] == 0
+                xp[a][k] = 0;
             }
 
         }
+
     }
 }

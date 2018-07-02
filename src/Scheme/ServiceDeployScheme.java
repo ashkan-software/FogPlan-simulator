@@ -35,14 +35,15 @@ public class ServiceDeployScheme {
         if (type == ALL_FOG) {
             ArrayFiller.generateFixed2DArray(variable.x, 1);
             ArrayFiller.generateFixed2DArray(variable.xp, 0);
+        } else if (type == ALL_CLOUD) {
+            ArrayFiller.generateFixed2DArray(variable.x, 0);
+            ArrayFiller.generateFixed2DArray(variable.xp, 1);
         } else if (type == OPTIMAL) { // starts from all zeros
             ArrayFiller.generateFixed2DArray(variable.x, 0);
             ArrayFiller.generateFixed2DArray(variable.xp, 0);
-        } else {
+        } else { // starts from all zeros
             ArrayFiller.generateFixed2DArray(variable.x, 0);
-//            for (int a = 0; a < Parameters.NUM_SERVICES; a++) {
-//                variable.xp[a][0] = 1; // An instance of service a is running in cloud
-//            }
+            ArrayFiller.generateFixed2DArray(variable.xp, 0);
         }
 
     }

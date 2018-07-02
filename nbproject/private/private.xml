@@ -8,23 +8,21 @@
             <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Trace/CombinedAppTrace6secReader.java</file>
             <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Run/MainDelayCostViolRealTraceCumulative.java</file>
             <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Scheme/Variable.java</file>
-            <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Run/MainThresholdRealTraceCombinedApp.java</file>
-            <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Simulation/Heuristic.java</file>
+            <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Simulation/Cost.java</file>
             <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Run/Parameters.java</file>
-            <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Simulation/Optimization.java</file>
-            <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/MMP/MMPsimulator.java</file>
-            <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Simulation/FogTrafficIndex.java</file>
             <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Utilities/ArrayFiller.java</file>
             <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Trace/SparseTraceReader.java</file>
             <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/MMP/MMP.java</file>
+            <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Scheme/ServiceDeployScheme.java</file>
             <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Trace/CumulativeTraceReader.java</file>
             <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Run/MainThresholdMMP.java</file>
             <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/MMP/MMPconstructor.java</file>
             <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Run/MainDelayCostViolMMP.java</file>
             <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Run/MainSchemeReconfigIntervalMMP.java</file>
             <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Run/MainDelayCostViolRealTraceCombinedApp6sec.java</file>
-            <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Run/MainDelayCostViolRealTraceSparse.java</file>
             <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Trace/CombinedAppTraceReader.java</file>
+            <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Run/MainThresholdRealTraceCombinedApp2.java</file>
+            <file>file:/Users/ashkany/NetBeansProjects/FogServiceController/src/Scheme/ServiceCounter.java</file>
         </group>
     </open-files>
 </project-private>

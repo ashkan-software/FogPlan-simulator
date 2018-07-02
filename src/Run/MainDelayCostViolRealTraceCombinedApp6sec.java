@@ -1,5 +1,6 @@
 package Run;
 
+import Scheme.ServiceCounter;
 import Scheme.ServiceDeployScheme;
 import Simulation.Heuristic;
 import Trace.CombinedAppTrace6secReader;
@@ -37,10 +38,11 @@ public class MainDelayCostViolRealTraceCombinedApp6sec {
         Heuristic heuristicFogDynamic = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.NUM_FOG_NODES, Parameters.NUM_SERVICES, Parameters.NUM_CLOUD_SERVERS);
         Heuristic.initializeStaticVariables();
 
-        int containersDeployedAllCloud = 0;
-        int containersDeployedAllFog = 0;
-        int containersDeployedFogStatic = 0;
-        int containersDeployedFogDynamic = 0;
+        ServiceCounter containersDeployedAllCloud = null;
+        ServiceCounter containersDeployedAllFog = null;
+        ServiceCounter containersDeployedFogStatic = null;
+        ServiceCounter containersDeployedFogDynamic = null ;
+
 
         double delayAllCloud = 0;
         double delayAllFog = 0;
@@ -93,7 +95,8 @@ public class MainDelayCostViolRealTraceCombinedApp6sec {
 
             System.out.println((totalTraffic(combinedTrafficPerFogNode) * Parameters.NUM_SERVICES) + "\t" + delayAllCloud + "\t" + delayAllFog + "\t" + delayFogStatic + "\t" + delayFogDynamic
                     + "\t" + (costAllCloud / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costAllFog / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogStatic / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogDynamic / Parameters.TRAFFIC_CHANGE_INTERVAL)
-                    + "\t" + containersDeployedAllCloud + "\t" + containersDeployedAllFog + "\t" + containersDeployedFogStatic + "\t" + containersDeployedFogDynamic
+                    + "\t" + containersDeployedAllCloud.getDeployedFogServices() + "\t" + containersDeployedAllFog.getDeployedFogServices() + "\t" + containersDeployedFogStatic.getDeployedFogServices() + "\t" + containersDeployedFogDynamic.getDeployedFogServices()
+                    + "\t" + containersDeployedAllCloud.getDeployedCloudServices() + "\t" + containersDeployedAllFog.getDeployedCloudServices() + "\t" + containersDeployedFogStatic.getDeployedCloudServices() + "\t" + containersDeployedFogDynamic.getDeployedCloudServices()
                     + "\t" + violAllCloud + "\t" + violAllFog + "\t" + violFogStatic + "\t" + violFogDynamic);
 
         }
