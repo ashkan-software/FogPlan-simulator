@@ -1,2 +1,2 @@
-# DFSP-simulator
-Simulator Software for Dynamic Fog Service Provisioning (DFSP)
+# FogPlan-simulator
+Simulator Software for QoS-aware Dynamic Fog Service Provisioning (QDFSP)
