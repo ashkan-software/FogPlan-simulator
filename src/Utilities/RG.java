@@ -4,7 +4,7 @@ import java.util.Random;
 
 /**
  *
- * @author ashkan Yousefpour
+ * @author Ashkan Y.
  */
 public class RG {
     

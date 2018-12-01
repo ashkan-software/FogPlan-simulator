@@ -1,23 +1,23 @@
-package MMP;
+package DTMC;
 
 import java.util.ArrayList;
 
 /**
  *
- * @author ashkany This class contains the information about the Markov
- * modulated Process (MMP)
+ * @author Ashkan Y. This class contains the variables and parameters about the
+ Discrete Time Markov Chain (DTMC)
  */
-public class MMP {
+public class DTMC {
 
     public int numberOfStates; // total number of states
     public double[] TrafficRateInState; // this is the rate of the process when we are in state x
     public int[][] rate; // this is the transition rate from state x_i to x_j
-    
+
     protected ArrayList<ArrayList<Integer>> next;
     protected ArrayList<ArrayList<Double>> nextProbCumulative;
     private int[] totalRate; // stores the sum of the rates in one row in the rate matrix
 
-    public MMP(int numberOfStates) {
+    public DTMC(int numberOfStates) {
         this.numberOfStates = numberOfStates;
     }
 
@@ -29,6 +29,9 @@ public class MMP {
         this.TrafficRateInState = TrafficRateInState;
     }
 
+    /**
+     * Prints the transition rates
+     */
     public void printTransitionRates() {
         for (int i = 0; i < numberOfStates; i++) {
             for (int j = 0; j < numberOfStates; j++) {
@@ -38,13 +41,16 @@ public class MMP {
         }
     }
 
+    /**
+     * Prints the traffic rates (traffic rates are the states basically)
+     */
     public void printTrafficRateInState() {
         for (int i = 0; i < numberOfStates; i++) {
             System.out.print(TrafficRateInState[i] + " ");
         }
         System.out.println("");
     }
-    
+
     public void configNextArrays() {
         // Total
         totalRate = new int[numberOfStates];
@@ -85,15 +91,20 @@ public class MMP {
             nextProbCumulative.add(innerList);
         }
     }
-    
-    
-     public void printTotalRate() {
+
+    /**
+     * Prints the totalRate array elements
+     */
+    public void printTotalRate() {
         for (int i = 0; i < numberOfStates; i++) {
             System.out.print(totalRate[i] + " ");
         }
         System.out.println("");
     }
 
+    /**
+     * Prints the Next array elements
+     */
     public void printNext() {
         for (int i = 0; i < numberOfStates; i++) {
             System.out.print(next.get(i) + " ");

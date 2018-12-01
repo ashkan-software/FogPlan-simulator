@@ -1,17 +1,11 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package Simulation;
 
-import Run.MainDelayCostViolRealTraceCombinedApp;
-import Run.MainDelayCostViolRealTraceCumulative;
 import Utilities.ArrayFiller;
 
 /**
  *
- * @author ashkany
+ * @author Ashkan Y.
  */
 public class Cost {
 
@@ -61,7 +55,7 @@ public class Cost {
         ArrayFiller.generateFixed1DArray(FOG_CONTROLLER_COMM_UNIT_COST, 0.0000000005d);
 
         SERVICE_PENALY = new double[NUM_SERVICES];
-        ArrayFiller.generateRandom1DArray(SERVICE_PENALY, 2d, 5d); // 2-5 for optimal and cumulative. 40-80 for MMP
+        ArrayFiller.generateRandom1DArray(SERVICE_PENALY, 2d, 5d); // 2-5 for optimal and cumulative. 20-50 for MMP
     }
 
     /**

@@ -1,16 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package Scheme;
 
-import Run.Parameters;
+import Run.RunParameters;
 import Utilities.ArrayFiller;
 
 /**
  *
- * @author ashkany
+ * @author Ashkan Y.
  */
 public class ServiceDeployScheme {
 
@@ -29,8 +25,8 @@ public class ServiceDeployScheme {
 
     public ServiceDeployScheme(int type) {
         this.type = type;
-        variable = new Variable(Parameters.NUM_SERVICES, Parameters.NUM_FOG_NODES, Parameters.NUM_CLOUD_SERVERS);
-        averageRateOfTrafficPerNodePerService = new Double[Parameters.NUM_SERVICES][Parameters.NUM_FOG_NODES];
+        variable = new Variable(RunParameters.NUM_SERVICES, RunParameters.NUM_FOG_NODES, RunParameters.NUM_CLOUD_SERVERS);
+        averageRateOfTrafficPerNodePerService = new Double[RunParameters.NUM_SERVICES][RunParameters.NUM_FOG_NODES];
 
         if (type == ALL_FOG) {
             ArrayFiller.generateFixed2DArray(variable.x, 1);

@@ -1,6 +1,6 @@
 package Simulation;
 
-import Run.Parameters;
+import Run.RunParameters;
 import Scheme.ServiceCounter;
 import Scheme.ServiceDeployScheme;
 import Utilities.ArrayFiller;
@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  *
- * @author ashkany
+ * @author Ashkan Y.
  */
 public class Heuristic {
 
@@ -234,7 +234,7 @@ public class Heuristic {
             calcNormalizedArrivalRateFogNodes();
             calcNormalizedArrivalRateCloudNodes();
             if (Optimization.optimizationConstraintsSatisfied(x, xp, numServices, numFogNodes, numCloudServers, L_S, L_M, KS, KM, KpS, KpM, lambdap_in)) {
-                cost = getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+                cost = getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
                 if (cost < minimumCost) {
                     minimumCost = cost;
                     Optimization.updateBestDecisionVaraibles(x, xp, numServices, numFogNodes, numCloudServers);
@@ -531,15 +531,15 @@ public class Heuristic {
         double aa, b, c, e;
         //if not deployiing (X[a][j] == 0) this is the cost we were paying, 
         // but now this is seen as savings
-//        savings += Cost.costCfc(Parameters.TAU, j, a, lambda_out, h);
-//        savings += Cost.costPC(Parameters.TAU, h[j], a, L_P, lambdap_in);
-//        savings += Cost.costSC(Parameters.TAU, h[j], a, L_S);
-//        savings += Cost.costViolPerFogNode(Parameters.TAU, a, calcVper(a, j));
-        aa = Cost.costCfc(Parameters.TAU, j, a, lambda_out, h);
-        b = Cost.costExtraPC(Parameters.TAU, h[j], a, L_P, lambda_out[a][j]);
-        c = Cost.costExtraSC(Parameters.TAU, h[j], a, L_S, xp);
+//        savings += Cost.costCfc(RunParameters.TAU, j, a, lambda_out, h);
+//        savings += Cost.costPC(RunParameters.TAU, h[j], a, L_P, lambdap_in);
+//        savings += Cost.costSC(RunParameters.TAU, h[j], a, L_S);
+//        savings += Cost.costViolPerFogNode(RunParameters.TAU, a, calcVper(a, j));
+        aa = Cost.costCfc(RunParameters.TAU, j, a, lambda_out, h);
+        b = Cost.costExtraPC(RunParameters.TAU, h[j], a, L_P, lambda_out[a][j]);
+        c = Cost.costExtraSC(RunParameters.TAU, h[j], a, L_S, xp);
         double fogTrafficPercentage = calcFogTrafficPercentage(a, j);
-        e = Cost.costViolPerFogNode(Parameters.TAU, a, calcVper(a, j, fogTrafficPercentage), q, fogTrafficPercentage);
+        e = Cost.costViolPerFogNode(RunParameters.TAU, a, calcVper(a, j, fogTrafficPercentage), q, fogTrafficPercentage);
         savings = aa + b + c + e;
 
         // Now if we were to deploy, this is the cost we would pay
@@ -548,9 +548,9 @@ public class Heuristic {
 
         double xx, y, z, k;
         xx = Cost.costDep(j, a, L_S);
-        y = Cost.costPF(Parameters.TAU, j, a, L_P, lambda_in);
-        z = Cost.costSF(Parameters.TAU, j, a, L_S);
-        k = Cost.costViolPerFogNode(Parameters.TAU, a, calcVper(a, j, fogTrafficPercentage), q, fogTrafficPercentage);
+        y = Cost.costPF(RunParameters.TAU, j, a, L_P, lambda_in);
+        z = Cost.costSF(RunParameters.TAU, j, a, L_S);
+        k = Cost.costViolPerFogNode(RunParameters.TAU, a, calcVper(a, j, fogTrafficPercentage), q, fogTrafficPercentage);
         loss = xx + y + z + k;
 
         x[a][j] = 0; // revert this back to what it was
@@ -577,20 +577,20 @@ public class Heuristic {
         double savings = 0;
         //if not releasing (X[a][j] == 1) this is the cost we were paying, 
         // but now this is seen as savings
-        savings += Cost.costPF(Parameters.TAU, j, a, L_P, lambda_in);
-        savings += Cost.costSF(Parameters.TAU, j, a, L_S);
+        savings += Cost.costPF(RunParameters.TAU, j, a, L_P, lambda_in);
+        savings += Cost.costSF(RunParameters.TAU, j, a, L_S);
         double fogTrafficPercentage = calcFogTrafficPercentage(a, j);
-        savings += Cost.costViolPerFogNode(Parameters.TAU, a, calcVper(a, j, fogTrafficPercentage), q, fogTrafficPercentage);
+        savings += Cost.costViolPerFogNode(RunParameters.TAU, a, calcVper(a, j, fogTrafficPercentage), q, fogTrafficPercentage);
 
         // Now if we were to release, this is the loss we would pay
         x[a][j] = 0;
         d[a][j] = calcServiceDelay(a, j); // this is just to update the things
 
-        loss += Cost.costCfc(Parameters.TAU, j, a, lambda_out, h);
-        loss += Cost.costExtraPC(Parameters.TAU, h[j], a, L_P, lambda_out[a][j]);
-        loss += Cost.costExtraSC(Parameters.TAU, h[j], a, L_S, xp);
+        loss += Cost.costCfc(RunParameters.TAU, j, a, lambda_out, h);
+        loss += Cost.costExtraPC(RunParameters.TAU, h[j], a, L_P, lambda_out[a][j]);
+        loss += Cost.costExtraSC(RunParameters.TAU, h[j], a, L_S, xp);
 
-        loss += Cost.costViolPerFogNode(Parameters.TAU, a, calcVper(a, j, fogTrafficPercentage), q, fogTrafficPercentage);
+        loss += Cost.costViolPerFogNode(RunParameters.TAU, a, calcVper(a, j, fogTrafficPercentage), q, fogTrafficPercentage);
 
         x[a][j] = 1; // revert this back to what it was
         d[a][j] = calcServiceDelay(a, j); // revert things back to what they were

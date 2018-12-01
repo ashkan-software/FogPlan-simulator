@@ -1,11 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package Trace;
 
-import Run.Parameters;
+import Run.RunParameters;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -13,7 +8,7 @@ import java.util.Scanner;
 
 /**
  *
- * @author ashkany
+ * @author Ashkan Y.
  */
 public class CumulativeTraceReader {
 
@@ -53,10 +48,10 @@ public class CumulativeTraceReader {
     private static void normalizeTraceTraffic() {
         findMinAndMax(trafficTrace);
         for (int i = 0; i < trafficTrace.size(); i++) {
-            trafficTrace.set(i, (trafficTrace.get(i) - min + 0.0001) / (max - min) * Parameters.TRAFFIC_NORM_FACTOR);
+            trafficTrace.set(i, (trafficTrace.get(i) - min + 0.0001) / (max - min) * RunParameters.TRAFFIC_NORM_FACTOR);
         }
 
-        averageTrafficTrace = (averageTrafficTrace - min) / (max - min) * Parameters.TRAFFIC_NORM_FACTOR;
+        averageTrafficTrace = (averageTrafficTrace - min) / (max - min) * RunParameters.TRAFFIC_NORM_FACTOR;
     }
 
     private static void findMinAndMax(ArrayList<Double> trace) {

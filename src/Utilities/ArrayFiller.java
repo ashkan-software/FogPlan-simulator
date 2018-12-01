@@ -2,7 +2,7 @@ package Utilities;
 
 /**
  *
- * @author ashkany
+ * @author Ashkan Y.
  */
 public class ArrayFiller {
 

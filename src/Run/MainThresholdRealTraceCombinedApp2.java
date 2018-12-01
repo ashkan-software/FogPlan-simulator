@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author ashkany This main class runs the scheme for different intervals of
+ * @author Ashkan Y. This main class runs the scheme for different intervals of
  * running the heuristic in the scheme
  */
 public class MainThresholdRealTraceCombinedApp2 {
@@ -25,21 +25,21 @@ public class MainThresholdRealTraceCombinedApp2 {
 
     public static void main(String[] args) throws FileNotFoundException {
 
-        Parameters.TAU = TAU;
-        Parameters.TRAFFIC_CHANGE_INTERVAL = TRAFFIC_CHANGE_INTERVAL;
-        int q = Parameters.TAU / Parameters.TRAFFIC_CHANGE_INTERVAL;
+        RunParameters.TAU = TAU;
+        RunParameters.TRAFFIC_CHANGE_INTERVAL = TRAFFIC_CHANGE_INTERVAL;
+        int q = RunParameters.TAU / RunParameters.TRAFFIC_CHANGE_INTERVAL;
         // the number of times that traffic changes between each run of the heuristic
 
         ArrayList<Double[]> traceList = CombinedAppTraceReader.readTrafficFromFile();
         TOTAL_RUN = traceList.size();
 
-        Heuristic heuristicAllCloud = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.ALL_CLOUD), Parameters.NUM_FOG_NODES, Parameters.NUM_SERVICES, Parameters.NUM_CLOUD_SERVERS);
-        Heuristic heuristicAllFog = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.ALL_FOG), Parameters.NUM_FOG_NODES, Parameters.NUM_SERVICES, Parameters.NUM_CLOUD_SERVERS);
-        Heuristic heuristicFogStatic = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_STATIC, CombinedAppTraceReader.averagePerFogNode), Parameters.NUM_FOG_NODES, Parameters.NUM_SERVICES, Parameters.NUM_CLOUD_SERVERS);
-        Heuristic heuristicFogDynamic = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.NUM_FOG_NODES, Parameters.NUM_SERVICES, Parameters.NUM_CLOUD_SERVERS);
+        Heuristic heuristicAllCloud = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.ALL_CLOUD), RunParameters.NUM_FOG_NODES, RunParameters.NUM_SERVICES, RunParameters.NUM_CLOUD_SERVERS);
+        Heuristic heuristicAllFog = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.ALL_FOG), RunParameters.NUM_FOG_NODES, RunParameters.NUM_SERVICES, RunParameters.NUM_CLOUD_SERVERS);
+        Heuristic heuristicFogStatic = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_STATIC, CombinedAppTraceReader.averagePerFogNode), RunParameters.NUM_FOG_NODES, RunParameters.NUM_SERVICES, RunParameters.NUM_CLOUD_SERVERS);
+        Heuristic heuristicFogDynamic = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), RunParameters.NUM_FOG_NODES, RunParameters.NUM_SERVICES, RunParameters.NUM_CLOUD_SERVERS);
 
-        Heuristic heuristicFogStaticViolation = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_STATIC, CombinedAppTraceReader.averagePerFogNode), Parameters.NUM_FOG_NODES, Parameters.NUM_SERVICES, Parameters.NUM_CLOUD_SERVERS);
-        Heuristic heuristicFogDynamicViolation = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.NUM_FOG_NODES, Parameters.NUM_SERVICES, Parameters.NUM_CLOUD_SERVERS);
+        Heuristic heuristicFogStaticViolation = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_STATIC, CombinedAppTraceReader.averagePerFogNode), RunParameters.NUM_FOG_NODES, RunParameters.NUM_SERVICES, RunParameters.NUM_CLOUD_SERVERS);
+        Heuristic heuristicFogDynamicViolation = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), RunParameters.NUM_FOG_NODES, RunParameters.NUM_SERVICES, RunParameters.NUM_CLOUD_SERVERS);
 
         Heuristic.initializeStaticVariables();
 
@@ -113,7 +113,7 @@ public class MainThresholdRealTraceCombinedApp2 {
                 fogcontainersDeployedAllCloud[i] = containersDeployedAllCloud.getDeployedFogServices();
                 cloudcontainersDeployedAllCloud[i] = containersDeployedAllCloud.getDeployedCloudServices();
                 delayAllCloud[i] = heuristicAllCloud.getAvgServiceDelay();
-                costAllCloud[i] = heuristicAllCloud.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+                costAllCloud[i] = heuristicAllCloud.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
                 violAllCloud[i] = heuristicAllCloud.getViolationPercentage();
 
                 heuristicAllFog.setTrafficToGlobalTraffic();
@@ -121,7 +121,7 @@ public class MainThresholdRealTraceCombinedApp2 {
                 fogcontainersDeployedAllFog[i] = containersDeployedAllFog.getDeployedFogServices();
                 cloudcontainersDeployedAllFog[i] = containersDeployedAllFog.getDeployedCloudServices();
                 delayAllFog[i] = heuristicAllFog.getAvgServiceDelay();
-                costAllFog[i] = heuristicAllFog.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+                costAllFog[i] = heuristicAllFog.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
                 violAllFog[i] = heuristicAllFog.getViolationPercentage();
 
                 heuristicFogStatic.setTrafficToGlobalTraffic();
@@ -129,7 +129,7 @@ public class MainThresholdRealTraceCombinedApp2 {
                 fogcontainersDeployedFogStatic[i] = containersDeployedFogStatic.getDeployedFogServices();
                 cloudcontainersDeployedFogStatic[i] = containersDeployedFogStatic.getDeployedCloudServices();
                 delayFogStatic[i] = heuristicFogStatic.getAvgServiceDelay();
-                costFogStatic[i] = heuristicFogStatic.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+                costFogStatic[i] = heuristicFogStatic.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
                 violFogStatic[i] = heuristicFogStatic.getViolationPercentage();
 
                 heuristicFogDynamic.setTrafficToGlobalTraffic();
@@ -139,7 +139,7 @@ public class MainThresholdRealTraceCombinedApp2 {
                     cloudcontainersDeployedFogDynamic[i] = containersDeployedFogDynamic.getDeployedCloudServices();
                 }
                 delayFogDynamic[i] = heuristicFogDynamic.getAvgServiceDelay();
-                costFogDynamic[i] = heuristicFogDynamic.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+                costFogDynamic[i] = heuristicFogDynamic.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
                 violFogDynamic[i] = heuristicFogDynamic.getViolationPercentage();
 
                 heuristicFogStaticViolation.setTrafficToGlobalTraffic();
@@ -147,7 +147,7 @@ public class MainThresholdRealTraceCombinedApp2 {
                 fogcontainersDeployedFogStaticViolation[i] = containersDeployedFogStaticViolation.getDeployedFogServices();
                 cloudcontainersDeployedFogStaticViolation[i] = containersDeployedFogStaticViolation.getDeployedCloudServices();
                 delayFogStaticViolation[i] = heuristicFogStaticViolation.getAvgServiceDelay();
-                costFogStaticViolation[i] = heuristicFogStaticViolation.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+                costFogStaticViolation[i] = heuristicFogStaticViolation.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
                 violFogStaticViolation[i] = heuristicFogStaticViolation.getViolationPercentage();
 
                 heuristicFogDynamicViolation.setTrafficToGlobalTraffic();
@@ -157,14 +157,14 @@ public class MainThresholdRealTraceCombinedApp2 {
                     cloudcontainersDeployedFogDynamicViolation[i] = containersDeployedFogDynamicViolation.getDeployedCloudServices();
                 }
                 delayFogDynamicViolation[i] = heuristicFogDynamicViolation.getAvgServiceDelay();
-                costFogDynamicViolation[i] = heuristicFogDynamicViolation.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+                costFogDynamicViolation[i] = heuristicFogDynamicViolation.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
                 violFogDynamicViolation[i] = heuristicFogDynamicViolation.getViolationPercentage();
 
             }
 
-            System.out.print(threshold + "\t" + ((sumTrafficPerNodePerApp * Parameters.NUM_FOG_NODES * Parameters.NUM_SERVICES) / (TOTAL_RUN))
+            System.out.print(threshold + "\t" + ((sumTrafficPerNodePerApp * RunParameters.NUM_FOG_NODES * RunParameters.NUM_SERVICES) / (TOTAL_RUN))
                     + "\t" + (findAverageOfArray(delayAllCloud)) + "\t" + (findAverageOfArray(delayAllFog)) + "\t" + (findAverageOfArray(delayFogStatic)) + "\t" + (findAverageOfArray(delayFogDynamic)) + "\t" + (findAverageOfArray(delayFogStaticViolation)) + "\t" + (findAverageOfArray(delayFogDynamicViolation))
-                    + "\t" + ((findAverageOfArray(costAllCloud) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findAverageOfArray(costAllFog) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findAverageOfArray(costFogStatic) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findAverageOfArray(costFogDynamic) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findAverageOfArray(costFogStaticViolation) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findAverageOfArray(costFogDynamicViolation) / Parameters.TRAFFIC_CHANGE_INTERVAL))
+                    + "\t" + ((findAverageOfArray(costAllCloud) / RunParameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findAverageOfArray(costAllFog) / RunParameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findAverageOfArray(costFogStatic) / RunParameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findAverageOfArray(costFogDynamic) / RunParameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findAverageOfArray(costFogStaticViolation) / RunParameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findAverageOfArray(costFogDynamicViolation) / RunParameters.TRAFFIC_CHANGE_INTERVAL))
                     + "\t" + (findAverageOfArray(fogcontainersDeployedAllCloud)) + "\t" + (findAverageOfArray(fogcontainersDeployedAllFog)) + "\t" + (findAverageOfArray(fogcontainersDeployedFogStatic)) + "\t" + (findAverageOfArray(fogcontainersDeployedFogDynamic)) + "\t" + (findAverageOfArray(fogcontainersDeployedFogStaticViolation)) + "\t" + (findAverageOfArray(fogcontainersDeployedFogDynamicViolation))
                     + "\t" + (findAverageOfArray(cloudcontainersDeployedAllCloud)) + "\t" + (findAverageOfArray(cloudcontainersDeployedAllFog)) + "\t" + (findAverageOfArray(cloudcontainersDeployedFogStatic)) + "\t" + (findAverageOfArray(cloudcontainersDeployedFogDynamic)) + "\t" + (findAverageOfArray(cloudcontainersDeployedFogStaticViolation)) + "\t" + (findAverageOfArray(cloudcontainersDeployedFogDynamicViolation))
                     + "\t" + (findAverageOfArray(violAllCloud)) + "\t" + (findAverageOfArray(violAllFog)) + "\t" + (findAverageOfArray(violFogStatic)) + "\t" + (findAverageOfArray(violFogDynamic)) + "\t" + (findAverageOfArray(violFogStaticViolation)) + "\t" + (findAverageOfArray(violFogDynamicViolation)));
@@ -172,7 +172,7 @@ public class MainThresholdRealTraceCombinedApp2 {
             if (threshold % 5 == 0) {
                 System.out.print(
                         "\t" + (findStandardDeviationOfArray(delayAllCloud)) + "\t" + (findStandardDeviationOfArray(delayAllFog)) + "\t" + (findStandardDeviationOfArray(delayFogStatic)) + "\t" + (findStandardDeviationOfArray(delayFogDynamic)) + "\t" + (findStandardDeviationOfArray(delayFogStaticViolation)) + "\t" + (findStandardDeviationOfArray(delayFogDynamicViolation))
-                        + "\t" + ((findStandardDeviationOfArray(costAllCloud) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findStandardDeviationOfArray(costAllFog) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findStandardDeviationOfArray(costFogStatic) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findStandardDeviationOfArray(costFogDynamic) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findStandardDeviationOfArray(costFogStaticViolation) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findStandardDeviationOfArray(costFogDynamicViolation) / Parameters.TRAFFIC_CHANGE_INTERVAL))
+                        + "\t" + ((findStandardDeviationOfArray(costAllCloud) / RunParameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findStandardDeviationOfArray(costAllFog) / RunParameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findStandardDeviationOfArray(costFogStatic) / RunParameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findStandardDeviationOfArray(costFogDynamic) / RunParameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findStandardDeviationOfArray(costFogStaticViolation) / RunParameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findStandardDeviationOfArray(costFogDynamicViolation) / RunParameters.TRAFFIC_CHANGE_INTERVAL))
                         + "\t" + (findStandardDeviationOfArray(fogcontainersDeployedAllCloud)) + "\t" + (findStandardDeviationOfArray(fogcontainersDeployedAllFog)) + "\t" + (findStandardDeviationOfArray(fogcontainersDeployedFogStatic)) + "\t" + (findStandardDeviationOfArray(fogcontainersDeployedFogDynamic)) + "\t" + (findStandardDeviationOfArray(fogcontainersDeployedFogStaticViolation)) + "\t" + (findStandardDeviationOfArray(fogcontainersDeployedFogDynamicViolation))
                         + "\t" + (findStandardDeviationOfArray(cloudcontainersDeployedAllCloud)) + "\t" + (findStandardDeviationOfArray(cloudcontainersDeployedAllFog)) + "\t" + (findStandardDeviationOfArray(cloudcontainersDeployedFogStatic)) + "\t" + (findStandardDeviationOfArray(cloudcontainersDeployedFogDynamic)) + "\t" + (findStandardDeviationOfArray(cloudcontainersDeployedFogStaticViolation)) + "\t" + (findStandardDeviationOfArray(cloudcontainersDeployedFogDynamicViolation))
                         + "\t" + (findStandardDeviationOfArray(violAllCloud)) + "\t" + (findStandardDeviationOfArray(violAllFog)) + "\t" + (findStandardDeviationOfArray(violFogStatic)) + "\t" + (findStandardDeviationOfArray(violFogDynamic)) + "\t" + (findStandardDeviationOfArray(violFogStaticViolation)) + "\t" + (findStandardDeviationOfArray(violFogDynamicViolation))
