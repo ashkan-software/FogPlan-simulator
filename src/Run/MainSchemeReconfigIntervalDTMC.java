@@ -11,7 +11,7 @@ import Simulation.Heuristic;
  * @author Ashkan Y. This main class runs the scheme for different intervals of
  * running the heuristic in the scheme
  */
-public class MainSchemeReconfigIntervalMMP {
+public class MainSchemeReconfigIntervalDTMC {
 
     private static int MAX_HEURISTIC_CHANGE_INTERVAL = 250;
     protected final static int TRAFFIC_CHANGE_INTERVAL = 10; // time interval between run of the heuristic (s)
@@ -23,8 +23,8 @@ public class MainSchemeReconfigIntervalMMP {
         // the number of times that traffic changes between each run of the heuristic
         RunParameters.TRAFFIC_CHANGE_INTERVAL = TRAFFIC_CHANGE_INTERVAL;
 
-        DTMCconstructor mmpConstructor = new DTMCconstructor();
-        DTMCsimulator trafficRateSetter = new DTMCsimulator(mmpConstructor.dtmc);
+        DTMCconstructor dtmcConstructor = new DTMCconstructor();
+        DTMCsimulator trafficRateSetter = new DTMCsimulator(dtmcConstructor.dtmc);
 
         Heuristic heuristicFogDynamic = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), RunParameters.NUM_FOG_NODES, RunParameters.NUM_SERVICES, RunParameters.NUM_CLOUD_SERVERS);
         Heuristic heuristicFogDynamicViolation = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), RunParameters.NUM_FOG_NODES, RunParameters.NUM_SERVICES, RunParameters.NUM_CLOUD_SERVERS);

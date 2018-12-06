@@ -40,10 +40,10 @@ public class Cost {
         ArrayFiller.generateFixed1DArray(CLOUD_UNIT_STOR_COST, 0.00000000004d);
 
         FOG_UNIT_PROC_COST = new double[NUM_FOG_NODES];
-        ArrayFiller.generateRandom1DArray(FOG_UNIT_PROC_COST, 0.02d, 0.02d); // 0.02d for optimal and cumulative and MMP and threshold
+        ArrayFiller.generateRandom1DArray(FOG_UNIT_PROC_COST, 0.02d, 0.02d); // 0.02d for optimal and cumulative and DTMC and threshold
 
         FOG_UNIT_STOR_COST = new double[NUM_FOG_NODES];
-        ArrayFiller.generateRandom1DArray(FOG_UNIT_STOR_COST, 0.00000000008d, 0.00000000008d); // 00000000008d for optimal and cumulative and MMP and threshold
+        ArrayFiller.generateRandom1DArray(FOG_UNIT_STOR_COST, 0.00000000008d, 0.00000000008d); // 00000000008d for optimal and cumulative and DTMC and threshold
 
         FOG_CLOUD_COMM_UNIT_COST = new double[NUM_FOG_NODES][NUM_CLOUD_SERVERS];
         ArrayFiller.generateFixed2DArray(FOG_CLOUD_COMM_UNIT_COST, 0.0000000002d);
@@ -55,7 +55,7 @@ public class Cost {
         ArrayFiller.generateFixed1DArray(FOG_CONTROLLER_COMM_UNIT_COST, 0.0000000005d);
 
         SERVICE_PENALY = new double[NUM_SERVICES];
-        ArrayFiller.generateRandom1DArray(SERVICE_PENALY, 2d, 5d); // 2-5 for optimal and cumulative. 20-50 for MMP
+        ArrayFiller.generateRandom1DArray(SERVICE_PENALY, 2d, 5d); // 2-5 for optimal and cumulative. 20-50 for DTMC
     }
 
     /**
