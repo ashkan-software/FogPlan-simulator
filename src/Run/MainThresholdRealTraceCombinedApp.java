@@ -3,6 +3,7 @@ package Run;
 import Scheme.ServiceCounter;
 import Scheme.ServiceDeployScheme;
 import Simulation.Heuristic;
+import Simulation.Violation;
 import Trace.CombinedAppTraceReader;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -89,7 +90,7 @@ public class MainThresholdRealTraceCombinedApp {
 
         double sumTrafficPerNodePerApp = 0; // used for getting average
 
-        double violationSlack = Heuristic.getViolationSlack();
+        double violationSlack = Violation.getViolationSlack();
 
         Double[] combinedTrafficPerFogNode;
         
@@ -114,7 +115,7 @@ public class MainThresholdRealTraceCombinedApp {
                 cloudcontainersDeployedAllCloud += containersDeployedAllCloud.getDeployedCloudServices();
                 delayAllCloud += heuristicAllCloud.getAvgServiceDelay();
                 costAllCloud += heuristicAllCloud.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-                violAllCloud += heuristicAllCloud.getViolationPercentage();
+                violAllCloud += Violation.getViolationPercentage(heuristicAllCloud);
 
                 heuristicAllFog.setTrafficToGlobalTraffic();
                 containersDeployedAllFog = heuristicAllFog.run(Heuristic.COMBINED_APP, false);
@@ -122,7 +123,7 @@ public class MainThresholdRealTraceCombinedApp {
                 cloudcontainersDeployedAllFog += containersDeployedAllFog.getDeployedCloudServices();
                 delayAllFog += heuristicAllFog.getAvgServiceDelay();
                 costAllFog += heuristicAllFog.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-                violAllFog += heuristicAllFog.getViolationPercentage();
+                violAllFog += Violation.getViolationPercentage(heuristicAllFog);
 
                 heuristicFogStatic.setTrafficToGlobalTraffic();
                 containersDeployedFogStatic = heuristicFogStatic.run(Heuristic.COMBINED_APP, false);
@@ -130,7 +131,7 @@ public class MainThresholdRealTraceCombinedApp {
                 cloudcontainersDeployedFogStatic += containersDeployedFogStatic.getDeployedCloudServices();
                 delayFogStatic += heuristicFogStatic.getAvgServiceDelay();
                 costFogStatic += heuristicFogStatic.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-                violFogStatic += heuristicFogStatic.getViolationPercentage();
+                violFogStatic += Violation.getViolationPercentage(heuristicFogStatic);
 
                 heuristicFogDynamic.setTrafficToGlobalTraffic();
                 if (i % q == 0) {
@@ -140,7 +141,7 @@ public class MainThresholdRealTraceCombinedApp {
                 }
                 delayFogDynamic += heuristicFogDynamic.getAvgServiceDelay();
                 costFogDynamic += heuristicFogDynamic.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-                violFogDynamic += heuristicFogDynamic.getViolationPercentage();
+                violFogDynamic += Violation.getViolationPercentage(heuristicFogDynamic);
 
                 heuristicFogStaticViolation.setTrafficToGlobalTraffic();
                 containersDeployedFogStaticViolation = heuristicFogStaticViolation.run(Heuristic.COMBINED_APP, true);
@@ -148,7 +149,7 @@ public class MainThresholdRealTraceCombinedApp {
                 cloudcontainersDeployedFogStaticViolation += containersDeployedFogStaticViolation.getDeployedCloudServices();
                 delayFogStaticViolation += heuristicFogStaticViolation.getAvgServiceDelay();
                 costFogStaticViolation += heuristicFogStaticViolation.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-                violFogStaticViolation += heuristicFogStaticViolation.getViolationPercentage();
+                violFogStaticViolation += Violation.getViolationPercentage(heuristicFogStaticViolation);
 
                 heuristicFogDynamicViolation.setTrafficToGlobalTraffic();
                 if (i % q == 0) {
@@ -158,7 +159,7 @@ public class MainThresholdRealTraceCombinedApp {
                 }
                 delayFogDynamicViolation += heuristicFogDynamicViolation.getAvgServiceDelay();
                 costFogDynamicViolation += heuristicFogDynamicViolation.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-                violFogDynamicViolation += heuristicFogDynamicViolation.getViolationPercentage();
+                violFogDynamicViolation += Violation.getViolationPercentage(heuristicFogDynamicViolation);
 
             }
 

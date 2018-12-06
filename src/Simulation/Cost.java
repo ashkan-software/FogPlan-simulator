@@ -55,7 +55,7 @@ public class Cost {
         ArrayFiller.generateFixed1DArray(FOG_CONTROLLER_COMM_UNIT_COST, 0.0000000005d);
 
         SERVICE_PENALY = new double[NUM_SERVICES];
-        ArrayFiller.generateRandom1DArray(SERVICE_PENALY, 2d, 5d); // 2-5 for optimal and cumulative. 20-50 for DTMC
+        ArrayFiller.generateRandom1DArray(SERVICE_PENALY, 20d, 50d); // 2-5 for optimal and cumulative. 20-50 for DTMC
     }
 
     /**

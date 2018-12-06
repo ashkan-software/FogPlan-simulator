@@ -3,6 +3,7 @@ package Run;
 import Scheme.ServiceCounter;
 import Scheme.ServiceDeployScheme;
 import Simulation.Heuristic;
+import Simulation.Violation;
 import Trace.CombinedAppTraceReader;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -70,7 +71,7 @@ public class MainDelayCostViolRealTraceCombinedApp {
         double violFogDynamicViol = 0;
         double violOptimalPlacement = 0;
 
-        double violationSlack = Heuristic.getViolationSlack();
+        double violationSlack = Violation.getViolationSlack();
         Double[] combinedTrafficPerFogNode;
 
         System.out.println("Traffic\tD(AC)\tD(AF)\tD(FS)\tD(FD)\tD(FDV)\tD(OP)\tC(AC)\tC(AF)\tC(FS)\tC(FD)\tC(FDV)\tC(OP)\tCNT(AC)\tCNT(AF)\tCNT(FS)\tCNT(FD)\tCNT(FDV)\tCNT(OP)\tCCNT(AC)\tCCNT(AF)\tCCNT(FS)\tCCNT(FD)\tCCNT(FDV)\tCCNT(OP)\tV(AC)\tV(AF)\tV(FS)\tV(FD)\tV(FDV)\tV(OP)\tVS=" + violationSlack);
@@ -82,20 +83,20 @@ public class MainDelayCostViolRealTraceCombinedApp {
             containersDeployedAllCloud = heuristicAllCloud.run(Heuristic.COMBINED_APP, false); // boolean will be ignored
             delayAllCloud = heuristicAllCloud.getAvgServiceDelay();
             costAllCloud = heuristicAllCloud.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-            violAllCloud = heuristicAllCloud.getViolationPercentage();
+            violAllCloud = Violation.getViolationPercentage(heuristicAllCloud);
 
             heuristicAllFog.setTrafficToGlobalTraffic();
             containersDeployedAllFog = heuristicAllFog.run(Heuristic.COMBINED_APP, false); // boolean will be ignored
             delayAllFog = heuristicAllFog.getAvgServiceDelay();
             costAllFog = heuristicAllFog.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-            violAllFog = heuristicAllFog.getViolationPercentage();
+            violAllFog = Violation.getViolationPercentage(heuristicAllFog);
 
             
             heuristicFogStatic.setTrafficToGlobalTraffic();
             containersDeployedFogStatic = heuristicFogStatic.run(Heuristic.COMBINED_APP, true);
             delayFogStatic = heuristicFogStatic.getAvgServiceDelay();
             costFogStatic = heuristicFogStatic.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-            violFogStatic = heuristicFogStatic.getViolationPercentage();
+            violFogStatic = Violation.getViolationPercentage(heuristicFogStatic);
 
             heuristicFogDynamic.setTrafficToGlobalTraffic();
             if (i % q == 0) {
@@ -103,7 +104,7 @@ public class MainDelayCostViolRealTraceCombinedApp {
             }
             delayFogDynamic = heuristicFogDynamic.getAvgServiceDelay();
             costFogDynamic = heuristicFogDynamic.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-            violFogDynamic = heuristicFogDynamic.getViolationPercentage();
+            violFogDynamic = Violation.getViolationPercentage(heuristicFogDynamic);
             
             
             heuristicFogDynamicViol.setTrafficToGlobalTraffic();
@@ -112,7 +113,7 @@ public class MainDelayCostViolRealTraceCombinedApp {
             }
             delayFogDynamicViol = heuristicFogDynamicViol.getAvgServiceDelay();
             costFogDynamicViol = heuristicFogDynamicViol.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-            violFogDynamicViol = heuristicFogDynamicViol.getViolationPercentage();
+            violFogDynamicViol = Violation.getViolationPercentage(heuristicFogDynamicViol);
             
             printCost = false;
             optimalPlacement.setTrafficToGlobalTraffic();
@@ -120,7 +121,7 @@ public class MainDelayCostViolRealTraceCombinedApp {
             delayOptimalPlacement = optimalPlacement.getAvgServiceDelay();
             printCost = true;
             costOptimalPlacement = optimalPlacement.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-            violOptimalPlacement = optimalPlacement.getViolationPercentage();
+            violOptimalPlacement = Violation.getViolationPercentage(optimalPlacement);
 
             System.out.println((totalTraffic(combinedTrafficPerFogNode) * RunParameters.NUM_SERVICES) + "\t" + delayAllCloud + "\t" + delayAllFog + "\t" + delayFogStatic + "\t" + delayFogDynamic + "\t" + delayFogDynamicViol + "\t" + delayOptimalPlacement
                     + "\t" + (costAllCloud / RunParameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costAllFog / RunParameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogStatic / RunParameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogDynamic / RunParameters.TRAFFIC_CHANGE_INTERVAL)  + "\t" + (costFogDynamicViol / RunParameters.TRAFFIC_CHANGE_INTERVAL)  + "\t" + (costOptimalPlacement / RunParameters.TRAFFIC_CHANGE_INTERVAL)

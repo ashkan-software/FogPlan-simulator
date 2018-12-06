@@ -3,6 +3,7 @@ package Run;
 import Scheme.ServiceCounter;
 import Scheme.ServiceDeployScheme;
 import Simulation.Heuristic;
+import Simulation.Violation;
 import Trace.CumulativeTraceReader;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -76,7 +77,7 @@ public class MainDelayCostViolRealTraceCumulative {
         double violFogDynamicViolation = 0;
         double violOptimalPlacement = 0;
 
-        double violationSlack = Heuristic.getViolationSlack();
+        double violationSlack = Violation.getViolationSlack();
         Double trafficPerNodePerApp;
 
         System.out.println("Traffic\tD(AC)\tD(AF)\tD(FS)\tD(FD)\tD(FSV)\tD(FDV)\tD(OP)\tC(AC)\tC(AF)\tC(FS)\tC(FD)\tC(FSV)\tC(FDV)\tC(OP)\tCNT(AC)\tCNT(AF)\tCNT(FS)\tCNT(FD)\tCNT(FSV)\tCNT(FDV)\tCNT(OP)\tV(AC)\tV(AF)\tV(FS)\tV(FD)\tV(FSV)\tV(FDV)\tV(OP)\tVS=" + violationSlack);
@@ -88,19 +89,19 @@ public class MainDelayCostViolRealTraceCumulative {
             containersDeployedAllCloud = heuristicAllCloud.run(Heuristic.COMBINED_APP_REGIONES, false);
             delayAllCloud = heuristicAllCloud.getAvgServiceDelay();
             costAllCloud = heuristicAllCloud.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-            violAllCloud = heuristicAllCloud.getViolationPercentage();
+            violAllCloud = Violation.getViolationPercentage(heuristicAllCloud);
 
             heuristicAllFog.setTrafficToGlobalTraffic();
             containersDeployedAllFog = heuristicAllFog.run(Heuristic.COMBINED_APP_REGIONES, false);
             delayAllFog = heuristicAllFog.getAvgServiceDelay();
             costAllFog = heuristicAllFog.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-            violAllFog = heuristicAllFog.getViolationPercentage();
+            violAllFog = Violation.getViolationPercentage(heuristicAllFog);
 
             heuristicFogStatic.setTrafficToGlobalTraffic();
             containersDeployedFogStatic = heuristicFogStatic.run(Heuristic.COMBINED_APP_REGIONES, false);
             delayFogStatic = heuristicFogStatic.getAvgServiceDelay();
             costFogStatic = heuristicFogStatic.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-            violFogStatic = heuristicFogStatic.getViolationPercentage();
+            violFogStatic = Violation.getViolationPercentage(heuristicFogStatic);
 
             heuristicFogDynamic.setTrafficToGlobalTraffic();
             if (i % q == 0) {
@@ -108,13 +109,13 @@ public class MainDelayCostViolRealTraceCumulative {
             }
             delayFogDynamic = heuristicFogDynamic.getAvgServiceDelay();
             costFogDynamic = heuristicFogDynamic.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-            violFogDynamic = heuristicFogDynamic.getViolationPercentage();
+            violFogDynamic = Violation.getViolationPercentage(heuristicFogDynamic);
             
             heuristicFogStaticViolation.setTrafficToGlobalTraffic();
             containersDeployedFogStaticViolation = heuristicFogStaticViolation.run(Heuristic.COMBINED_APP_REGIONES, true);
             delayFogStaticViolation = heuristicFogStaticViolation.getAvgServiceDelay();
             costFogStaticViolation = heuristicFogStaticViolation.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-            violFogStaticViolation = heuristicFogStaticViolation.getViolationPercentage();
+            violFogStaticViolation = Violation.getViolationPercentage(heuristicFogStaticViolation);
 
             heuristicFogDynamicViolation.setTrafficToGlobalTraffic();
             if (i % q == 0) {
@@ -122,7 +123,7 @@ public class MainDelayCostViolRealTraceCumulative {
             }
             delayFogDynamicViolation = heuristicFogDynamicViolation.getAvgServiceDelay();
             costFogDynamicViolation = heuristicFogDynamicViolation.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-            violFogDynamicViolation = heuristicFogDynamicViolation.getViolationPercentage();
+            violFogDynamicViolation = Violation.getViolationPercentage(heuristicFogDynamicViolation);
 
             containersDeployedOptimalPlacement = new ServiceCounter(0, 0);
 //            printCost = false;

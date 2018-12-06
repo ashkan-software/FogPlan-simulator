@@ -5,6 +5,7 @@ import DTMC.DTMCsimulator;
 import Scheme.ServiceCounter;
 import Scheme.ServiceDeployScheme;
 import Simulation.Heuristic;
+import Simulation.Violation;
 
 /**
  *
@@ -44,7 +45,7 @@ public class MainSchemeReconfigIntervalDTMC {
 
         double sumTrafficPerNodePerApp = 0d; // used for getting average
 
-        double violationSlack = Heuristic.getViolationSlack();
+        double violationSlack = Violation.getViolationSlack();
         double trafficPerNodePerApp;
 
         System.out.println("Tau\tTraffic\tDelay\tCost\tContainer\tViol\tDelay(Vonly)\tCost(Vonly)\tContainer(Vonly)\tViol(Vonly)\tViol_Slack=" + violationSlack + "\tThresh=" + Heuristic.getThresholdAverage());
@@ -73,11 +74,11 @@ public class MainSchemeReconfigIntervalDTMC {
                 }
                 sumDelayFogDynamic += heuristicFogDynamic.getAvgServiceDelay();
                 sumCostFogDynamic += heuristicFogDynamic.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-                sumViolFogDynamic += heuristicFogDynamic.getViolationPercentage();
+                sumViolFogDynamic += Violation.getViolationPercentage(heuristicFogDynamic);
 
                 sumDelayFogDynamicViolation += heuristicFogDynamicViolation.getAvgServiceDelay();
                 sumCostFogDynamicViolation += heuristicFogDynamicViolation.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
-                sumViolFogDynamicViolation += heuristicFogDynamicViolation.getViolationPercentage();
+                sumViolFogDynamicViolation += Violation.getViolationPercentage(heuristicFogDynamicViolation);
             }
 
             System.out.println(RunParameters.TAU + "\t" + ((sumTrafficPerNodePerApp * RunParameters.NUM_FOG_NODES * RunParameters.NUM_SERVICES) / (TOTAL_RUN))

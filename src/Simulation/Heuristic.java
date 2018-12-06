@@ -16,20 +16,20 @@ import java.util.List;
  */
 public class Heuristic {
 
-    private static double th[]; // threshold
-    private static double q[]; // quality of service for service a
+    protected static double th[]; // threshold
+    protected static double q[]; // quality of service for service a
 
-    private static double dIF[]; // average propagation delay from IoT nodes to fog node j (*can be measured and shown in paper by trace*)
-    private static double rIF[]; // average transmission rate from IoT nodes to fog node j (*can be measured and shown in paper by trace*)
+    protected static double dIF[]; // average propagation delay from IoT nodes to fog node j (*can be measured and shown in paper by trace*)
+    protected static double rIF[]; // average transmission rate from IoT nodes to fog node j (*can be measured and shown in paper by trace*)
 
-    private static double dFC[][]; // propagation delay from fog node j to cloud node k (*can be measured and shown in paper by trace*)
-    private static double rFC[][]; // average transmission rate from fog node j to cloud node k (*can be measured and shown in paper by trace*)
+    protected static double dFC[][]; // propagation delay from fog node j to cloud node k (*can be measured and shown in paper by trace*)
+    protected static double rFC[][]; // average transmission rate from fog node j to cloud node k (*can be measured and shown in paper by trace*)
 
-    public static double l_rq[]; // average request length of service a
-    public static double l_rp[]; // average response length of service a
+    protected static double l_rq[]; // average request length of service a
+    protected static double l_rp[]; // average response length of service a
 
-    private static double KP[]; // processing capacity (service rate) of fog node j
-    private static double KpP[]; // processing capacity (service rate) of cloud server k
+    protected static double KP[]; // processing capacity (service rate) of fog node j
+    protected static double KpP[]; // processing capacity (service rate) of cloud server k
 
     private static double KM[]; // memory capacity of fog node j, in bytes
     private static double KpM[]; // memory capacity of cloud server k, in bytes
@@ -49,7 +49,7 @@ public class Heuristic {
     public static int NOT_COMBINED = 3;
 
     private static ArrayList<HashSet<Integer>> h_reverse; // set of fog nodes j that send their traffic to cloud server k (associated fog nodes to cloud server k)
-    private static int[] h; // map given fog node to the associated cloud node
+    public static int[] h; // map given fog node to the associated cloud node
 
     private static double[] L_P; // amount of required processing for service a per unit traffic, in MIPS
     private static double[] L_S; // size of service (i.e. container) a,
@@ -62,33 +62,31 @@ public class Heuristic {
 
     private static Cost cost;
 
-    private double proc_time;
-
     private boolean firstTimeDone = false;
 
-    private static int numFogNodes;
-    private static int numServices;
-    private static int numCloudServers;
+    public static int numFogNodes;
+    public static int numServices;
+    public static int numCloudServers;
 
     private static double[] ServiceTrafficPercentage;
 
-    private int[][] x; // x_aj
-    private int[][] x_backup;
-    private int[][] xp; // x'_ak
-    private int[][] v; // v_aj
+    protected int[][] x; // x_aj
+    protected int[][] x_backup;
+    protected int[][] xp; // x'_ak
+    protected int[][] v; // v_aj
 
-    private double d[][]; // stores d_aj
-    private double Vper[]; // V^%_a
+    protected double d[][]; // stores d_aj
+    protected double Vper[]; // V^%_a
 
     private static double globalTraffic[][]; // this is a static version of traffic, which must remain the same
 
-    private double lambda_in[][]; // lambda^in_aj
-    private double lambdap_in[][]; // lambda'^in_ak
+    protected double lambda_in[][]; // lambda^in_aj
+    protected double lambdap_in[][]; // lambda'^in_ak
 
-    private double lambda_out[][]; // lambda^out_aj
+    protected double lambda_out[][]; // lambda^out_aj
 
-    private double arrivalCloud[]; // LAMBDA^C
-    private double arrivalFog[]; // LAMBDA^F
+    protected double arrivalCloud[]; // LAMBDA^C
+    protected double arrivalFog[]; // LAMBDA^F
 
     private int type;
     private ServiceDeployScheme scheme;
@@ -397,7 +395,7 @@ public class Heuristic {
         double sumDenum = 0;
         for (int a = 0; a < numServices; a++) {
             for (int j = 0; j < numFogNodes; j++) {
-                sumNum += calcServiceDelay(a, j) * lambda_in[a][j];
+                sumNum += Delay.calcServiceDelay(a, j, this) * lambda_in[a][j];
                 sumDenum += lambda_in[a][j];
             }
         }
@@ -406,7 +404,7 @@ public class Heuristic {
 
     public double getCost(double timeDuration) {
         for (int a = 0; a < numServices; a++) {
-            calcViolation(a); // updates traffic values, average service delay, and violation
+            Violation.calcViolation(a, this); // updates traffic values, average service delay, and violation
         }
         return cost.calcCost(timeDuration, x, xp, x_backup, Vper, q, lambda_in, lambdap_in, lambda_out, L_P, L_S, h);
     }
@@ -445,7 +443,7 @@ public class Heuristic {
     }
 
     private void FogServicePlacementMinViolationHeuristic(int a) {
-        calcViolation(a);
+        Violation.calcViolation(a, this);
         List<FogTrafficIndex> fogTrafficIndex = getFogIncomingTraffic(a, false);
         Collections.sort(fogTrafficIndex);
         int listIndex = -1;
@@ -458,7 +456,7 @@ public class Heuristic {
                 // to add CODE: DEPLOY
 //               System.out.println("dep "+a+" "+j);
                 x[a][j] = 1;
-                calcViolation(a);
+                Violation.calcViolation(a, this);
             }
 
         }
@@ -469,12 +467,12 @@ public class Heuristic {
             j = fogTrafficIndex.get(listIndex).getFogIndex();
             if (x[a][j] == 1) { // if service a is implemented on fog node j
                 x[a][j] = 0;
-                calcViolation(a);
+                Violation.calcViolation(a, this);
                 if (Vper[a] <= 1 - q[a]) {
                     // to add CODE: RELEASE
                 } else {
                     x[a][j] = 1;
-                    calcViolation(a);
+                    Violation.calcViolation(a, this);
                     canRelease = false;
                 }
             }
@@ -485,7 +483,7 @@ public class Heuristic {
     }
 
     private void FogServicePlacementMinCostHeuristic(int a) {
-        calcViolation(a);
+        Violation.calcViolation(a, this);
         List<FogTrafficIndex> fogTrafficIndex = getFogIncomingTraffic(a, false);
         Collections.sort(fogTrafficIndex);
         int listIndex = -1;
@@ -499,7 +497,7 @@ public class Heuristic {
                     // to add CODE: DEPLOY
 //                    System.out.println("delay" + calcDeployDelay(a, j)); // not yet used
                     x[a][j] = 1;
-                    calcViolation(a);
+                    Violation.calcViolation(a, this);
                 }
             }
         }
@@ -511,7 +509,7 @@ public class Heuristic {
                 if (releaseMakesSense(a, j)) {
                     // to add CODE: RELEASE
                     x[a][j] = 0;
-                    calcViolation(a);
+                    Violation.calcViolation(a, this);
                 }
             }
         }
@@ -544,7 +542,7 @@ public class Heuristic {
 
         // Now if we were to deploy, this is the cost we would pay
         x[a][j] = 1;
-        d[a][j] = calcServiceDelay(a, j); // this is just to update the things
+        d[a][j] = Delay.calcServiceDelay(a, j, this); // this is just to update the things
 
         double xx, y, z, k;
         xx = Cost.costDep(j, a, L_S);
@@ -554,7 +552,7 @@ public class Heuristic {
         loss = xx + y + z + k;
 
         x[a][j] = 0; // revert this back to what it was
-        d[a][j] = calcServiceDelay(a, j); // revert things back to what they were
+        d[a][j] = Delay.calcServiceDelay(a, j, this); // revert things back to what they were
 //        System.out.println("Not Dep " + a + " " + j + " costCfc:" + aa + " costPC:" + b + " costSC:" + c + " CostV:" + e);
 //        System.out.println("Not Dep " + a + " " + j + " costDep:" + xx + " costPF:" + y + " costSF:" + z + " CostV:" + k);
 
@@ -584,7 +582,7 @@ public class Heuristic {
 
         // Now if we were to release, this is the loss we would pay
         x[a][j] = 0;
-        d[a][j] = calcServiceDelay(a, j); // this is just to update the things
+        d[a][j] = Delay.calcServiceDelay(a, j, this); // this is just to update the things
 
         loss += Cost.costCfc(RunParameters.TAU, j, a, lambda_out, h);
         loss += Cost.costExtraPC(RunParameters.TAU, h[j], a, L_P, lambda_out[a][j]);
@@ -593,7 +591,7 @@ public class Heuristic {
         loss += Cost.costViolPerFogNode(RunParameters.TAU, a, calcVper(a, j, fogTrafficPercentage), q, fogTrafficPercentage);
 
         x[a][j] = 1; // revert this back to what it was
-        d[a][j] = calcServiceDelay(a, j); // revert things back to what they were
+        d[a][j] = Delay.calcServiceDelay(a, j, this); // revert things back to what they were
         if (savings > loss) {
 //            System.out.println("Rel "+a +" "+j+ "saving:"+savings + " loss:"+loss);
             return true;
@@ -681,32 +679,6 @@ public class Heuristic {
         return fogTrafficIndex;
     }
 
-    /**
-     * Calculate SLA Violation Percentage. (Percentage of IoT requests that do
-     * not meet the delay requirement for service a (V^%_a))ˇ
-     *
-     * @param a
-     */
-    private void calcViolation(int a) {
-
-        double sumNum = 0;
-        double sumDenum = 0;
-        for (int j = 0; j < numFogNodes; j++) {
-            d[a][j] = calcServiceDelay(a, j);
-            if (d[a][j] > th[a]) {
-                v[a][j] = 1;
-            } else {
-                v[a][j] = 0;
-            }
-            sumNum += v[a][j] * lambda_in[a][j];
-            sumDenum += lambda_in[a][j];
-        }
-        if (sumDenum == 0) {
-            Vper[a] = 0;
-        } else {
-            Vper[a] = sumNum / sumDenum;
-        }
-    }
 
     public static void setThresholds(double threshold) {
         for (int a = 0; a < numServices; a++) {
@@ -726,63 +698,9 @@ public class Heuristic {
         return (sum / numServices);
     }
 
-    public double getViolationPercentage(int a) {
-        calcViolation(a);
-        return (Math.max(0, Vper[a] - (1 - q[a])) * 100);
-    }
+    
 
-    public static double getViolationSlack(int a) {
-        return (1 - q[a]) * 100;
-    }
-
-    public double getViolationPercentage() {
-        double sum = 0;
-        for (int a = 0; a < numServices; a++) {
-            sum += getViolationPercentage(a);
-        }
-        return (sum / numServices);
-    }
-
-    public static double getViolationSlack() {
-        double sum = 0;
-        for (int a = 0; a < numServices; a++) {
-            sum += getViolationSlack(a);
-        }
-        return (sum / numServices);
-    }
-
-    /**
-     * Calculates d_{aj} Also updates the traffic based on x[a][j]
-     *
-     * @param a
-     * @param j
-     * @return
-     */
-    private double calcServiceDelay(int a, int j) {
-        calcNormalizedArrivalRateFogNode(j); // will be used in calculating delay below
-        int k = h[j];
-        calcNormalizedArrivalRateCloudNode(k);
-        if (x[a][j] == 1) {
-            if (arrivalFog[j] > KP[j]) {
-                proc_time = 2000d;
-                System.out.println("too much load for fog");
-            } else {
-                proc_time = 1 / (KP[j] - arrivalFog[j]) * 1000d; // so that it is in ms
-            }
-
-//            System.out.println("DIF: " + (2 * dIF[j]) + " proc: " + (proc_time) + " trans: " + ((l_rp[a] + l_rq[a]) / rIF[j] * 1000));
-            return (2 * dIF[j]) + (proc_time) + ((l_rp[a] + l_rq[a]) / rIF[j] * 1000d); // this is in ms
-
-        } else {
-            if (arrivalCloud[k] > KpP[k]) {
-                proc_time = 1000d;
-                System.out.println("too much load for cloud");
-            } else {
-                proc_time = 1 / (KpP[k] - arrivalCloud[k]) * 1000d; // so that it is in ms
-            }
-            return (2 * (dIF[j] + dFC[j][k])) + (proc_time) + (((l_rp[a] + l_rq[a]) / rIF[j] + (l_rp[a] + l_rq[a]) / rFC[j][k]) * 1000d); // this is in ms
-        }
-    }
+    
 
     private void calcNormalizedArrivalRateFogNodes() {
         for (int j = 0; j < numFogNodes; j++) {
@@ -790,7 +708,7 @@ public class Heuristic {
         }
     }
 
-    private void calcNormalizedArrivalRateFogNode(int j) {
+    public void calcNormalizedArrivalRateFogNode(int j) {
         double tempSum = 0;
         for (int a = 0; a < numServices; a++) {
             tempSum += L_P[a] * lambda_in[a][j] * x[a][j];
@@ -804,7 +722,7 @@ public class Heuristic {
         }
     }
 
-    private void calcNormalizedArrivalRateCloudNode(int k) {
+    public void calcNormalizedArrivalRateCloudNode(int k) {
         double tempSum = 0;
         for (int a = 0; a < numServices; a++) {
             calcArrivalRateCloudFromFogNodesForService(k, a);
