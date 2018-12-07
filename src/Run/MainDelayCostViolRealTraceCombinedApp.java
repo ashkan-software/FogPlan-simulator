@@ -3,6 +3,7 @@ package Run;
 import Scheme.ServiceCounter;
 import Scheme.ServiceDeployScheme;
 import Simulation.Heuristic;
+import Simulation.Traffic;
 import Simulation.Violation;
 import Trace.CombinedAppTraceReader;
 import java.io.FileNotFoundException;
@@ -29,20 +30,19 @@ public class MainDelayCostViolRealTraceCombinedApp {
 
         
         TOTAL_RUN = traceList.size(); // 4 hours of trace
-        RunParameters.TAU = TAU;
-        RunParameters.TRAFFIC_CHANGE_INTERVAL = TRAFFIC_CHANGE_INTERVAL;
+        Parameters.TAU = TAU;
+        Parameters.TRAFFIC_CHANGE_INTERVAL = TRAFFIC_CHANGE_INTERVAL;
+        Parameters.initialize();
         
         int q = TAU / TRAFFIC_CHANGE_INTERVAL; // the number of times that traffic changes between each run of the heuristic
 
-        Heuristic heuristicAllCloud = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.ALL_CLOUD), RunParameters.NUM_FOG_NODES, RunParameters.NUM_SERVICES, RunParameters.NUM_CLOUD_SERVERS);
-        Heuristic heuristicAllFog = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.ALL_FOG), RunParameters.NUM_FOG_NODES, RunParameters.NUM_SERVICES, RunParameters.NUM_CLOUD_SERVERS);
-        Heuristic heuristicFogStatic = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_STATIC, CombinedAppTraceReader.averagePerFogNode), RunParameters.NUM_FOG_NODES, RunParameters.NUM_SERVICES, RunParameters.NUM_CLOUD_SERVERS);
-        Heuristic heuristicFogDynamic = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), RunParameters.NUM_FOG_NODES, RunParameters.NUM_SERVICES, RunParameters.NUM_CLOUD_SERVERS);
-        Heuristic heuristicFogDynamicViol = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), RunParameters.NUM_FOG_NODES, RunParameters.NUM_SERVICES, RunParameters.NUM_CLOUD_SERVERS);
-        Heuristic optimalPlacement = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.OPTIMAL), RunParameters.NUM_FOG_NODES, RunParameters.NUM_SERVICES, RunParameters.NUM_CLOUD_SERVERS);
+        Heuristic heuristicAllCloud = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.ALL_CLOUD), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Heuristic heuristicAllFog = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.ALL_FOG), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Heuristic heuristicFogStatic = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_STATIC, CombinedAppTraceReader.averagePerFogNode), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Heuristic heuristicFogDynamic = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Heuristic heuristicFogDynamicViol = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Heuristic optimalPlacement = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.OPTIMAL), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
         
-        Heuristic.initializeStaticVariables();
-
         ServiceCounter containersDeployedAllCloud = null;
         ServiceCounter containersDeployedAllFog = null;
         ServiceCounter containersDeployedFogStatic = null;
@@ -77,54 +77,54 @@ public class MainDelayCostViolRealTraceCombinedApp {
         System.out.println("Traffic\tD(AC)\tD(AF)\tD(FS)\tD(FD)\tD(FDV)\tD(OP)\tC(AC)\tC(AF)\tC(FS)\tC(FD)\tC(FDV)\tC(OP)\tCNT(AC)\tCNT(AF)\tCNT(FS)\tCNT(FD)\tCNT(FDV)\tCNT(OP)\tCCNT(AC)\tCCNT(AF)\tCCNT(FS)\tCCNT(FD)\tCCNT(FDV)\tCCNT(OP)\tV(AC)\tV(AF)\tV(FS)\tV(FD)\tV(FDV)\tV(OP)\tVS=" + violationSlack);
         for (int i = 0; i < TOTAL_RUN; i++) {
             combinedTrafficPerFogNode = nextRate(traceList);
-            Heuristic.distributeTraffic(combinedTrafficPerFogNode);
+            Traffic.distributeTraffic(combinedTrafficPerFogNode);
 
-            heuristicAllCloud.setTrafficToGlobalTraffic();
-            containersDeployedAllCloud = heuristicAllCloud.run(Heuristic.COMBINED_APP, false); // boolean will be ignored
+            Traffic.setTrafficToGlobalTraffic(heuristicAllCloud);
+            containersDeployedAllCloud = heuristicAllCloud.run(Traffic.COMBINED_APP, false); // boolean will be ignored
             delayAllCloud = heuristicAllCloud.getAvgServiceDelay();
-            costAllCloud = heuristicAllCloud.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
+            costAllCloud = heuristicAllCloud.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
             violAllCloud = Violation.getViolationPercentage(heuristicAllCloud);
 
-            heuristicAllFog.setTrafficToGlobalTraffic();
-            containersDeployedAllFog = heuristicAllFog.run(Heuristic.COMBINED_APP, false); // boolean will be ignored
+            Traffic.setTrafficToGlobalTraffic(heuristicAllFog);
+            containersDeployedAllFog = heuristicAllFog.run(Traffic.COMBINED_APP, false); // boolean will be ignored
             delayAllFog = heuristicAllFog.getAvgServiceDelay();
-            costAllFog = heuristicAllFog.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
+            costAllFog = heuristicAllFog.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
             violAllFog = Violation.getViolationPercentage(heuristicAllFog);
 
             
-            heuristicFogStatic.setTrafficToGlobalTraffic();
-            containersDeployedFogStatic = heuristicFogStatic.run(Heuristic.COMBINED_APP, true);
+            Traffic.setTrafficToGlobalTraffic(heuristicFogStatic);
+            containersDeployedFogStatic = heuristicFogStatic.run(Traffic.COMBINED_APP, true);
             delayFogStatic = heuristicFogStatic.getAvgServiceDelay();
-            costFogStatic = heuristicFogStatic.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
+            costFogStatic = heuristicFogStatic.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
             violFogStatic = Violation.getViolationPercentage(heuristicFogStatic);
 
-            heuristicFogDynamic.setTrafficToGlobalTraffic();
+            Traffic.setTrafficToGlobalTraffic(heuristicFogDynamic);
             if (i % q == 0) {
-                containersDeployedFogDynamic = heuristicFogDynamic.run(Heuristic.COMBINED_APP, false);
+                containersDeployedFogDynamic = heuristicFogDynamic.run(Traffic.COMBINED_APP, false);
             }
             delayFogDynamic = heuristicFogDynamic.getAvgServiceDelay();
-            costFogDynamic = heuristicFogDynamic.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
+            costFogDynamic = heuristicFogDynamic.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
             violFogDynamic = Violation.getViolationPercentage(heuristicFogDynamic);
             
             
-            heuristicFogDynamicViol.setTrafficToGlobalTraffic();
+            Traffic.setTrafficToGlobalTraffic(heuristicFogDynamicViol);
             if (i % q == 0) {
-                containersDeployedFogDynamicViol = heuristicFogDynamicViol.run(Heuristic.COMBINED_APP, true);
+                containersDeployedFogDynamicViol = heuristicFogDynamicViol.run(Traffic.COMBINED_APP, true);
             }
             delayFogDynamicViol = heuristicFogDynamicViol.getAvgServiceDelay();
-            costFogDynamicViol = heuristicFogDynamicViol.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
+            costFogDynamicViol = heuristicFogDynamicViol.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
             violFogDynamicViol = Violation.getViolationPercentage(heuristicFogDynamicViol);
             
             printCost = false;
-            optimalPlacement.setTrafficToGlobalTraffic();
-            containersDeployedOptimalPlacement = optimalPlacement.run(Heuristic.COMBINED_APP, true); // boolean will be ignored
+            Traffic.setTrafficToGlobalTraffic(optimalPlacement);
+            containersDeployedOptimalPlacement = optimalPlacement.run(Traffic.COMBINED_APP, true); // boolean will be ignored
             delayOptimalPlacement = optimalPlacement.getAvgServiceDelay();
             printCost = true;
-            costOptimalPlacement = optimalPlacement.getCost(RunParameters.TRAFFIC_CHANGE_INTERVAL);
+            costOptimalPlacement = optimalPlacement.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
             violOptimalPlacement = Violation.getViolationPercentage(optimalPlacement);
 
-            System.out.println((totalTraffic(combinedTrafficPerFogNode) * RunParameters.NUM_SERVICES) + "\t" + delayAllCloud + "\t" + delayAllFog + "\t" + delayFogStatic + "\t" + delayFogDynamic + "\t" + delayFogDynamicViol + "\t" + delayOptimalPlacement
-                    + "\t" + (costAllCloud / RunParameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costAllFog / RunParameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogStatic / RunParameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogDynamic / RunParameters.TRAFFIC_CHANGE_INTERVAL)  + "\t" + (costFogDynamicViol / RunParameters.TRAFFIC_CHANGE_INTERVAL)  + "\t" + (costOptimalPlacement / RunParameters.TRAFFIC_CHANGE_INTERVAL)
+            System.out.println((totalTraffic(combinedTrafficPerFogNode) * Parameters.numServices) + "\t" + delayAllCloud + "\t" + delayAllFog + "\t" + delayFogStatic + "\t" + delayFogDynamic + "\t" + delayFogDynamicViol + "\t" + delayOptimalPlacement
+                    + "\t" + (costAllCloud / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costAllFog / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogStatic / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogDynamic / Parameters.TRAFFIC_CHANGE_INTERVAL)  + "\t" + (costFogDynamicViol / Parameters.TRAFFIC_CHANGE_INTERVAL)  + "\t" + (costOptimalPlacement / Parameters.TRAFFIC_CHANGE_INTERVAL)
                     + "\t" + containersDeployedAllCloud.getDeployedFogServices() + "\t" + containersDeployedAllFog.getDeployedFogServices() + "\t" + containersDeployedFogStatic.getDeployedFogServices() + "\t" + containersDeployedFogDynamic.getDeployedFogServices() + "\t" + containersDeployedFogDynamicViol.getDeployedFogServices() + "\t" + containersDeployedOptimalPlacement.getDeployedFogServices()
                     + "\t" + containersDeployedAllCloud.getDeployedCloudServices() + "\t" + containersDeployedAllFog.getDeployedCloudServices() + "\t" + containersDeployedFogStatic.getDeployedCloudServices() + "\t" + containersDeployedFogDynamic.getDeployedCloudServices() + "\t" + containersDeployedFogDynamicViol.getDeployedCloudServices() + "\t" + containersDeployedOptimalPlacement.getDeployedCloudServices()
                     + "\t" + violAllCloud + "\t" + violAllFog + "\t" + violFogStatic + "\t" + violFogDynamic + "\t" + violFogDynamicViol + "\t" + violOptimalPlacement);

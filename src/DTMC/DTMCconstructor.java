@@ -1,6 +1,6 @@
 package DTMC;
 
-import Run.RunParameters;
+import Run.Parameters;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -135,9 +135,9 @@ public class DTMCconstructor {
     private void normalizeTraceTraffic(ArrayList<Double> trafficTrace) {
         findMinAndMax(trafficTrace);
         for (int i = 0; i < trafficTrace.size(); i++) {
-            trafficTrace.set(i, (trafficTrace.get(i) - minRate + SMOOTHING_NUMBER) / (maxRate - minRate) * RunParameters.TRAFFIC_NORM_FACTOR);
+            trafficTrace.set(i, (trafficTrace.get(i) - minRate + SMOOTHING_NUMBER) / (maxRate - minRate) * Parameters.TRAFFIC_NORM_FACTOR);
         }
-        averageTrafficRate = (averageTrafficRate - minRate + SMOOTHING_NUMBER) / (maxRate - minRate) * RunParameters.TRAFFIC_NORM_FACTOR;
+        averageTrafficRate = (averageTrafficRate - minRate + SMOOTHING_NUMBER) / (maxRate - minRate) * Parameters.TRAFFIC_NORM_FACTOR;
 
     }
 

@@ -1,6 +1,6 @@
 package Trace;
 
-import Run.RunParameters;
+import Run.Parameters;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -41,8 +41,8 @@ public class CombinedAppTrace6secReader {
         double input;
 
         while (in.hasNext()) {
-            Double[] combinedAppPerFogNode = new Double[RunParameters.NUM_FOG_NODES];
-            for (int j = 0; j < RunParameters.NUM_FOG_NODES; j++) {
+            Double[] combinedAppPerFogNode = new Double[Parameters.numFogNodes];
+            for (int j = 0; j < Parameters.numFogNodes; j++) {
                 in.nextInt(); // ignore the first numbers, which are the indices of fog node
                 combinedAppPerFogNode[j] = in.nextDouble();
             }
@@ -53,9 +53,9 @@ public class CombinedAppTrace6secReader {
     }
 
     private static void initializeAverageParameters() {
-        averagePerFogNode = new Double[RunParameters.NUM_FOG_NODES];
-        CumulativeAveragePerFogNode = new double[RunParameters.NUM_FOG_NODES];
-        for (int j = 0; j < RunParameters.NUM_FOG_NODES; j++) {
+        averagePerFogNode = new Double[Parameters.numFogNodes];
+        CumulativeAveragePerFogNode = new double[Parameters.numFogNodes];
+        for (int j = 0; j < Parameters.numFogNodes; j++) {
             CumulativeAveragePerFogNode[j] = 0d;
         }
     }
@@ -69,14 +69,14 @@ public class CombinedAppTrace6secReader {
             normalizeTraffic(combinedAppPerFogNode);
         }
         int times = trafficTrace.size();
-        for (int j = 0; j < RunParameters.NUM_FOG_NODES; j++) {
+        for (int j = 0; j < Parameters.numFogNodes; j++) {
             averagePerFogNode[j] = CumulativeAveragePerFogNode[j] / times;
         }
     }
 
     private static void normalizeTraffic(Double[] combinedAppPerFogNode) {
-        for (int j = 0; j < RunParameters.NUM_FOG_NODES; j++) {
-            combinedAppPerFogNode[j] = ((combinedAppPerFogNode[j] - min + 0.0001) / (max - min)) * RunParameters.TRAFFIC_NORM_FACTOR * RunParameters.NUM_SERVICES;
+        for (int j = 0; j < Parameters.numFogNodes; j++) {
+            combinedAppPerFogNode[j] = ((combinedAppPerFogNode[j] - min + 0.0001) / (max - min)) * Parameters.TRAFFIC_NORM_FACTOR * Parameters.numServices;
             CumulativeAveragePerFogNode[j] += combinedAppPerFogNode[j];
         }
     }
@@ -85,7 +85,7 @@ public class CombinedAppTrace6secReader {
         min = Double.MAX_VALUE;
         max = Double.MIN_VALUE;
         for (Double[] combinedAppPerFogNode : trace) {
-            for (int j = 0; j < RunParameters.NUM_FOG_NODES; j++) {
+            for (int j = 0; j < Parameters.numFogNodes; j++) {
                 if (combinedAppPerFogNode[j] < min) {
                     min = combinedAppPerFogNode[j];
                 }

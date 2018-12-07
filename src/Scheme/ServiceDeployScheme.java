@@ -1,7 +1,7 @@
 
 package Scheme;
 
-import Run.RunParameters;
+import Run.Parameters;
 import Utilities.ArrayFiller;
 
 /**
@@ -25,8 +25,8 @@ public class ServiceDeployScheme {
 
     public ServiceDeployScheme(int type) {
         this.type = type;
-        variable = new Variable(RunParameters.NUM_SERVICES, RunParameters.NUM_FOG_NODES, RunParameters.NUM_CLOUD_SERVERS);
-        averageRateOfTrafficPerNodePerService = new Double[RunParameters.NUM_SERVICES][RunParameters.NUM_FOG_NODES];
+        variable = new Variable(Parameters.numServices, Parameters.numFogNodes, Parameters.numCloudServers);
+        averageRateOfTrafficPerNodePerService = new Double[Parameters.numServices][Parameters.numFogNodes];
 
         if (type == ALL_FOG) {
             ArrayFiller.generateFixed2DArray(variable.x, 1);

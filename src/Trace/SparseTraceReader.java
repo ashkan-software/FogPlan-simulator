@@ -1,6 +1,6 @@
 package Trace;
 
-import Run.RunParameters;
+import Run.Parameters;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -74,20 +74,20 @@ public class SparseTraceReader {
     }
 
     private static void initializeTrafficArray() {
-        lambda = new Double[RunParameters.NUM_SERVICES][RunParameters.NUM_FOG_NODES];
-        for (int a = 0; a < RunParameters.NUM_SERVICES; a++) {
-            for (int j = 0; j < RunParameters.NUM_FOG_NODES; j++) {
+        lambda = new Double[Parameters.numServices][Parameters.numFogNodes];
+        for (int a = 0; a < Parameters.numServices; a++) {
+            for (int j = 0; j < Parameters.numFogNodes; j++) {
                 lambda[a][j] = 0d;
             }
         }
     }
 
     private static void initializeAverageParameters() {
-        //        randomAverage = new double[RunParameters.NUM_SERVICES][RunParameters.NUM_FOG_NODES];
-        average = new Double[RunParameters.NUM_SERVICES][RunParameters.NUM_FOG_NODES];
-        CumulativeAverage = new double[RunParameters.NUM_SERVICES][RunParameters.NUM_FOG_NODES];
-        for (int a = 0; a < RunParameters.NUM_SERVICES; a++) {
-            for (int j = 0; j < RunParameters.NUM_FOG_NODES; j++) {
+        //        randomAverage = new double[Parameters.numServices][Parameters.numFogNodes];
+        average = new Double[Parameters.numServices][Parameters.numFogNodes];
+        CumulativeAverage = new double[Parameters.numServices][Parameters.numFogNodes];
+        for (int a = 0; a < Parameters.numServices; a++) {
+            for (int j = 0; j < Parameters.numFogNodes; j++) {
                 CumulativeAverage[a][j] = 0d;
             }
         }
@@ -104,8 +104,8 @@ public class SparseTraceReader {
         }
         int times = traceList.size();
 //        int randomIndex;
-        for (int a = 0; a < RunParameters.NUM_SERVICES; a++) {
-            for (int j = 0; j < RunParameters.NUM_FOG_NODES; j++) {
+        for (int a = 0; a < Parameters.numServices; a++) {
+            for (int j = 0; j < Parameters.numFogNodes; j++) {
 //                randomIndex = (int) (RG.GenUniformRandom() * times);
 //                randomAverage[a][j] = traceList.get(randomIndex)[a][j];
                 average[a][j] = CumulativeAverage[a][j] / times;
@@ -114,9 +114,9 @@ public class SparseTraceReader {
     }
 
     private static void normalizeTraffic(Double[][] traffic) {
-        for (int a = 0; a < RunParameters.NUM_SERVICES; a++) {
-            for (int j = 0; j < RunParameters.NUM_FOG_NODES; j++) {
-                traffic[a][j] = ((traffic[a][j] - min + 0.0001) / (max - min)) * RunParameters.TRAFFIC_NORM_FACTOR;
+        for (int a = 0; a < Parameters.numServices; a++) {
+            for (int j = 0; j < Parameters.numFogNodes; j++) {
+                traffic[a][j] = ((traffic[a][j] - min + 0.0001) / (max - min)) * Parameters.TRAFFIC_NORM_FACTOR;
                 CumulativeAverage[a][j] += traffic[a][j];
             }
         }
@@ -126,8 +126,8 @@ public class SparseTraceReader {
         min = Double.MAX_VALUE;
         max = Double.MIN_VALUE;
         for (Double[][] traffic : traceList) {
-            for (int a = 0; a < RunParameters.NUM_SERVICES; a++) {
-                for (int j = 0; j < RunParameters.NUM_FOG_NODES; j++) {
+            for (int a = 0; a < Parameters.numServices; a++) {
+                for (int j = 0; j < Parameters.numFogNodes; j++) {
                     if (traffic[a][j] < min) {
                         min = traffic[a][j];
                     }

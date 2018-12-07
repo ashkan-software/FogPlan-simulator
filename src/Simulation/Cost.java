@@ -1,6 +1,7 @@
 
 package Simulation;
 
+import Run.Parameters;
 import Utilities.ArrayFiller;
 
 /**
@@ -9,9 +10,9 @@ import Utilities.ArrayFiller;
  */
 public class Cost {
 
-    private final int NUM_SERVICES;
-    private final int NUM_CLOUD_SERVERS;
-    private final int NUM_FOG_NODES;
+    private static int NUM_SERVICES;
+    private static int NUM_CLOUD_SERVERS;
+    private static int NUM_FOG_NODES;
 
     private static double[] CLOUD_UNIT_PROC_COST;
     private static double[] FOG_UNIT_PROC_COST;
@@ -25,8 +26,8 @@ public class Cost {
 
     private static double[] SERVICE_PENALY;
 
-    private double totalSpentTime = 0;
-    private double totalCost = 0;
+    private static double totalSpentTime = 0;
+    private static double totalCost = 0;
 
     public Cost(int NUM_CLOUD_SERVERS, int NUM_FOG_NODES, int NUM_SERVICES) {
         this.NUM_CLOUD_SERVERS = NUM_CLOUD_SERVERS;
@@ -97,7 +98,7 @@ public class Cost {
     }
 
     public static double costCfc(double time, int j, int a, double lambda_out[][], int[] h) {
-        return FOG_CLOUD_COMM_UNIT_COST[j][h[j]] * lambda_out[a][j] * (Heuristic.l_rp[a] + Heuristic.l_rq[a]) * time;
+        return FOG_CLOUD_COMM_UNIT_COST[j][h[j]] * lambda_out[a][j] * (Parameters.l_rp[a] + Parameters.l_rq[a]) * time;
     }
 
     public static double costDep(int j, int a, double[] L_S) {
@@ -126,7 +127,7 @@ public class Cost {
      * @param h
      * @return
      */
-    public double calcCost(double time, int[][] x, int[][] xp, int[][] x_backup, double Vper[], double q[], double lambda_in[][], double lambdap_in[][], double lambda_out[][], double[] L_P, double[] L_S, int[] h) {
+    public static double calcCost(double time, int[][] x, int[][] xp, int[][] x_backup, double Vper[], double q[], double lambda_in[][], double lambdap_in[][], double lambda_out[][], double[] L_P, double[] L_S, int[] h) {
         double costPC, costPF, costSC, costSF, costCfc, costCff, costDep, costViol;
 
         // cost of processing in cloud
@@ -206,7 +207,7 @@ public class Cost {
 
     }
 
-    public void printAverageCost() {
+    public static void printAverageCost() {
         System.out.println("Avg Cost: " + totalCost / totalSpentTime);
     }
 }

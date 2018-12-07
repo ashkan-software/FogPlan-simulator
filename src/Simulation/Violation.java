@@ -1,5 +1,6 @@
 package Simulation;
 
+import Run.Parameters;
 import com.sun.javafx.scene.traversal.Hueristic2D;
 
 /**
@@ -22,7 +23,7 @@ public class Violation {
         double sumDenum = 0;
         for (int j = 0; j < Heuristic.numFogNodes; j++) {
             heuristic.d[a][j] = Delay.calcServiceDelay(a, j, heuristic);
-            if (heuristic.d[a][j] > heuristic.th[a]) {
+            if (heuristic.d[a][j] > Parameters.th[a]) {
                 heuristic.v[a][j] = 1;
             } else {
                 heuristic.v[a][j] = 0;
@@ -40,7 +41,7 @@ public class Violation {
     
     public static double getViolationPercentage(int a, Heuristic heuristic) {
         Violation.calcViolation(a, heuristic);
-        return (Math.max(0, heuristic.Vper[a] - (1 - Heuristic.q[a])) * 100);
+        return (Math.max(0, heuristic.Vper[a] - (1 - Parameters.q[a])) * 100);
     }
 
     public static double getViolationPercentage(Heuristic heuristic) {
@@ -60,6 +61,16 @@ public class Violation {
     }
     
     private static double getViolationSlack(int a) {
-        return (1 - Heuristic.q[a]) * 100;
+        return (1 - Parameters.q[a]) * 100;
+    }
+    
+    public static double calcVper(int a, int j, double fogTrafficPercentage, Heuristic heuristic) {
+        if (heuristic.d[a][j] > Parameters.th[a]) {
+            heuristic.v[a][j] = 1;
+            return fogTrafficPercentage;
+        } else {
+            heuristic.v[a][j] = 0;
+            return 0;
+        }
     }
 }
