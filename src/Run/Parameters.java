@@ -3,6 +3,7 @@ package Run;
 import Simulation.Cost;
 import Simulation.Heuristic;
 import Utilities.ArrayFiller;
+import Utilities.Factorial;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -15,9 +16,9 @@ public class Parameters {
     public static int TAU; // time interval between run of the heuristic (s)
     public static int TRAFFIC_CHANGE_INTERVAL; // time interval between run of the heuristic (s)
 
-    public final static int numFogNodes = 100; // opt 10. DTMC 100. threshold 10
-    public final static int numServices = 50; // opt 2. DTMC 50. threshold 20
-    public final static int numCloudServers = 25; // opt 3. DTMC 25. threshold 3
+    public final static int numFogNodes = 10; // opt 10. DTMC 100. threshold 10
+    public final static int numServices = 20; // opt 2. DTMC 50. threshold 20
+    public final static int numCloudServers = 3; // opt 3. DTMC 25. threshold 3
 
     // 60 fog, 20 service, 25 cloud 1 result per second
     public static double[] ServiceTrafficPercentage;
@@ -62,9 +63,13 @@ public class Parameters {
     // note that the delay of deploying containers is not considered yet, since we don't really need to when the interval of changing traffic is in the order of seconds (e.g. 5s or 60s)
     // this is because, even if we consider the 50ms delay, it will not affect the resutls.  
     public static double rFContr[]; // transmission rate from fog node j to the fog service controller
+    
+    private static Cost cost;
 
     public static void initialize() {
 
+        cost = new Cost(numCloudServers, numFogNodes, numServices);
+        Factorial f = new Factorial();
         globalTraffic = new double[numServices][numFogNodes];
         q = new double[numServices];
         ArrayFiller.generateRandom1DArray(q, 0.9, 0.99999);

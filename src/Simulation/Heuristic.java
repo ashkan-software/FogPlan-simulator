@@ -30,13 +30,8 @@ public class Heuristic {
     protected double d[][]; // stores d_aj
     protected double Vper[]; // V^%_a
 
-    protected double lambda_in[][]; // lambda^in_aj
-    protected double lambdap_in[][]; // lambda'^in_ak
-
-    protected double lambda_out[][]; // lambda^out_aj
-
-    protected double arrivalCloud[]; // LAMBDA^C
-    protected double arrivalFog[]; // LAMBDA^F
+    protected Traffic traffic;
+    protected Delay delay;
 
     private int type;
     protected ServiceDeployScheme scheme;
@@ -44,12 +39,10 @@ public class Heuristic {
 
     public Heuristic(ServiceDeployScheme scheme, int numFogNodes, int numServices, int numCloudServers) {
 
-        lambda_in = new double[numServices][numFogNodes];
-        lambdap_in = new double[numServices][numCloudServers];
-        lambda_out = new double[numServices][numFogNodes];
-        arrivalCloud = new double[numCloudServers];
-        arrivalFog = new double[numFogNodes];
-
+        traffic = new Traffic();
+        delay = new Delay(this);
+        
+        
         this.scheme = scheme;
         type = scheme.type;
         x = scheme.variable.x;
@@ -72,6 +65,7 @@ public class Heuristic {
 
     public ServiceCounter run(int traceType, boolean justMinimizeViolation) {
         backupAllPlacements();
+        delay.initialize();
         if (type == ServiceDeployScheme.ALL_CLOUD) {
             // do not change the placement
             return new ServiceCounter(0, numCloudServers * numServices);
@@ -98,7 +92,7 @@ public class Heuristic {
             Traffic.calcNormalizedArrivalRateFogNodes(this);
             Traffic.calcNormalizedArrivalRateCloudNodes(this);
             if (Optimization.optimizationConstraintsSatisfied(x, xp, numServices, numFogNodes, numCloudServers, Parameters.L_S, 
-                    Parameters.L_M, Parameters.KS, Parameters.KM, Parameters.KpS, Parameters.KpM, lambdap_in)) {
+                    Parameters.L_M, Parameters.KS, Parameters.KM, Parameters.KpS, Parameters.KpM, traffic.lambdap_in)) {
                 cost = getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
                 if (cost < minimumCost) {
                     minimumCost = cost;
@@ -107,17 +101,6 @@ public class Heuristic {
             }
         }
         Optimization.updateDecisionVaraiblesAccordingToBest(x, xp, numServices, numFogNodes, numCloudServers);
-//            System.out.println("Optimal");
-//            for (int a = 0; a < numServices; a++) {
-//                for (int j = 0; j < numFogNodes; j++) {
-//                    System.out.print(x[a][j] + " ");
-//                }
-//                System.out.print("| ");
-//                for (int k = 0; k < numCloudServers; k++) {
-//                    System.out.print(xp[a][k] + " ");
-//                }
-//                System.out.println("");
-//            }
         return ServiceCounter.countServices(numServices, numFogNodes, numCloudServers, x, xp);
     }
 
@@ -157,21 +140,22 @@ public class Heuristic {
                 MinCost(a);
             }
         }
-//                System.out.println("Dynamic");
-//                for (int a = 0; a < numServices; a++) {
-//                    for (int j = 0; j < numFogNodes; j++) {
-//                        System.out.print(x[a][j] + " ");
-//                    }
-//                    System.out.print("| ");
-//                    for (int k = 0; k < numCloudServers; k++) {
-//                        System.out.print(xp[a][k] + " ");
-//                    }
-//                    System.out.println("");
-//                }
         return ServiceCounter.countServices(numServices, numFogNodes, numCloudServers, x, xp);
 
     }
 
+    public double getAvgServiceDelay() {
+        double sumNum = 0;
+        double sumDenum = 0;
+        for (int a = 0; a < Parameters.numServices; a++) {
+            for (int j = 0; j < Parameters.numFogNodes; j++) {
+                sumNum += delay.calcServiceDelay(a, j) * traffic.lambda_in[a][j];
+                sumDenum += traffic.lambda_in[a][j];
+            }
+        }
+        return sumNum / sumDenum;
+    }
+    
     public void unsetFirstTimeBoolean() {
         firstTimeDone = false;
     }
@@ -181,7 +165,7 @@ public class Heuristic {
         for (int a = 0; a < numServices; a++) {
             Violation.calcViolation(a, this); // updates traffic values, average service delay, and violation
         }
-        return Cost.calcCost(timeDuration, x, xp, x_backup, Vper, Parameters.q, lambda_in, lambdap_in, lambda_out, Parameters.L_P, Parameters.L_S, Parameters.h);
+        return Cost.calcCost(timeDuration, x, xp, x_backup, Vper, Parameters.q, traffic.lambda_in, traffic.lambdap_in, traffic.lambda_out, Parameters.L_P, Parameters.L_S, Parameters.h);
     }
 
     public void printAllocation() {
@@ -289,8 +273,8 @@ public class Heuristic {
         double costCfc, costExtraPC, costExtraSC, costViolPerFogNode;
         //if not deployiing (X[a][j] == 0) this is the cost we were paying, 
         // but now this is seen as savings
-        costCfc = Cost.costCfc(Parameters.TAU, j, a, lambda_out, Parameters.h);
-        costExtraPC = Cost.costExtraPC(Parameters.TAU, Parameters.h[j], a, Parameters.L_P, lambda_out[a][j]);
+        costCfc = Cost.costCfc(Parameters.TAU, j, a, traffic.lambda_out, Parameters.h);
+        costExtraPC = Cost.costExtraPC(Parameters.TAU, Parameters.h[j], a, Parameters.L_P, traffic.lambda_out[a][j]);
         costExtraSC = Cost.costExtraSC(Parameters.TAU, Parameters.h[j], a, Parameters.L_S, xp);
         double fogTrafficPercentage = calcFogTrafficPercentage(a, j);
         costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, Violation.calcVper(a, j, fogTrafficPercentage, this), Parameters.q, fogTrafficPercentage);
@@ -298,17 +282,17 @@ public class Heuristic {
 
         // Now if we were to deploy, this is the cost we would pay
         x[a][j] = 1;
-        d[a][j] = Delay.calcServiceDelay(a, j, this); // this is just to update the things
+        d[a][j] = delay.calcServiceDelay(a, j); // this is just to update the things
 
         double costDep, costPF, costSF;
         costDep = Cost.costDep(j, a, Parameters.L_S);
-        costPF = Cost.costPF(Parameters.TAU, j, a, Parameters.L_P, lambda_in);
+        costPF = Cost.costPF(Parameters.TAU, j, a, Parameters.L_P, traffic.lambda_in);
         costSF = Cost.costSF(Parameters.TAU, j, a, Parameters.L_S);
         costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, Violation.calcVper(a, j, fogTrafficPercentage, this), Parameters.q, fogTrafficPercentage);
         loss = costDep + costPF + costSF + costViolPerFogNode;
 
         x[a][j] = 0; // revert this back to what it was
-        d[a][j] = Delay.calcServiceDelay(a, j, this); // revert things back to what they were
+        d[a][j] = delay.calcServiceDelay(a, j); // revert things back to what they were
         if (savings > loss) {
             return true;
         } else {
@@ -329,7 +313,7 @@ public class Heuristic {
         //if not releasing (X[a][j] == 1) this is the cost we were paying, 
         // but now this is seen as savings
         double costPF, costSF, costViolPerFogNode;
-        costPF = Cost.costPF(Parameters.TAU, j, a, Parameters.L_P, lambda_in);
+        costPF = Cost.costPF(Parameters.TAU, j, a, Parameters.L_P, traffic.lambda_in);
         costSF = Cost.costSF(Parameters.TAU, j, a, Parameters.L_S);
         double fogTrafficPercentage = calcFogTrafficPercentage(a, j);
         costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, Violation.calcVper(a, j, fogTrafficPercentage, this), Parameters.q, fogTrafficPercentage);
@@ -337,17 +321,17 @@ public class Heuristic {
         
         // Now if we were to release, this is the loss we would pay
         x[a][j] = 0;
-        d[a][j] = Delay.calcServiceDelay(a, j, this); // this is just to update the things
+        d[a][j] = delay.calcServiceDelay(a, j); // this is just to update the things
 
         double costCfc, costExtraPC, costExtraSC;
-        costCfc = Cost.costCfc(Parameters.TAU, j, a, lambda_out, Parameters.h);
-        costExtraPC = Cost.costExtraPC(Parameters.TAU, Parameters.h[j], a, Parameters.L_P, lambda_out[a][j]);
+        costCfc = Cost.costCfc(Parameters.TAU, j, a, traffic.lambda_out, Parameters.h);
+        costExtraPC = Cost.costExtraPC(Parameters.TAU, Parameters.h[j], a, Parameters.L_P, traffic.lambda_out[a][j]);
         costExtraSC = Cost.costExtraSC(Parameters.TAU, Parameters.h[j], a, Parameters.L_S, xp);
         costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, Violation.calcVper(a, j, fogTrafficPercentage, this), Parameters.q, fogTrafficPercentage);
         loss = costCfc + costExtraPC + costExtraSC + costViolPerFogNode;
 
         x[a][j] = 1; // revert this back to what it was
-        d[a][j] = Delay.calcServiceDelay(a, j, this); // revert things back to what they were
+        d[a][j] = delay.calcServiceDelay(a, j); // revert things back to what they were
         if (savings > loss) {
 //            System.out.println("Rel "+a +" "+j+ "saving:"+savings + " loss:"+loss);
             return true;
@@ -377,9 +361,9 @@ public class Heuristic {
     private double calcFogTrafficPercentage(int a, int j) {
         double denum = 0;
         for (int fog = 0; fog < numFogNodes; fog++) {
-            denum += lambda_in[a][fog];
+            denum += traffic.lambda_in[a][fog];
         }
-        return lambda_in[a][j] / denum;
+        return traffic.lambda_in[a][j] / denum;
     }
 
     private void backupPlacement(int a) {
@@ -393,8 +377,6 @@ public class Heuristic {
             backupPlacement(a);
         }
     }
-
-    
 
     /**
      * Updates arrays x_aj and xp_ak according to the combination. (we divide
@@ -455,7 +437,7 @@ public class Heuristic {
     private void deployCloudServiceIfNeeded(int a) {
         Traffic.calcNormalizedArrivalRateCloudNodes(this);
         for (int k = 0; k < numCloudServers; k++) { // If incoming traffic rate to a cloud server for a particular service is 0, the service could be released to save space. On the other hand, even if there is small traffic incoming to a cloud server for a particular service, the service must not be removed from the cloud server
-            if (lambdap_in[a][k] > 0) {
+            if (traffic.lambdap_in[a][k] > 0) {
                 xp[a][k] = 1;
             } else { // lambdap_in[a][k] == 0
                 xp[a][k] = 0;
