@@ -9,7 +9,7 @@ import Utilities.Factorial;
  * calculating delay
  */
 public class Delay {
-
+    
     private double[][] rho; // rho_aj
     private double[][] rhop; //rho'_ak
 
@@ -21,28 +21,28 @@ public class Delay {
 
     private double P0[][];
     private double PQ[][];
-
+    
     private double P0p[][];
     private double PQp[][];
-
+    
     private Heuristic heuristic;
-
+    
     public Delay(Heuristic heuristic) {
         this.heuristic = heuristic;
-
+        
         rho = new double[Parameters.numServices][Parameters.numFogNodes];
         rhop = new double[Parameters.numServices][Parameters.numCloudServers];
         f = new double[Parameters.numServices][Parameters.numFogNodes];
         fp = new double[Parameters.numServices][Parameters.numCloudServers];
-
+        
         n = new int[Parameters.numFogNodes];
         np = new int[Parameters.numCloudServers];
-
+        
         P0 = new double[Parameters.numServices][Parameters.numFogNodes];
         P0p = new double[Parameters.numServices][Parameters.numCloudServers];
         PQ = new double[Parameters.numServices][Parameters.numFogNodes];
         PQp = new double[Parameters.numServices][Parameters.numCloudServers];
-
+        
         for (int j = 0; j < Parameters.numFogNodes; j++) {
             n[j] = 4;
         }
@@ -50,16 +50,30 @@ public class Delay {
             n[k] = 10;
         }
     }
-
+    
     public void initialize() {
-        calcServiceFractionFog();
-        calcServiceFractionCloud();
-        calcRhoFog();
-        calcRhoCloud();
-        calcP0Fog();
-        calcP0Cloud();
-        calcPQFog();
-        calcPQCloud();
+        for (int a = 0; a < Parameters.numServices; a++) {
+            for (int j = 0; j < Parameters.numFogNodes; j++) {
+                initFog(a, j);
+            }
+            for (int k = 0; k < Parameters.numCloudServers; k++) {
+                initCloud(a, k);
+            }
+        }
+    }
+    
+    private void initFog(int a, int j) {
+        calcServiceFractionFog(a, j);
+        calcRhoFog(a, j);
+        calcP0Fog(a, j);
+        calcPQFog(a, j);
+    }
+    
+    private void initCloud(int a, int k) {
+        calcServiceFractionCloud(a, k);
+        calcRhoCloud(a, k);
+        calcP0Cloud(a, k);
+        calcPQCloud(a, k);
     }
 
     /**
@@ -85,17 +99,19 @@ public class Delay {
             return Double.NaN;
         }
     }
-
+    
     private double calcProcTimeMMCcloud(int a, int k) {
+        initCloud(a, k);
         if (fp[a][k] == 0) { // if the service is not implemented in cloud
-            System.out.println("servcie "+a+" is not implemtend on cloud server "+k);
-            System.out.println(heuristic.scheme.type);
+            System.out.println("servcie " + a + " is not implemtend on cloud server " + k); // this is for debug
+            System.out.println(heuristic.scheme.type); // this is for debug
             return 3000d; // a big number
         }
         return 1 / ((fp[a][k] * Parameters.KpP[k]) / np[k]) + PQp[a][k] / (fp[a][k] * Parameters.KpP[k] - heuristic.traffic.arrivalCloud[a][k]);
     }
-
+    
     private double calcProcTimeMMCfog(int a, int j) {
+        initFog(a, j);
         if (f[a][j] == 0) { // if the service is not implemented in cloud
             return 2000d; // a big number
         }
@@ -105,16 +121,16 @@ public class Delay {
     /**
      * calculates PQ (Erlang's C) for all services on all cloud nodes
      */
-    private void calcPQCloud() {
-        PQp = calcPQ(Parameters.numCloudServers, np, rhop, P0p);
+    private void calcPQCloud(int a, int k) {
+        calcPQ(a, k, np, rhop, P0p, PQp);
     }
 
     /**
      * calculates PQ (Erlang's C) for all services on all fog nodes
      */
-    private void calcPQFog() {
-        PQ = calcPQ(Parameters.numFogNodes, n, rho, P0);
-
+    private void calcPQFog(int a, int j) {
+        calcPQ(a, j, n, rho, P0, PQ);
+        
     }
 
     /**
@@ -124,35 +140,29 @@ public class Delay {
      * @param numServers
      * @return PQ
      */
-    private double[][] calcPQ(int numNodes, int[] numServers, double[][] rho, double[][] P0) {
-        double[][] PQ = new double[Parameters.numServices][numNodes];
+    private void calcPQ(int a, int i, int[] numServers, double[][] rho, double[][] P0, double[][] PQ) {
         double d1, d2;
-        for (int i = 0; i < numNodes; i++) {
-            for (int a = 0; a < Parameters.numServices; a++) {
-                if (rho[a][i] == Double.POSITIVE_INFINITY) { // this is when f[a][i] = 0 (service is not implemeted)
-                    continue;
-                } else {
-                    d1 = (Math.pow(numServers[i] * rho[a][i], numServers[i])) / Factorial.fact[numServers[i]];
-                    d2 = P0[a][i] / (1 - rho[a][i]);
-                    PQ[a][i] = d1 * d2;
-                }
-            }
+        if (rho[a][i] == Double.POSITIVE_INFINITY) { // this is when f[a][i] = 0 (service is not implemeted)
+            return;
+        } else {
+            d1 = (Math.pow(numServers[i] * rho[a][i], numServers[i])) / Factorial.fact[numServers[i]];
+            d2 = P0[a][i] / (1 - rho[a][i]);
+            PQ[a][i] = d1 * d2;
         }
-        return PQ;
     }
 
     /**
      * Calculates P0 for all services on all cloud nodes
      */
-    private void calcP0Cloud() {
-        P0p = calcP0(Parameters.numCloudServers, np, rhop);
+    private void calcP0Cloud(int a, int k) {
+        calcP0(a, k, np, rhop, P0p);
     }
 
     /**
      * Calculates P0 for all services on all fog nodes
      */
-    private void calcP0Fog() {
-        P0 = calcP0(Parameters.numFogNodes, n, rho);
+    private void calcP0Fog(int a, int j) {
+        calcP0(a, j, n, rho, P0);
     }
 
     /**
@@ -163,26 +173,19 @@ public class Delay {
      * @param rho
      * @return P0
      */
-    private double[][] calcP0(int numNodes, int[] numServers, double[][] rho) {
-        double[][] P0 = new double[Parameters.numServices][numNodes];
-        double sum;
+    private void calcP0(int a, int i, int[] numServers, double[][] rho, double[][] P0) {
+        double sum = 0;
         double d1, d2;
-        for (int i = 0; i < numNodes; i++) {
-            for (int a = 0; a < Parameters.numServices; a++) {
-                if (rho[a][i] == Double.POSITIVE_INFINITY) { // this is when f[a][i] = 0 (service is not implemeted)
-                    continue;
-                } else {
-                    sum = 0;
-                    for (int c = 0; c <= numServers[i] - 1; c++) {
-                        sum = sum + ((Math.pow(numServers[i] * rho[a][i], c)) / Factorial.fact[c]);
-                    }
-                    d1 = ((Math.pow(numServers[i] * rho[a][i], numServers[i])) / Factorial.fact[numServers[i]]);
-                    d2 = 1 / (1 - rho[a][i]);
-                    P0[a][i] = 1 / (sum + d1 * d2);
-                }
+        if (rho[a][i] == Double.POSITIVE_INFINITY) { // this is when f[a][i] = 0 (service is not implemeted)
+            return;
+        } else {
+            for (int c = 0; c <= numServers[i] - 1; c++) {
+                sum = sum + ((Math.pow(numServers[i] * rho[a][i], c)) / Factorial.fact[c]);
             }
+            d1 = ((Math.pow(numServers[i] * rho[a][i], numServers[i])) / Factorial.fact[numServers[i]]);
+            d2 = 1 / (1 - rho[a][i]);
+            P0[a][i] = 1 / (sum + d1 * d2);
         }
-        return P0;
     }
 
     /**
@@ -190,8 +193,8 @@ public class Delay {
      *
      * @param heuristic
      */
-    private void calcRhoCloud() {
-        calcRho(Parameters.numCloudServers, heuristic.xp, heuristic.traffic.arrivalCloud, fp, Parameters.KpP, rhop);
+    private void calcRhoCloud(int a, int k) {
+        calcRho(a, k, heuristic.xp, heuristic.traffic.arrivalCloud, fp, Parameters.KpP, rhop);
     }
 
     /**
@@ -199,8 +202,8 @@ public class Delay {
      *
      * @param heuristic
      */
-    private void calcRhoFog() {
-        calcRho(Parameters.numFogNodes, heuristic.x, heuristic.traffic.arrivalFog, f, Parameters.KP, rho);
+    private void calcRhoFog(int a, int j) {
+        calcRho(a, j, heuristic.x, heuristic.traffic.arrivalFog, f, Parameters.KP, rho);
     }
 
     /**
@@ -213,15 +216,11 @@ public class Delay {
      * @param totalServiceRate either KP or KpP
      * @param rho
      */
-    private void calcRho(int numNodes, int[][] placement, double[][] serviceArrivalRate, double[][] f, double[] totalServiceRate, double[][] rho) {
-        for (int a = 0; a < Parameters.numServices; a++) {
-            for (int i = 0; i < numNodes; i++) {
-                if (placement[a][i] != 0) {
-                    rho[a][i] = serviceArrivalRate[a][i] / (f[a][i] * totalServiceRate[i]);
-                } else {
-                    rho[a][i] = Double.POSITIVE_INFINITY;
-                }
-            }
+    private void calcRho(int a, int i, int[][] placement, double[][] serviceArrivalRate, double[][] f, double[] totalServiceRate, double[][] rho) {
+        if (placement[a][i] != 0) {
+            rho[a][i] = serviceArrivalRate[a][i] / (f[a][i] * totalServiceRate[i]);
+        } else {
+            rho[a][i] = Double.POSITIVE_INFINITY;
         }
     }
 
@@ -231,8 +230,8 @@ public class Delay {
      *
      * @param heuristic
      */
-    private void calcServiceFractionCloud() {
-        fp = calcServiceFraction(Parameters.numCloudServers, heuristic.xp);
+    private void calcServiceFractionCloud(int a, int k) {
+        fp[a][k] = calcServiceFraction(heuristic.xp, a, k);
     }
 
     /**
@@ -241,32 +240,28 @@ public class Delay {
      *
      * @param heuristic
      */
-    private void calcServiceFractionFog() {
-        f = calcServiceFraction(Parameters.numFogNodes, heuristic.x);
+    private void calcServiceFractionFog(int a, int j) {
+        f[a][j] = calcServiceFraction(heuristic.x, a, j);
     }
 
     /**
-     * Calculates f
+     * Calculates f_ai
      *
-     * @param numNodes
      * @param placement
+     * @param a
+     * @param i
      * @return
      */
-    private double[][] calcServiceFraction(int numNodes, int[][] placement) {
-        double[][] f = new double[Parameters.numServices][numNodes];
-        double sum;
-        for (int i = 0; i < numNodes; i++) {
-            sum = 0;
-            for (int a = 0; a < Parameters.numServices; a++) {
-                sum += (placement[a][i] * Parameters.L_P[a]);
-            }
-            for (int a = 0; a < Parameters.numServices; a++) {
-                if (sum == 0) {
-                    f[a][i] = 0;
-                } else {
-                    f[a][i] = (placement[a][i] * Parameters.L_P[a]) / sum;
-                }
-            }
+    private double calcServiceFraction(int[][] placement, int a, int i) {
+        double f;
+        double sum = 0;
+        for (int s = 0; s < Parameters.numServices; s++) {
+            sum += (placement[s][i] * Parameters.L_P[s]);
+        }
+        if (sum == 0) {
+            f = 0;
+        } else {
+            f = (placement[a][i] * Parameters.L_P[a]) / sum;
         }
         return f;
     }
@@ -289,13 +284,13 @@ public class Delay {
         }
         return proc_time;
     }
-
+    
     public static void setThresholds(double threshold) {
         for (int a = 0; a < Parameters.numServices; a++) {
             Parameters.th[a] = threshold;
         }
     }
-
+    
     public static double getThresholdAverage() {
         double sum = 0;
         for (int a = 0; a < Parameters.numServices; a++) {
@@ -303,5 +298,5 @@ public class Delay {
         }
         return (sum / Parameters.numServices);
     }
-
+    
 }

@@ -85,15 +85,16 @@ public class Traffic {
     
     protected static void calcNormalizedArrivalRateCloudNodes(Heuristic heuristic) {
         for (int a = 0; a < Parameters.numServices; a++) {
-            for (int j = 0; j < Parameters.numFogNodes; j++) {
-                calcNormalizedArrivalRateFogNode(a, j, heuristic);
+            for (int k = 0; k < Parameters.numCloudServers; k++) {
+                calcArrivalRateCloudFroNodesForService(k, a, heuristic);
+                calcNormalizedArrivalRateCloudNode(a, k, heuristic);
             }
         }
 
     }
 
-    protected static void calcNormalizedArrivalRateCloudNode(int a, int j, Heuristic heuristic) {
-        heuristic.traffic.arrivalFog[a][j] = Parameters.L_P[a] * heuristic.traffic.lambda_in[a][j] * heuristic.x[a][j];
+    protected static void calcNormalizedArrivalRateCloudNode(int a, int k, Heuristic heuristic) {
+        heuristic.traffic.arrivalCloud[a][k] = Parameters.L_P[a] * heuristic.traffic.lambdap_in[a][k] * heuristic.xp[a][k];
     }
 
    
@@ -104,7 +105,7 @@ public class Traffic {
      *
      * @param k
      */
-    private static void calcArrivalRateCloudFromFogNodesForService(int k, int a, Heuristic heuristic) {
+    public static void calcArrivalRateCloudFroNodesForService(int k, int a, Heuristic heuristic) {
         double tempSum = 0;
         for (Integer j : Parameters.h_reverse.get(k)) {
             heuristic.traffic.lambda_out[a][j] = heuristic.traffic.lambda_in[a][j] * (1 - heuristic.x[a][j]); // calculate lambda^out_aj
