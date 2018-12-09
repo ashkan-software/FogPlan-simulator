@@ -9,7 +9,6 @@ import Run.Parameters;
  */
 public class Violation {
 
-   
     /**
      * Calculate SLA Violation Percentage. (Percentage of IoT requests that do
      * not meet the delay requirement for service a (V^%_a))ˇ
@@ -23,9 +22,10 @@ public class Violation {
         double sumDenum = 0;
         for (int j = 0; j < Parameters.numFogNodes; j++) {
             heuristic.d[a][j] = heuristic.delay.calcServiceDelay(a, j);
-            if (heuristic.d[a][j] > Parameters.th[a]) {
+            if (heuristic.d[a][j] != Double.NaN && heuristic.d[a][j] > Parameters.th[a]) {
+                
                 heuristic.v[a][j] = 1;
-            } else {
+            } else { // note that if d[a][j] = Double.NaN, it means it is not defined, and hence it will not be a violation
                 heuristic.v[a][j] = 0;
             }
             sumNum += heuristic.v[a][j] * heuristic.traffic.lambda_in[a][j];
@@ -37,8 +37,7 @@ public class Violation {
             heuristic.Vper[a] = sumNum / sumDenum;
         }
     }
-    
-    
+
     public static double getViolationPercentage(int a, Heuristic heuristic) {
         Violation.calcViolation(a, heuristic);
         return (Math.max(0, heuristic.Vper[a] - (1 - Parameters.q[a])) * 100);
@@ -59,11 +58,11 @@ public class Violation {
         }
         return (sum / Parameters.numServices);
     }
-    
+
     private static double getViolationSlack(int a) {
         return (1 - Parameters.q[a]) * 100;
     }
-    
+
     public static double calcVper(int a, int j, double fogTrafficPercentage, Heuristic heuristic) {
         if (heuristic.d[a][j] > Parameters.th[a]) {
             heuristic.v[a][j] = 1;

@@ -72,27 +72,31 @@ public class Delay {
     public double calcServiceDelay(int a, int j) {
         double proc_time;
         int k = Parameters.h[j];
-        if (heuristic.x[a][j] == 1) {
+        if (heuristic.x[a][j] == 1) { // if the service is implelemted at the fog
 //            proc_time = calcProcTimeMM1(heuristic.traffic.arrivalFog[j], Parameters.KP[j]); // MM1
             proc_time = calcProcTimeMMCfog(a, j);
             return (2 * Parameters.dIF[j]) + (proc_time) + ((Parameters.l_rp[a] + Parameters.l_rq[a]) / Parameters.rIF[j] * 1000d); // this is in ms
-        } else {
+        } else if (heuristic.xp[a][k] == 1) { // if the service is implelemted in the cloud
 //            proc_time = calcProcTimeMM1(heuristic.traffic.arrivalCloud[k], Parameters.KpP[k]); //MM1
             proc_time = calcProcTimeMMCcloud(a, k);
+            
             return (2 * (Parameters.dIF[j] + Parameters.dFC[j][k])) + (proc_time) + (((Parameters.l_rp[a] + Parameters.l_rq[a]) / Parameters.rIF[j] + (Parameters.l_rp[a] + Parameters.l_rq[a]) / Parameters.rFC[j][k]) * 1000d); // this is in ms
+        } else { // serivce a is not implemented anywhere, delay is not defined
+            return Double.NaN;
         }
     }
 
     private double calcProcTimeMMCcloud(int a, int k) {
-        if (fp[a][k] == 0){ // if the service is not implemented in cloud
-            System.err.print("service" + a + " is not implemented in cloud server "+k);
-            return 2000d; // a big number
+        if (fp[a][k] == 0) { // if the service is not implemented in cloud
+            System.out.println("servcie "+a+" is not implemtend on cloud server "+k);
+            System.out.println(heuristic.scheme.type);
+            return 3000d; // a big number
         }
         return 1 / ((fp[a][k] * Parameters.KpP[k]) / np[k]) + PQp[a][k] / (fp[a][k] * Parameters.KpP[k] - heuristic.traffic.arrivalCloud[a][k]);
     }
-    
+
     private double calcProcTimeMMCfog(int a, int j) {
-        if (f[a][j] == 0){ // if the service is not implemented in cloud
+        if (f[a][j] == 0) { // if the service is not implemented in cloud
             return 2000d; // a big number
         }
         return 1 / ((f[a][j] * Parameters.KP[j]) / n[j]) + PQ[a][j] / (f[a][j] * Parameters.KP[j] - heuristic.traffic.arrivalFog[a][j]);
@@ -103,11 +107,6 @@ public class Delay {
      */
     private void calcPQCloud() {
         PQp = calcPQ(Parameters.numCloudServers, np, rhop, P0p);
-//        for (int k = 0; k < Parameters.numCloudServers; k++) {
-//            for (int a = 0; a < Parameters.numServices; a++) {
-//                System.out.println(PQp[a][k]);
-//            }
-//        }
     }
 
     /**
@@ -115,7 +114,7 @@ public class Delay {
      */
     private void calcPQFog() {
         PQ = calcPQ(Parameters.numFogNodes, n, rho, P0);
-        
+
     }
 
     /**
@@ -218,10 +217,8 @@ public class Delay {
         for (int a = 0; a < Parameters.numServices; a++) {
             for (int i = 0; i < numNodes; i++) {
                 if (placement[a][i] != 0) {
-                    System.out.println("jj");
                     rho[a][i] = serviceArrivalRate[a][i] / (f[a][i] * totalServiceRate[i]);
                 } else {
-                    System.out.println("kk");
                     rho[a][i] = Double.POSITIVE_INFINITY;
                 }
             }
@@ -264,8 +261,11 @@ public class Delay {
                 sum += (placement[a][i] * Parameters.L_P[a]);
             }
             for (int a = 0; a < Parameters.numServices; a++) {
-                f[a][i] = (placement[a][i] * Parameters.L_P[a]) / sum;
-                System.out.println(f[a][i]);
+                if (sum == 0) {
+                    f[a][i] = 0;
+                } else {
+                    f[a][i] = (placement[a][i] * Parameters.L_P[a]) / sum;
+                }
             }
         }
         return f;
