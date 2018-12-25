@@ -22,9 +22,7 @@ public class Violation {
         double sumDenum = 0;
         for (int j = 0; j < Parameters.numFogNodes; j++) {
             method.d[a][j] = method.delay.calcServiceDelay(a, j);
-            if (method.d[a][j] == Double.NaN){
-                method.v[a][j] = 0;
-            } else if (method.d[a][j] > Parameters.th[a]) {
+            if (method.d[a][j] > Parameters.th[a]) {
                 method.v[a][j] = 1;
             } else {
                 method.v[a][j] = 0;

@@ -3,6 +3,7 @@ package Run;
 import Simulation.Cost;
 import Utilities.ArrayFiller;
 import Utilities.Factorial;
+import Utilities.ReverseMap;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -16,7 +17,7 @@ public class Parameters {
     public static int TRAFFIC_CHANGE_INTERVAL; // time interval between run of the metgod (s)
 
     public final static int numFogNodes = 10; // opt 10. DTMC 100. threshold 10
-    public final static int numServices = 40; // opt 2. DTMC 50. threshold 20
+    public final static int numServices = 2; // opt 2. DTMC 50. threshold 20
     public final static int numCloudServers = 3; // opt 3. DTMC 25. threshold 3
 
     // 60 fog, 20 service, 25 cloud 1 result per second
@@ -50,8 +51,8 @@ public class Parameters {
 
     public static int CONTAINER_INIT_DELAY = 50; // 50 ms -> CONTAINER-AS-A-SERVICE AT THE EDGE: TRADE- OFF BETWEEN ENERGY EFFICIENCY AND SERVICE AVAILABILITY AT FOG NANO DATA CENTERS
 
-    public static ArrayList<HashSet<Integer>> h_reverse; // set of fog nodes j that send their traffic to cloud server k (associated fog nodes to cloud server k)
-    public static int[] h; // map given fog node to the associated cloud node
+    public static int[][] h; //index of the cloud server to which the traffic for service a is routed from fog node j
+    public static ReverseMap[][] H_inverse; // set of indices of all fog nodes that route the traffic for service a to cloud server k.
 
     public static double[] L_P; // amount of required processing for service a per unit traffic, in MIPS
     public static double[] L_S; // size of service (i.e. container) a,
@@ -62,7 +63,7 @@ public class Parameters {
     // note that the delay of deploying containers is not considered yet, since we don't really need to when the interval of changing traffic is in the order of seconds (e.g. 5s or 60s)
     // this is because, even if we consider the 50ms delay, it will not affect the resutls.  
     public static double rFContr[]; // transmission rate from fog node j to the fog service controller
-    
+
     private static Cost cost;
 
     public static void initialize() {
@@ -133,21 +134,24 @@ public class Parameters {
         l_rp = new double[numServices];
         ArrayFiller.generateRandom1DArray(l_rp, 10d * 8d, 20d * 8d); // the request size 10B-20B
 
-        h = new int[numFogNodes];
-        for (int j = 0; j < numFogNodes; j++) {
-            h[j] = (int) (Math.random() * numCloudServers);
+        h = new int[numServices][numFogNodes];
+        for (int a = 0; a < numServices; a++) {
+            for (int j = 0; j < numFogNodes; j++) {
+                h[a][j] = (int) (Math.random() * numCloudServers);
+            }
         }
 
-        h_reverse = new ArrayList<>(numCloudServers);
+        H_inverse = new ReverseMap[numServices][numCloudServers];
         for (int k = 0; k < numCloudServers; k++) {
-            HashSet<Integer> single_h_reverse = new HashSet<>();
-
-            for (int j = 0; j < numFogNodes; j++) {
-                if (h[j] == k) {
-                    single_h_reverse.add(j);
+            for (int a = 0; a < numServices; a++) {
+                HashSet<Integer> single_h_reverse = new HashSet<>();
+                for (int j = 0; j < numFogNodes; j++) {
+                    if (h[a][j] == k) {
+                        single_h_reverse.add(j);
+                    }
                 }
+                H_inverse[a][k] = new ReverseMap(single_h_reverse);
             }
-            h_reverse.add(k, single_h_reverse); // addd the mapping to the arrayList of reverse mappings
         }
 
         ServiceTrafficPercentage = new double[numServices];

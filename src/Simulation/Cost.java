@@ -55,7 +55,7 @@ public class Cost {
         ArrayFiller.generateFixed1DArray(FOG_CONTROLLER_COMM_UNIT_COST, 0.0000000005d);
 
         SERVICE_PENALY = new double[NUM_SERVICES];
-        ArrayFiller.generateRandom1DArray(SERVICE_PENALY, 25d, 25d); // 2-5 for optimal and cumulative. 20-50 for DTMC
+        ArrayFiller.generateRandom1DArray(SERVICE_PENALY, 5d, 5d); // 2-5 for optimal and cumulative. 20-50 for DTMC
     }
 
     /**
@@ -111,8 +111,8 @@ public class Cost {
         return FOG_UNIT_STOR_COST[j] * L_S[a] * time;
     }
 
-    public static double costCfc(double time, int j, int a, double lambda_out[][], int[] h) {
-        return FOG_CLOUD_COMM_UNIT_COST[j][h[j]] * lambda_out[a][j] * (Parameters.l_rp[a] + Parameters.l_rq[a]) * time;
+    public static double costCfc(double time, int j, int a, double lambda_out[][], int[][] h) {
+        return FOG_CLOUD_COMM_UNIT_COST[j][h[a][j]] * lambda_out[a][j] * (Parameters.l_rp[a] + Parameters.l_rq[a]) * time;
     }
 
     public static double costDep(int j, int a, double[] L_S) {
@@ -141,7 +141,7 @@ public class Cost {
      * @param h
      * @return
      */
-    public static double calcCost(double time, int[][] x, int[][] xp, int[][] x_backup, double Vper[], double q[], double lambda_in[][], double lambdap_in[][], double lambda_out[][], double[] L_P, double[] L_S, int[] h) {
+    public static double calcCost(double time, int[][] x, int[][] xp, int[][] x_backup, double Vper[], double q[], double lambda_in[][], double lambdap_in[][], double lambda_out[][], double[] L_P, double[] L_S, int[][] h) {
         double costPC, costPF, costSC, costSF, costCfc, costCff, costDep, costViol;
 
         // cost of processing in cloud

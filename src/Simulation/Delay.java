@@ -85,20 +85,16 @@ public class Delay {
      */
     public double calcServiceDelay(int a, int j) {
         double proc_time;
-        int k = Parameters.h[j];
+        int k = Parameters.h[a][j];
         if (method.x[a][j] == 1) { // if the service is implelemted at the fog
 //            proc_time = calcProcTimeMM1(heuristic.traffic.arrivalFog[j], Parameters.KP[j]); // MM1
             proc_time = calcProcTimeMMCfog(a, j);
             return (2 * Parameters.dIF[j]) + (proc_time) + ((Parameters.l_rp[a] + Parameters.l_rq[a]) / Parameters.rIF[j] * 1000d); // this is in ms
-        } else if (method.xp[a][k] == 1) { // if the service is implelemted in the cloud
+        } else { // if the service is implelemted in the cloud
 //            proc_time = calcProcTimeMM1(heuristic.traffic.arrivalCloud[k], Parameters.KpP[k]); //MM1
             proc_time = calcProcTimeMMCcloud(a, k);
-            
             return (2 * (Parameters.dIF[j] + Parameters.dFC[j][k])) + (proc_time) + (((Parameters.l_rp[a] + Parameters.l_rq[a]) / Parameters.rIF[j] + (Parameters.l_rp[a] + Parameters.l_rq[a]) / Parameters.rFC[j][k]) * 1000d); // this is in ms
-        } else { // serivce a is not implemented anywhere, delay is not defined
-            
-            return Double.NaN;
-        }
+        } 
     }
     
     private double calcProcTimeMMCcloud(int a, int k) {

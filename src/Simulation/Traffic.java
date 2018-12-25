@@ -107,7 +107,7 @@ public class Traffic {
      */
     public static void calcArrivalRateCloudFroNodesForService(int k, int a, Method method) {
         double tempSum = 0;
-        for (Integer j : Parameters.h_reverse.get(k)) {
+        for (Integer j : Parameters.H_inverse[a][k].elemets) {
             method.traffic.lambda_out[a][j] = method.traffic.lambda_in[a][j] * (1 - method.x[a][j]); // calculate lambda^out_aj
             tempSum += method.traffic.lambda_out[a][j];
         }

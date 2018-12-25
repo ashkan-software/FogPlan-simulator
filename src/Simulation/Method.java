@@ -72,32 +72,33 @@ public class Method {
             return runOptimal();
         } else if (type == ServiceDeployScheme.FOG_STATIC) { // FOG_STATIC
             Traffic.backupIncomingTraffic(this);
+            System.out.println("kkkk");
             return runFogStatic(traceType, minimizeViolation);
         } else { // FOG_DYNAMIC
-            System.out.println("");
+            System.out.println("yyyyy");
             return runFogDynamic(minimizeViolation);
         }
     }
 
     private ServiceCounter runOptimal() {
-        
-        Optimization.init(numServices, numFogNodes, numCloudServers);
-        long numCombinations = (long) Math.pow(2, numServices * (numFogNodes + numCloudServers)); // x_aj and xp_ak
-        double minimumCost = Double.MAX_VALUE, cost;
-        for (long combination = 0; combination < numCombinations; combination++) {
-            updateDecisionVariablesAccordingToCombination(combination); // updates x, xp
-            Traffic.calcNormalizedArrivalRateFogNodes(this);
-            Traffic.calcNormalizedArrivalRateCloudNodes(this);
-            if (Optimization.optimizationConstraintsSatisfied(x, xp, numServices, numFogNodes, numCloudServers, Parameters.L_S,
-                    Parameters.L_M, Parameters.KS, Parameters.KM, Parameters.KpS, Parameters.KpM, traffic.lambdap_in)) {
-                cost = getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
-                if (cost < minimumCost) {
-                    minimumCost = cost;
-                    Optimization.updateBestDecisionVaraibles(x, xp, numServices, numFogNodes, numCloudServers);
-                }
-            }
-        }
-        Optimization.updateDecisionVaraiblesAccordingToBest(x, xp, numServices, numFogNodes, numCloudServers);
+
+//        Optimization.init(numServices, numFogNodes, numCloudServers);
+//        long numCombinations = (long) Math.pow(2, numServices * (numFogNodes + numCloudServers)); // x_aj and xp_ak
+//        double minimumCost = Double.MAX_VALUE, cost;
+//        for (long combination = 0; combination < numCombinations; combination++) {
+//            updateDecisionVariablesAccordingToCombination(combination); // updates x, xp
+//            Traffic.calcNormalizedArrivalRateFogNodes(this);
+//            Traffic.calcNormalizedArrivalRateCloudNodes(this);
+//            if (Optimization.optimizationConstraintsSatisfied(x, xp, numServices, numFogNodes, numCloudServers, Parameters.L_S,
+//                    Parameters.L_M, Parameters.KS, Parameters.KM, Parameters.KpS, Parameters.KpM, traffic.lambdap_in)) {
+//                cost = getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+//                if (cost < minimumCost) {
+//                    minimumCost = cost;
+//                    Optimization.updateBestDecisionVaraibles(x, xp, numServices, numFogNodes, numCloudServers);
+//                }
+//            }
+//        }
+//        Optimization.updateDecisionVaraiblesAccordingToBest(x, xp, numServices, numFogNodes, numCloudServers);
         return ServiceCounter.countServices(numServices, numFogNodes, numCloudServers, x, xp);
     }
 
@@ -148,10 +149,8 @@ public class Method {
         for (int a = 0; a < Parameters.numServices; a++) {
             for (int j = 0; j < Parameters.numFogNodes; j++) {
                 d = delay.calcServiceDelay(a, j) * traffic.lambda_in[a][j];
-                if (d != Double.NaN) {
-                    sumNum += d;
-                    sumDenum += traffic.lambda_in[a][j];
-                }
+                sumNum += d;
+                sumDenum += traffic.lambda_in[a][j];
             }
         }
         return sumNum / sumDenum;
@@ -187,6 +186,7 @@ public class Method {
     }
 
     private void MinViol(int a) {
+        deployCloudServiceIfNeeded(a);
         Violation.calcViolation(a, this);
         List<FogTrafficIndex> fogTrafficIndex = Traffic.getFogIncomingTraffic(a, false, this);
         Collections.sort(fogTrafficIndex);
@@ -198,7 +198,6 @@ public class Method {
             j = fogTrafficIndex.get(listIndex).getFogIndex();
             if (x[a][j] == 0 && fogResourceConstraintsSatisfied(j)) { // if service a is not implemented on fog node j
                 // to add CODE: DEPLOY
-//               System.out.println("dep "+a+" "+j);
                 x[a][j] = 1;
                 Violation.calcViolation(a, this);
             }
@@ -222,15 +221,15 @@ public class Method {
             }
 
         }
-        deployCloudServiceIfNeeded(a);
-
     }
 
     /**
-     * Runs the MinCost 
-     * @param a service a for which minCost is 
+     * Runs the MinCost
+     *
+     * @param a service a for which minCost is
      */
     private void MinCost(int a) {
+        deployCloudServiceIfNeeded(a);
         Violation.calcViolation(a, this);
         List<FogTrafficIndex> fogTrafficIndex = Traffic.getFogIncomingTraffic(a, false, this);
         Collections.sort(fogTrafficIndex); // sorts fog nodes based on incoming traffic
@@ -243,8 +242,6 @@ public class Method {
             if (x[a][j] == 0 && fogResourceConstraintsSatisfied(j)) { // if service a is not implemented on fog node j
                 if (deployMakesSense(a, j)) {
                     // to add CODE: DEPLOY
-//                    System.out.println("delay" + calcDeployDelay(a, j)); // not yet used
-                    System.out.print(".");
                     x[a][j] = 1;
                     Violation.calcViolation(a, this);
                 }
@@ -262,7 +259,6 @@ public class Method {
                 }
             }
         }
-        deployCloudServiceIfNeeded(a);
     }
 
     /**
@@ -273,20 +269,19 @@ public class Method {
      * @return
      */
     private boolean deployMakesSense(int a, int j) {
-        double loss = 0;
-        double savings = 0;
+        double futureCost = 0;
+        double futureSavings = 0;
         double costCfc, costExtraPC, costExtraSC, costViolPerFogNode;
         //if not deploying (X[a][j] == 0) this is the cost we were paying, 
         // but now this is seen as savings
         costCfc = Cost.costCfc(Parameters.TAU, j, a, traffic.lambda_out, Parameters.h);
-        costExtraPC = Cost.costExtraPC(Parameters.TAU, Parameters.h[j], a, Parameters.L_P, traffic.lambda_out[a][j]);
-        costExtraSC = Cost.costExtraSC(Parameters.TAU, Parameters.h[j], a, Parameters.L_S, xp);
+        costExtraPC = Cost.costExtraPC(Parameters.TAU, Parameters.h[a][j], a, Parameters.L_P, traffic.lambda_out[a][j]);
+        costExtraSC = Cost.costExtraSC(Parameters.TAU, Parameters.h[a][j], a, Parameters.L_S, xp);
         double fogTrafficPercentage = calcFogTrafficPercentage(a, j);
         costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, Violation.calcVper(a, j, fogTrafficPercentage, this), Parameters.q, fogTrafficPercentage);
-        savings = costCfc + costExtraPC + costExtraSC + costViolPerFogNode;
+        futureSavings = costCfc + costExtraPC + costExtraSC + costViolPerFogNode;
 
-        System.out.println("cfc" + costCfc + " pc" + costExtraPC + " sc"+ costExtraSC + " viol"+costViolPerFogNode);
-        
+//        System.out.println("cfc" + costCfc + " pc" + costExtraPC + " sc"+ costExtraSC + " viol"+costViolPerFogNode);
         // Now if we were to deploy, this is the cost we would pay
         x[a][j] = 1;
         d[a][j] = delay.calcServiceDelay(a, j); // this is just to update the things
@@ -296,13 +291,12 @@ public class Method {
         costPF = Cost.costPF(Parameters.TAU, j, a, Parameters.L_P, traffic.lambda_in);
         costSF = Cost.costSF(Parameters.TAU, j, a, Parameters.L_S);
         costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, Violation.calcVper(a, j, fogTrafficPercentage, this), Parameters.q, fogTrafficPercentage);
-        loss = costDep + costPF + costSF + costViolPerFogNode;
+        futureCost = costDep + costPF + costSF + costViolPerFogNode;
 
-        System.out.println("dep" + costDep + " pf" + costPF + " sf"+ costSF + " viol"+costViolPerFogNode);
-        
+//        System.out.println("dep" + costDep + " pf" + costPF + " sf"+ costSF + " viol"+costViolPerFogNode);
         x[a][j] = 0; // revert this back to what it was
         d[a][j] = delay.calcServiceDelay(a, j); // revert things back to what they were
-        if (savings > loss) {
+        if (futureSavings > futureCost) {
             return true;
         } else {
             return false;
@@ -317,8 +311,8 @@ public class Method {
      * @return
      */
     private boolean releaseMakesSense(int a, int j) {
-        double loss = 0;
-        double savings = 0;
+        double futureCost = 0;
+        double futureSavings = 0;
         //if not releasing (X[a][j] == 1) this is the cost we were paying, 
         // but now this is seen as savings
         double costPF, costSF, costViolPerFogNode;
@@ -326,23 +320,23 @@ public class Method {
         costSF = Cost.costSF(Parameters.TAU, j, a, Parameters.L_S);
         double fogTrafficPercentage = calcFogTrafficPercentage(a, j);
         costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, Violation.calcVper(a, j, fogTrafficPercentage, this), Parameters.q, fogTrafficPercentage);
-        savings = costPF + costSF + costViolPerFogNode;
+        futureSavings = costPF + costSF + costViolPerFogNode;
 
         // Now if we were to release, this is the loss we would pay
+        int k = Parameters.h[a][j];
         x[a][j] = 0;
         d[a][j] = delay.calcServiceDelay(a, j); // this is just to update the things
 
         double costCfc, costExtraPC, costExtraSC;
         costCfc = Cost.costCfc(Parameters.TAU, j, a, traffic.lambda_out, Parameters.h);
-        costExtraPC = Cost.costExtraPC(Parameters.TAU, Parameters.h[j], a, Parameters.L_P, traffic.lambda_out[a][j]);
-        costExtraSC = Cost.costExtraSC(Parameters.TAU, Parameters.h[j], a, Parameters.L_S, xp);
+        costExtraPC = Cost.costExtraPC(Parameters.TAU, Parameters.h[a][j], a, Parameters.L_P, traffic.lambda_out[a][j]);
+        costExtraSC = Cost.costExtraSC(Parameters.TAU, Parameters.h[a][j], a, Parameters.L_S, xp);
         costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, Violation.calcVper(a, j, fogTrafficPercentage, this), Parameters.q, fogTrafficPercentage);
-        loss = costCfc + costExtraPC + costExtraSC + costViolPerFogNode;
+        futureCost = costCfc + costExtraPC + costExtraSC + costViolPerFogNode;
 
         x[a][j] = 1; // revert this back to what it was
         d[a][j] = delay.calcServiceDelay(a, j); // revert things back to what they were
-        if (savings > loss) {
-//            System.out.println("Rel "+a +" "+j+ "saving:"+savings + " loss:"+loss);
+        if (futureSavings > futureCost) {
             return true;
         } else {
             return false;
@@ -361,7 +355,7 @@ public class Method {
 
     /**
      * Calculates percentage of traffic in a given fog node for a particular
-     * service to the total traffic to all fpg nodes for taht service
+     * service to the total traffic to all fog nodes for that service
      *
      * @param a
      * @param j
@@ -451,8 +445,9 @@ public class Method {
             } else { // lambdap_in[a][k] == 0
                 xp[a][k] = 0;
             }
-
+            System.out.print(xp[a][k] + " ");
         }
+        System.out.println("");
 
     }
 }
