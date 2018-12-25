@@ -14,39 +14,40 @@ public class Violation {
      * not meet the delay requirement for service a (V^%_a))ˇ
      *
      * @param a
-     * @param heuristic
+     * @param method
      */
-    public static void calcViolation(int a, Heuristic heuristic) {
+    public static void calcViolation(int a, Method method) throws UnsupportedOperationException {
 
         double sumNum = 0;
         double sumDenum = 0;
         for (int j = 0; j < Parameters.numFogNodes; j++) {
-            heuristic.d[a][j] = heuristic.delay.calcServiceDelay(a, j);
-            if (heuristic.d[a][j] != Double.NaN && heuristic.d[a][j] > Parameters.th[a]) {
-                
-                heuristic.v[a][j] = 1;
-            } else { // note that if d[a][j] = Double.NaN, it means it is not defined, and hence it will not be a violation
-                heuristic.v[a][j] = 0;
+            method.d[a][j] = method.delay.calcServiceDelay(a, j);
+            if (method.d[a][j] == Double.NaN){
+                method.v[a][j] = 0;
+            } else if (method.d[a][j] > Parameters.th[a]) {
+                method.v[a][j] = 1;
+            } else {
+                method.v[a][j] = 0;
             }
-            sumNum += heuristic.v[a][j] * heuristic.traffic.lambda_in[a][j];
-            sumDenum += heuristic.traffic.lambda_in[a][j];
+            sumNum += method.v[a][j] * method.traffic.lambda_in[a][j];
+            sumDenum += method.traffic.lambda_in[a][j];
         }
         if (sumDenum == 0) {
-            heuristic.Vper[a] = 0;
+            method.Vper[a] = 0;
         } else {
-            heuristic.Vper[a] = sumNum / sumDenum;
+            method.Vper[a] = sumNum / sumDenum;
         }
     }
 
-    public static double getViolationPercentage(int a, Heuristic heuristic) {
-        Violation.calcViolation(a, heuristic);
-        return (Math.max(0, heuristic.Vper[a] - (1 - Parameters.q[a])) * 100);
+    public static double getViolationPercentage(int a, Method method) {
+        Violation.calcViolation(a, method);
+        return (Math.max(0, method.Vper[a] - (1 - Parameters.q[a])) * 100);
     }
 
-    public static double getViolationPercentage(Heuristic heuristic) {
+    public static double getViolationPercentage(Method method) {
         double sum = 0;
         for (int a = 0; a < Parameters.numServices; a++) {
-            sum += getViolationPercentage(a, heuristic);
+            sum += getViolationPercentage(a, method);
         }
         return (sum / Parameters.numServices);
     }
@@ -63,12 +64,12 @@ public class Violation {
         return (1 - Parameters.q[a]) * 100;
     }
 
-    public static double calcVper(int a, int j, double fogTrafficPercentage, Heuristic heuristic) {
-        if (heuristic.d[a][j] > Parameters.th[a]) {
-            heuristic.v[a][j] = 1;
+    public static double calcVper(int a, int j, double fogTrafficPercentage, Method method) {
+        if (method.d[a][j] != Double.NaN && method.d[a][j] > Parameters.th[a]) {
+            method.v[a][j] = 1;
             return fogTrafficPercentage;
         } else {
-            heuristic.v[a][j] = 0;
+            method.v[a][j] = 0;
             return 0;
         }
     }

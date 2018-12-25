@@ -1,7 +1,6 @@
 package Run;
 
 import Simulation.Cost;
-import Simulation.Heuristic;
 import Utilities.ArrayFiller;
 import Utilities.Factorial;
 import java.util.ArrayList;
@@ -13,11 +12,11 @@ import java.util.HashSet;
  */
 public class Parameters {
 
-    public static int TAU; // time interval between run of the heuristic (s)
-    public static int TRAFFIC_CHANGE_INTERVAL; // time interval between run of the heuristic (s)
+    public static int TAU; // time interval between run of the method (s)
+    public static int TRAFFIC_CHANGE_INTERVAL; // time interval between run of the metgod (s)
 
     public final static int numFogNodes = 10; // opt 10. DTMC 100. threshold 10
-    public final static int numServices = 20; // opt 2. DTMC 50. threshold 20
+    public final static int numServices = 40; // opt 2. DTMC 50. threshold 20
     public final static int numCloudServers = 3; // opt 3. DTMC 25. threshold 3
 
     // 60 fog, 20 service, 25 cloud 1 result per second

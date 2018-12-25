@@ -5,33 +5,33 @@ import DTMC.DTMCsimulator;
 import Scheme.ServiceCounter;
 import Scheme.ServiceDeployScheme;
 import Simulation.Delay;
-import Simulation.Heuristic;
+import Simulation.Method;
 import Simulation.Traffic;
 import Simulation.Violation;
 
 /**
  *
  * @author Ashkan Y. This main class runs the scheme for different intervals of
- * running the heuristic in the scheme
+ * running the method in the scheme
  */
 public class MainSchemeReconfigIntervalDTMC {
 
-    private static int MAX_HEURISTIC_CHANGE_INTERVAL = 250;
-    protected final static int TRAFFIC_CHANGE_INTERVAL = 10; // time interval between run of the heuristic (s)
+    private static int MAX_METHOD_CHANGE_INTERVAL = 250;
+    protected final static int TRAFFIC_CHANGE_INTERVAL = 10; // time interval between run of the method (s)
     private final static int TOTAL_RUN = 200;
 
     public static void main(String[] args) {
 
         int q;
-        // the number of times that traffic changes between each run of the heuristic
+        // the number of times that traffic changes between each run of the method
         Parameters.TRAFFIC_CHANGE_INTERVAL = TRAFFIC_CHANGE_INTERVAL;
         Parameters.initialize();
         
         DTMCconstructor dtmcConstructor = new DTMCconstructor();
         DTMCsimulator trafficRateSetter = new DTMCsimulator(dtmcConstructor.dtmc);
 
-        Heuristic heuristicFogDynamic = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
-        Heuristic heuristicFogDynamicViolation = new Heuristic(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method FogDynamic = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method FogDynamicViolation = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
         
 
         double sumFogContainersDeployedFogDynamic = 0d; // used for getting average
@@ -52,7 +52,7 @@ public class MainSchemeReconfigIntervalDTMC {
         double trafficPerNodePerApp;
 
         System.out.println("Tau\tTraffic\tDelay\tCost\tContainer\tViol\tDelay(Vonly)\tCost(Vonly)\tContainer(Vonly)\tViol(Vonly)\tViol_Slack=" + violationSlack + "\tThresh=" + Delay.getThresholdAverage());
-        for (int Tau = 10; Tau <= MAX_HEURISTIC_CHANGE_INTERVAL; Tau+=10) {
+        for (int Tau = 10; Tau <= MAX_METHOD_CHANGE_INTERVAL; Tau+=10) {
             
             Parameters.TAU = Tau;
             q = Parameters.TAU / Parameters.TRAFFIC_CHANGE_INTERVAL;
@@ -62,12 +62,12 @@ public class MainSchemeReconfigIntervalDTMC {
                 Traffic.distributeTraffic(trafficPerNodePerApp);
                 sumTrafficPerNodePerApp += trafficPerNodePerApp;
 
-                Traffic.setTrafficToGlobalTraffic(heuristicFogDynamic);
-                Traffic.setTrafficToGlobalTraffic(heuristicFogDynamicViolation);
+                Traffic.setTrafficToGlobalTraffic(FogDynamic);
+                Traffic.setTrafficToGlobalTraffic(FogDynamicViolation);
                 if (i % q == 0) {
                     ServiceCounter FDserviceCounter,FDVserviceCounter;
-                    FDserviceCounter = heuristicFogDynamic.run(Traffic.COMBINED_APP_REGIONES, false);
-                    FDVserviceCounter = heuristicFogDynamicViolation.run(Traffic.COMBINED_APP_REGIONES, true);
+                    FDserviceCounter = FogDynamic.run(Traffic.COMBINED_APP_REGIONES, false);
+                    FDVserviceCounter = FogDynamicViolation.run(Traffic.COMBINED_APP_REGIONES, true);
 //                    System.out.println(a+" "+b);
                     sumFogContainersDeployedFogDynamic += FDserviceCounter.getDeployedFogServices();
                     sumCloudContainersDeployedFogDynamic += FDserviceCounter.getDeployedCloudServices();
@@ -75,13 +75,13 @@ public class MainSchemeReconfigIntervalDTMC {
                     sumFogContainersDeployedFogDynamicViolation += FDVserviceCounter.getDeployedFogServices();
                     sumCloudContainersDeployedFogDynamicViolation += FDVserviceCounter.getDeployedCloudServices();
                 }
-                sumDelayFogDynamic += heuristicFogDynamic.getAvgServiceDelay();
-                sumCostFogDynamic += heuristicFogDynamic.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
-                sumViolFogDynamic += Violation.getViolationPercentage(heuristicFogDynamic);
+                sumDelayFogDynamic += FogDynamic.getAvgServiceDelay();
+                sumCostFogDynamic += FogDynamic.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+                sumViolFogDynamic += Violation.getViolationPercentage(FogDynamic);
 
-                sumDelayFogDynamicViolation += heuristicFogDynamicViolation.getAvgServiceDelay();
-                sumCostFogDynamicViolation += heuristicFogDynamicViolation.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
-                sumViolFogDynamicViolation += Violation.getViolationPercentage(heuristicFogDynamicViolation);
+                sumDelayFogDynamicViolation += FogDynamicViolation.getAvgServiceDelay();
+                sumCostFogDynamicViolation += FogDynamicViolation.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+                sumViolFogDynamicViolation += Violation.getViolationPercentage(FogDynamicViolation);
             }
 
             System.out.println(Parameters.TAU + "\t" + ((sumTrafficPerNodePerApp * Parameters.numFogNodes * Parameters.numServices) / (TOTAL_RUN))

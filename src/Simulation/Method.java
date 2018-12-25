@@ -10,7 +10,7 @@ import java.util.List;
  *
  * @author Ashkan Y.
  */
-public class Heuristic {
+public class Method {
 
     protected double[][] backup_lambda_in;
 
@@ -36,7 +36,7 @@ public class Heuristic {
     private int type;
     protected ServiceDeployScheme scheme;
 
-    public Heuristic(ServiceDeployScheme scheme, int numFogNodes, int numServices, int numCloudServers) {
+    public Method(ServiceDeployScheme scheme, int numFogNodes, int numServices, int numCloudServers) {
 
         traffic = new Traffic();
         delay = new Delay(this);
@@ -59,7 +59,7 @@ public class Heuristic {
 
     }
 
-    public ServiceCounter run(int traceType, boolean justMinimizeViolation) {
+    public ServiceCounter run(int traceType, boolean minimizeViolation) {
         backupAllPlacements();
         delay.initialize();
         if (type == ServiceDeployScheme.ALL_CLOUD) {
@@ -72,31 +72,32 @@ public class Heuristic {
             return runOptimal();
         } else if (type == ServiceDeployScheme.FOG_STATIC) { // FOG_STATIC
             Traffic.backupIncomingTraffic(this);
-            return runFogStatic(traceType, justMinimizeViolation);
+            return runFogStatic(traceType, minimizeViolation);
         } else { // FOG_DYNAMIC
-            return runFogDynamic(justMinimizeViolation);
+            System.out.println("");
+            return runFogDynamic(minimizeViolation);
         }
     }
 
     private ServiceCounter runOptimal() {
-
-//        Optimization.init(numServices, numFogNodes, numCloudServers);
-//        long numCombinations = (long) Math.pow(2, numServices * (numFogNodes + numCloudServers)); // x_aj and xp_ak
-//        double minimumCost = Double.MAX_VALUE, cost;
-//        for (long combination = 0; combination < numCombinations; combination++) {
-//            updateDecisionVariablesAccordingToCombination(combination); // updates x, xp
-//            Traffic.calcNormalizedArrivalRateFogNodes(this);
-//            Traffic.calcNormalizedArrivalRateCloudNodes(this);
-//            if (Optimization.optimizationConstraintsSatisfied(x, xp, numServices, numFogNodes, numCloudServers, Parameters.L_S,
-//                    Parameters.L_M, Parameters.KS, Parameters.KM, Parameters.KpS, Parameters.KpM, traffic.lambdap_in)) {
-//                cost = getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
-//                if (cost < minimumCost) {
-//                    minimumCost = cost;
-//                    Optimization.updateBestDecisionVaraibles(x, xp, numServices, numFogNodes, numCloudServers);
-//                }
-//            }
-//        }
-//        Optimization.updateDecisionVaraiblesAccordingToBest(x, xp, numServices, numFogNodes, numCloudServers);
+        
+        Optimization.init(numServices, numFogNodes, numCloudServers);
+        long numCombinations = (long) Math.pow(2, numServices * (numFogNodes + numCloudServers)); // x_aj and xp_ak
+        double minimumCost = Double.MAX_VALUE, cost;
+        for (long combination = 0; combination < numCombinations; combination++) {
+            updateDecisionVariablesAccordingToCombination(combination); // updates x, xp
+            Traffic.calcNormalizedArrivalRateFogNodes(this);
+            Traffic.calcNormalizedArrivalRateCloudNodes(this);
+            if (Optimization.optimizationConstraintsSatisfied(x, xp, numServices, numFogNodes, numCloudServers, Parameters.L_S,
+                    Parameters.L_M, Parameters.KS, Parameters.KM, Parameters.KpS, Parameters.KpM, traffic.lambdap_in)) {
+                cost = getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+                if (cost < minimumCost) {
+                    minimumCost = cost;
+                    Optimization.updateBestDecisionVaraibles(x, xp, numServices, numFogNodes, numCloudServers);
+                }
+            }
+        }
+        Optimization.updateDecisionVaraiblesAccordingToBest(x, xp, numServices, numFogNodes, numCloudServers);
         return ServiceCounter.countServices(numServices, numFogNodes, numCloudServers, x, xp);
     }
 
@@ -128,9 +129,9 @@ public class Heuristic {
         }
     }
 
-    private ServiceCounter runFogDynamic(boolean justMinimizeViolation) {
+    private ServiceCounter runFogDynamic(boolean minimizeViolation) {
         for (int a = 0; a < numServices; a++) {
-            if (justMinimizeViolation) {
+            if (minimizeViolation) {
                 MinViol(a);
             } else {
                 MinCost(a);
@@ -225,6 +226,10 @@ public class Heuristic {
 
     }
 
+    /**
+     * Runs the MinCost 
+     * @param a service a for which minCost is 
+     */
     private void MinCost(int a) {
         Violation.calcViolation(a, this);
         List<FogTrafficIndex> fogTrafficIndex = Traffic.getFogIncomingTraffic(a, false, this);
@@ -239,6 +244,7 @@ public class Heuristic {
                 if (deployMakesSense(a, j)) {
                     // to add CODE: DEPLOY
 //                    System.out.println("delay" + calcDeployDelay(a, j)); // not yet used
+                    System.out.print(".");
                     x[a][j] = 1;
                     Violation.calcViolation(a, this);
                 }
@@ -270,7 +276,7 @@ public class Heuristic {
         double loss = 0;
         double savings = 0;
         double costCfc, costExtraPC, costExtraSC, costViolPerFogNode;
-        //if not deployiing (X[a][j] == 0) this is the cost we were paying, 
+        //if not deploying (X[a][j] == 0) this is the cost we were paying, 
         // but now this is seen as savings
         costCfc = Cost.costCfc(Parameters.TAU, j, a, traffic.lambda_out, Parameters.h);
         costExtraPC = Cost.costExtraPC(Parameters.TAU, Parameters.h[j], a, Parameters.L_P, traffic.lambda_out[a][j]);
@@ -279,6 +285,8 @@ public class Heuristic {
         costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, Violation.calcVper(a, j, fogTrafficPercentage, this), Parameters.q, fogTrafficPercentage);
         savings = costCfc + costExtraPC + costExtraSC + costViolPerFogNode;
 
+        System.out.println("cfc" + costCfc + " pc" + costExtraPC + " sc"+ costExtraSC + " viol"+costViolPerFogNode);
+        
         // Now if we were to deploy, this is the cost we would pay
         x[a][j] = 1;
         d[a][j] = delay.calcServiceDelay(a, j); // this is just to update the things
@@ -290,6 +298,8 @@ public class Heuristic {
         costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, Violation.calcVper(a, j, fogTrafficPercentage, this), Parameters.q, fogTrafficPercentage);
         loss = costDep + costPF + costSF + costViolPerFogNode;
 
+        System.out.println("dep" + costDep + " pf" + costPF + " sf"+ costSF + " viol"+costViolPerFogNode);
+        
         x[a][j] = 0; // revert this back to what it was
         d[a][j] = delay.calcServiceDelay(a, j); // revert things back to what they were
         if (savings > loss) {

@@ -39,18 +39,18 @@ public class Traffic {
         arrivalFog = new double[Parameters.numServices][Parameters.numFogNodes];
     }
 
-    protected static void backupIncomingTraffic(Heuristic heuristic) {
+    protected static void backupIncomingTraffic(Method method) {
         for (int a = 0; a < Parameters.numServices; a++) {
             for (int j = 0; j < Parameters.numFogNodes; j++) {
-                heuristic.backup_lambda_in[a][j] = heuristic.traffic.lambda_in[a][j];
+                method.backup_lambda_in[a][j] = method.traffic.lambda_in[a][j];
             }
         }
     }
 
-    protected static void restoreIncomingTraffic(Heuristic heuristic) {
+    protected static void restoreIncomingTraffic(Method method) {
         for (int a = 0; a < Parameters.numServices; a++) {
             for (int j = 0; j < Parameters.numFogNodes; j++) {
-                heuristic.traffic.lambda_in[a][j] = heuristic.backup_lambda_in[a][j];
+                method.traffic.lambda_in[a][j] = method.backup_lambda_in[a][j];
             }
         }
     }
@@ -61,40 +61,40 @@ public class Traffic {
      * @param a index of a given service
      * @return returns an array of FogTrafficIndex, for a given service
      */
-    protected static List<FogTrafficIndex> getFogIncomingTraffic(int a, boolean isSortAscending, Heuristic heuristic) {
+    protected static List<FogTrafficIndex> getFogIncomingTraffic(int a, boolean isSortAscending, Method method) {
 
         List<FogTrafficIndex> fogTrafficIndex = new ArrayList<>();
         for (int j = 0; j < Parameters.numFogNodes; j++) {
-            fogTrafficIndex.add(new FogTrafficIndex(j, heuristic.traffic.lambda_in[a][j], isSortAscending));
+            fogTrafficIndex.add(new FogTrafficIndex(j, method.traffic.lambda_in[a][j], isSortAscending));
         }
         return fogTrafficIndex;
     }
 
-    protected static void calcNormalizedArrivalRateFogNodes(Heuristic heuristic) {
+    protected static void calcNormalizedArrivalRateFogNodes(Method method) {
         for (int a = 0; a < Parameters.numServices; a++) {
             for (int j = 0; j < Parameters.numFogNodes; j++) {
-                calcNormalizedArrivalRateFogNode(a, j, heuristic);
+                calcNormalizedArrivalRateFogNode(a, j, method);
             }
         }
 
     }
 
-    protected static void calcNormalizedArrivalRateFogNode(int a, int j, Heuristic heuristic) {
-        heuristic.traffic.arrivalFog[a][j] = Parameters.L_P[a] * heuristic.traffic.lambda_in[a][j] * heuristic.x[a][j];
+    protected static void calcNormalizedArrivalRateFogNode(int a, int j, Method method) {
+        method.traffic.arrivalFog[a][j] = Parameters.L_P[a] * method.traffic.lambda_in[a][j] * method.x[a][j];
     }
     
-    protected static void calcNormalizedArrivalRateCloudNodes(Heuristic heuristic) {
+    protected static void calcNormalizedArrivalRateCloudNodes(Method method) {
         for (int a = 0; a < Parameters.numServices; a++) {
             for (int k = 0; k < Parameters.numCloudServers; k++) {
-                calcArrivalRateCloudFroNodesForService(k, a, heuristic);
-                calcNormalizedArrivalRateCloudNode(a, k, heuristic);
+                calcArrivalRateCloudFroNodesForService(k, a, method);
+                calcNormalizedArrivalRateCloudNode(a, k, method);
             }
         }
 
     }
 
-    protected static void calcNormalizedArrivalRateCloudNode(int a, int k, Heuristic heuristic) {
-        heuristic.traffic.arrivalCloud[a][k] = Parameters.L_P[a] * heuristic.traffic.lambdap_in[a][k] * heuristic.xp[a][k];
+    protected static void calcNormalizedArrivalRateCloudNode(int a, int k, Method method) {
+        method.traffic.arrivalCloud[a][k] = Parameters.L_P[a] * method.traffic.lambdap_in[a][k] * method.xp[a][k];
     }
 
    
@@ -105,21 +105,21 @@ public class Traffic {
      *
      * @param k
      */
-    public static void calcArrivalRateCloudFroNodesForService(int k, int a, Heuristic heuristic) {
+    public static void calcArrivalRateCloudFroNodesForService(int k, int a, Method method) {
         double tempSum = 0;
         for (Integer j : Parameters.h_reverse.get(k)) {
-            heuristic.traffic.lambda_out[a][j] = heuristic.traffic.lambda_in[a][j] * (1 - heuristic.x[a][j]); // calculate lambda^out_aj
-            tempSum += heuristic.traffic.lambda_out[a][j];
+            method.traffic.lambda_out[a][j] = method.traffic.lambda_in[a][j] * (1 - method.x[a][j]); // calculate lambda^out_aj
+            tempSum += method.traffic.lambda_out[a][j];
         }
-        heuristic.traffic.lambdap_in[a][k] = tempSum;
+        method.traffic.lambdap_in[a][k] = tempSum;
     }
 
-    public void printTraffic(Heuristic heuristic) {
+    public void printTraffic(Method method) {
         DecimalFormat df = new DecimalFormat("0.00");
         for (int a = 0; a < Parameters.numServices; a++) {
             for (int j = 0; j < Parameters.numFogNodes; j++) {
 
-                System.out.print(df.format(heuristic.traffic.lambda_in[a][j]) + " ");
+                System.out.print(df.format(method.traffic.lambda_in[a][j]) + " ");
             }
             System.out.println("");
         }
@@ -130,8 +130,8 @@ public class Traffic {
      * and changes the traffic to the average traffic values, so that the
      * placement solves the problem based on average
      */
-    protected static void initializeAvgTrafficForStaticFogPlacementFirstTimeCombined(Heuristic heuristic) {
-        distributeTraffic(heuristic.scheme.averageRateOfTraffic, heuristic.traffic.lambda_in);
+    protected static void initializeAvgTrafficForStaticFogPlacementFirstTimeCombined(Method method) {
+        distributeTraffic(method.scheme.averageRateOfTraffic, method.traffic.lambda_in);
     }
 
     /**
@@ -139,8 +139,8 @@ public class Traffic {
      * and changes the traffic per fog node to the average traffic values, so
      * that the placement solves the problem based on averages
      */
-    protected static void initializeAvgTrafficForStaticFogPlacementFirstTimePerFogNode(Heuristic heuristic) {
-        distributeTraffic(heuristic.scheme.averageRateOfCombinedAppTrafficPerNode, heuristic.traffic.lambda_in);
+    protected static void initializeAvgTrafficForStaticFogPlacementFirstTimePerFogNode(Method method) {
+        distributeTraffic(method.scheme.averageRateOfCombinedAppTrafficPerNode, method.traffic.lambda_in);
     }
 
     /**
@@ -148,8 +148,8 @@ public class Traffic {
      * and changes the traffic per fog node per service to the average traffic
      * values, so that the placement solves the problem based on averages
      */
-    protected static void initializeAvgTrafficForStaticFogPlacementFirstTimePerServicePerFogNode(Heuristic heuristic) {
-        setTraffic(heuristic.scheme.averageRateOfTrafficPerNodePerService, heuristic.traffic.lambda_in);
+    protected static void initializeAvgTrafficForStaticFogPlacementFirstTimePerServicePerFogNode(Method method) {
+        setTraffic(method.scheme.averageRateOfTrafficPerNodePerService, method.traffic.lambda_in);
     }
 
     private static void distributeTraffic(double trafficPerNodePerApp, double[][] targetTraffic) {
@@ -193,10 +193,10 @@ public class Traffic {
         setTraffic(actualTraffic, Parameters.globalTraffic);
     }
 
-    public static void setTrafficToGlobalTraffic(Heuristic heuristic) {
+    public static void setTrafficToGlobalTraffic(Method method) {
         for (int a = 0; a < Parameters.numServices; a++) {
             for (int j = 0; j < Parameters.numFogNodes; j++) {
-                heuristic.traffic.lambda_in[a][j] = Parameters.globalTraffic[a][j];
+                method.traffic.lambda_in[a][j] = Parameters.globalTraffic[a][j];
             }
         }
     }

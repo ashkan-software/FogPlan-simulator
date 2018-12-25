@@ -1,4 +1,3 @@
-
 package Simulation;
 
 import Run.Parameters;
@@ -56,7 +55,7 @@ public class Cost {
         ArrayFiller.generateFixed1DArray(FOG_CONTROLLER_COMM_UNIT_COST, 0.0000000005d);
 
         SERVICE_PENALY = new double[NUM_SERVICES];
-        ArrayFiller.generateRandom1DArray(SERVICE_PENALY, 20d, 50d); // 2-5 for optimal and cumulative. 20-50 for DTMC
+        ArrayFiller.generateRandom1DArray(SERVICE_PENALY, 25d, 25d); // 2-5 for optimal and cumulative. 20-50 for DTMC
     }
 
     /**
@@ -73,6 +72,21 @@ public class Cost {
         return CLOUD_UNIT_PROC_COST[k] * L_P[a] * extraTraffic * time;
     }
 
+    /**
+     * Calculates the cost of processing in a particular cloud server for a
+     * particular service for the duration of `time`
+     *
+     * @param time duration for which the cost of processing in the cloud is
+     * being calculated
+     * @param k the index of cloud server
+     * @param a the index of service
+     * @param L_P required amount of processing for service `a` per request, (in
+     * million instructions per request)
+     * @param lambdap_in incoming traffic rate to cloud server $k$ for service
+     * $a$ (request/second)
+     * @return returns the cost of processing in the cloud for the duration of
+     * `time`
+     */
     private static double costPC(double time, int k, int a, double[] L_P, double lambdap_in[][]) {
         return CLOUD_UNIT_PROC_COST[k] * L_P[a] * lambdap_in[a][k] * time;
     }
@@ -110,7 +124,7 @@ public class Cost {
     }
 
     public static double costViolPerFogNode(double time, int a, double Vper_aj, double q[], double fogTrafficPercentage) {
-        return Math.max(0, Vper_aj - (1 - q[a])*fogTrafficPercentage) * SERVICE_PENALY[a] * time;
+        return Math.max(0, Vper_aj - (1 - q[a]) * fogTrafficPercentage) * SERVICE_PENALY[a] * time;
     }
 
     /**

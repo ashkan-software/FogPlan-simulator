@@ -25,10 +25,10 @@ public class Delay {
     private double P0p[][];
     private double PQp[][];
     
-    private Heuristic heuristic;
+    private Method method;
     
-    public Delay(Heuristic heuristic) {
-        this.heuristic = heuristic;
+    public Delay(Method method) {
+        this.method = method;
         
         rho = new double[Parameters.numServices][Parameters.numFogNodes];
         rhop = new double[Parameters.numServices][Parameters.numCloudServers];
@@ -86,16 +86,17 @@ public class Delay {
     public double calcServiceDelay(int a, int j) {
         double proc_time;
         int k = Parameters.h[j];
-        if (heuristic.x[a][j] == 1) { // if the service is implelemted at the fog
+        if (method.x[a][j] == 1) { // if the service is implelemted at the fog
 //            proc_time = calcProcTimeMM1(heuristic.traffic.arrivalFog[j], Parameters.KP[j]); // MM1
             proc_time = calcProcTimeMMCfog(a, j);
             return (2 * Parameters.dIF[j]) + (proc_time) + ((Parameters.l_rp[a] + Parameters.l_rq[a]) / Parameters.rIF[j] * 1000d); // this is in ms
-        } else if (heuristic.xp[a][k] == 1) { // if the service is implelemted in the cloud
+        } else if (method.xp[a][k] == 1) { // if the service is implelemted in the cloud
 //            proc_time = calcProcTimeMM1(heuristic.traffic.arrivalCloud[k], Parameters.KpP[k]); //MM1
             proc_time = calcProcTimeMMCcloud(a, k);
             
             return (2 * (Parameters.dIF[j] + Parameters.dFC[j][k])) + (proc_time) + (((Parameters.l_rp[a] + Parameters.l_rq[a]) / Parameters.rIF[j] + (Parameters.l_rp[a] + Parameters.l_rq[a]) / Parameters.rFC[j][k]) * 1000d); // this is in ms
         } else { // serivce a is not implemented anywhere, delay is not defined
+            
             return Double.NaN;
         }
     }
@@ -104,10 +105,10 @@ public class Delay {
         initCloud(a, k);
         if (fp[a][k] == 0) { // if the service is not implemented in cloud
             System.out.println("servcie " + a + " is not implemtend on cloud server " + k); // this is for debug
-            System.out.println(heuristic.scheme.type); // this is for debug
+            System.out.println(method.scheme.type); // this is for debug
             return 3000d; // a big number
         }
-        return 1 / ((fp[a][k] * Parameters.KpP[k]) / np[k]) + PQp[a][k] / (fp[a][k] * Parameters.KpP[k] - heuristic.traffic.arrivalCloud[a][k]);
+        return 1 / ((fp[a][k] * Parameters.KpP[k]) / np[k]) + PQp[a][k] / (fp[a][k] * Parameters.KpP[k] - method.traffic.arrivalCloud[a][k]);
     }
     
     private double calcProcTimeMMCfog(int a, int j) {
@@ -115,7 +116,7 @@ public class Delay {
         if (f[a][j] == 0) { // if the service is not implemented in cloud
             return 2000d; // a big number
         }
-        return 1 / ((f[a][j] * Parameters.KP[j]) / n[j]) + PQ[a][j] / (f[a][j] * Parameters.KP[j] - heuristic.traffic.arrivalFog[a][j]);
+        return 1 / ((f[a][j] * Parameters.KP[j]) / n[j]) + PQ[a][j] / (f[a][j] * Parameters.KP[j] - method.traffic.arrivalFog[a][j]);
     }
 
     /**
@@ -194,7 +195,7 @@ public class Delay {
      * @param heuristic
      */
     private void calcRhoCloud(int a, int k) {
-        calcRho(a, k, heuristic.xp, heuristic.traffic.arrivalCloud, fp, Parameters.KpP, rhop);
+        calcRho(a, k, method.xp, method.traffic.arrivalCloud, fp, Parameters.KpP, rhop);
     }
 
     /**
@@ -203,7 +204,7 @@ public class Delay {
      * @param heuristic
      */
     private void calcRhoFog(int a, int j) {
-        calcRho(a, j, heuristic.x, heuristic.traffic.arrivalFog, f, Parameters.KP, rho);
+        calcRho(a, j, method.x, method.traffic.arrivalFog, f, Parameters.KP, rho);
     }
 
     /**
@@ -231,7 +232,7 @@ public class Delay {
      * @param heuristic
      */
     private void calcServiceFractionCloud(int a, int k) {
-        fp[a][k] = calcServiceFraction(heuristic.xp, a, k);
+        fp[a][k] = calcServiceFraction(method.xp, a, k);
     }
 
     /**
@@ -241,7 +242,7 @@ public class Delay {
      * @param heuristic
      */
     private void calcServiceFractionFog(int a, int j) {
-        f[a][j] = calcServiceFraction(heuristic.x, a, j);
+        f[a][j] = calcServiceFraction(method.x, a, j);
     }
 
     /**
