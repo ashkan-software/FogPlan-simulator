@@ -31,17 +31,10 @@ public class ServiceDeployScheme {
         if (type == ALL_FOG) {
             ArrayFiller.generateFixed2DArray(variable.x, 1);
             ArrayFiller.generateFixed2DArray(variable.xp, 0);
-        } else if (type == ALL_CLOUD) {
+        } else { // in the rest of methods, initially the service is deployed on all cloud servers
             ArrayFiller.generateFixed2DArray(variable.x, 0);
             ArrayFiller.generateFixed2DArray(variable.xp, 1);
-        } else if (type == OPTIMAL) { // starts from all zeros
-            ArrayFiller.generateFixed2DArray(variable.x, 0);
-            ArrayFiller.generateFixed2DArray(variable.xp, 0);
-        } else { // starts from all zeros
-            ArrayFiller.generateFixed2DArray(variable.x, 0);
-            ArrayFiller.generateFixed2DArray(variable.xp, 0);
         }
-
     }
 
     public ServiceDeployScheme(int type, double averageRateOfTraffic) {

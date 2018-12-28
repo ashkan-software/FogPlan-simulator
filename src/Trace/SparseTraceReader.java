@@ -18,6 +18,8 @@ public class SparseTraceReader {
     private static Double lambda[][];
 
     private static Double min, max;
+    
+    private final static double SMOOTHING_NUMBER = 0.000000000001d;
 
 //    public static double[][] randomAverage; 
     public static Double[][] average;
@@ -116,7 +118,7 @@ public class SparseTraceReader {
     private static void normalizeTraffic(Double[][] traffic) {
         for (int a = 0; a < Parameters.numServices; a++) {
             for (int j = 0; j < Parameters.numFogNodes; j++) {
-                traffic[a][j] = ((traffic[a][j] - min + 0.0001) / (max - min)) * Parameters.TRAFFIC_NORM_FACTOR;
+                traffic[a][j] = ((traffic[a][j] - min + SMOOTHING_NUMBER) / (max - min)) * Parameters.TRAFFIC_NORM_FACTOR;
                 CumulativeAverage[a][j] += traffic[a][j];
             }
         }

@@ -13,14 +13,12 @@ public class ArrayFiller {
      * (the sum of percentages will add up to 100%)
      *
      * @param input
-     * @param min
-     * @param max
      */
-    public static void generateRandomDistributionOnArray(double[] input, double min, double max) {
+    public static void generateRandomDistributionOnArray(double[] input) {
         int[] weight = new int[input.length];
         double sum = 0;
         for (int a = 0; a < input.length; a++) {
-            weight[a] = (int) RG.genUniformRandomBetween(min, max);
+            weight[a] = (int) RG.genUniformRandomBetween(10, 100);
             sum += weight[a];
         }
         for (int a = 0; a < input.length; a++) {

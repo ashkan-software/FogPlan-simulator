@@ -47,7 +47,7 @@ public class Delay {
             n[j] = 4;
         }
         for (int k = 0; k < Parameters.numCloudServers; k++) {
-            n[k] = 10;
+            n[k] = 8;
         }
     }
     
@@ -101,7 +101,7 @@ public class Delay {
         initCloud(a, k);
         if (fp[a][k] == 0) { // if the service is not implemented in cloud
             System.out.println("servcie " + a + " is not implemtend on cloud server " + k); // this is for debug
-            System.out.println(method.scheme.type); // this is for debug
+            System.out.println("Debug Please! Scheme: "+method.scheme.type); // this is for debug
             return 3000d; // a big number
         }
         return 1 / ((fp[a][k] * Parameters.KpP[k]) / np[k]) + PQp[a][k] / (fp[a][k] * Parameters.KpP[k] - method.traffic.arrivalCloud[a][k]);

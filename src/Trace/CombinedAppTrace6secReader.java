@@ -22,6 +22,8 @@ public class CombinedAppTrace6secReader {
     private static double[] CumulativeAveragePerFogNode;
 
     private static Double min, max;
+    
+    private final static double SMOOTHING_NUMBER = 0.000000000001d;
 
     public static ArrayList<Double[]> readTrafficFromFile() throws FileNotFoundException {
 
@@ -76,7 +78,7 @@ public class CombinedAppTrace6secReader {
 
     private static void normalizeTraffic(Double[] combinedAppPerFogNode) {
         for (int j = 0; j < Parameters.numFogNodes; j++) {
-            combinedAppPerFogNode[j] = ((combinedAppPerFogNode[j] - min + 0.0001) / (max - min)) * Parameters.TRAFFIC_NORM_FACTOR * Parameters.numServices;
+            combinedAppPerFogNode[j] = ((combinedAppPerFogNode[j] - min + SMOOTHING_NUMBER) / (max - min)) * Parameters.TRAFFIC_NORM_FACTOR * Parameters.numServices;
             CumulativeAveragePerFogNode[j] += combinedAppPerFogNode[j];
         }
     }

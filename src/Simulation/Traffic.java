@@ -31,6 +31,8 @@ public class Traffic {
     public static int COMBINED_APP = 2;
     public static int NOT_COMBINED = 3;
 
+    private static final int TRAFFIC_ENLARGE_FACTOR = Parameters.numServices * Parameters.numFogNodes; // since the traffic is read from the tracefiles, its value might be small. This factor will enlarge the vlaue of the traffic
+
     public Traffic() {
         lambda_in = new double[Parameters.numServices][Parameters.numFogNodes];
         lambdap_in = new double[Parameters.numServices][Parameters.numCloudServers];
@@ -82,11 +84,11 @@ public class Traffic {
     protected static void calcNormalizedArrivalRateFogNode(int a, int j, Method method) {
         method.traffic.arrivalFog[a][j] = Parameters.L_P[a] * method.traffic.lambda_in[a][j] * method.x[a][j];
     }
-    
+
     protected static void calcNormalizedArrivalRateCloudNodes(Method method) {
         for (int a = 0; a < Parameters.numServices; a++) {
             for (int k = 0; k < Parameters.numCloudServers; k++) {
-                calcArrivalRateCloudFroNodesForService(k, a, method);
+                calcArrivalRateCloudForNodesForService(k, a, method);
                 calcNormalizedArrivalRateCloudNode(a, k, method);
             }
         }
@@ -97,15 +99,13 @@ public class Traffic {
         method.traffic.arrivalCloud[a][k] = Parameters.L_P[a] * method.traffic.lambdap_in[a][k] * method.xp[a][k];
     }
 
-   
-
     /**
      * calculate lambda^out_aj and lambdap_in_ak for cloud server k for service
      * a
      *
      * @param k
      */
-    public static void calcArrivalRateCloudFroNodesForService(int k, int a, Method method) {
+    private static void calcArrivalRateCloudForNodesForService(int k, int a, Method method) {
         double tempSum = 0;
         for (Integer j : Parameters.H_inverse[a][k].elemets) {
             method.traffic.lambda_out[a][j] = method.traffic.lambda_in[a][j] * (1 - method.x[a][j]); // calculate lambda^out_aj
@@ -114,8 +114,8 @@ public class Traffic {
         method.traffic.lambdap_in[a][k] = tempSum;
     }
 
-    public void printTraffic(Method method) {
-        DecimalFormat df = new DecimalFormat("0.00");
+    public static void printTraffic(Method method) {
+        DecimalFormat df = new DecimalFormat("0.000000");
         for (int a = 0; a < Parameters.numServices; a++) {
             for (int j = 0; j < Parameters.numFogNodes; j++) {
 
@@ -132,6 +132,8 @@ public class Traffic {
      */
     protected static void initializeAvgTrafficForStaticFogPlacementFirstTimeCombined(Method method) {
         distributeTraffic(method.scheme.averageRateOfTraffic, method.traffic.lambda_in);
+        
+        enlargeTraffic(method);
     }
 
     /**
@@ -141,6 +143,8 @@ public class Traffic {
      */
     protected static void initializeAvgTrafficForStaticFogPlacementFirstTimePerFogNode(Method method) {
         distributeTraffic(method.scheme.averageRateOfCombinedAppTrafficPerNode, method.traffic.lambda_in);
+        enlargeTraffic(method);
+        printTraffic(method);
     }
 
     /**
@@ -150,6 +154,7 @@ public class Traffic {
      */
     protected static void initializeAvgTrafficForStaticFogPlacementFirstTimePerServicePerFogNode(Method method) {
         setTraffic(method.scheme.averageRateOfTrafficPerNodePerService, method.traffic.lambda_in);
+        enlargeTraffic(method);
     }
 
     private static void distributeTraffic(double trafficPerNodePerApp, double[][] targetTraffic) {
@@ -158,7 +163,7 @@ public class Traffic {
         double[] fogTrafficPercentage = new double[Parameters.numFogNodes];
         for (int a = 0; a < Parameters.numServices; a++) {
             trafficForCurrentService = totalTraffic * Parameters.ServiceTrafficPercentage[a];
-            ArrayFiller.generateRandomDistributionOnArray(fogTrafficPercentage, 1, 7);
+            ArrayFiller.generateRandomDistributionOnArray(fogTrafficPercentage);
             for (int j = 0; j < Parameters.numFogNodes; j++) {
                 targetTraffic[a][j] = trafficForCurrentService * fogTrafficPercentage[j];
             }
@@ -189,14 +194,24 @@ public class Traffic {
         }
     }
 
-    public static void setTraffic(Double[][] actualTraffic) {
-        setTraffic(actualTraffic, Parameters.globalTraffic);
-    }
-
+    /**
+     * Set the lambda_in[][] to a number between 1 and 10
+     *
+     * @param method
+     */
     public static void setTrafficToGlobalTraffic(Method method) {
         for (int a = 0; a < Parameters.numServices; a++) {
             for (int j = 0; j < Parameters.numFogNodes; j++) {
                 method.traffic.lambda_in[a][j] = Parameters.globalTraffic[a][j];
+            }
+        }
+        enlargeTraffic(method);
+    }
+
+    private static void enlargeTraffic(Method method) {
+        for (int a = 0; a < Parameters.numServices; a++) {
+            for (int j = 0; j < Parameters.numFogNodes; j++) {
+                method.traffic.lambda_in[a][j] *= TRAFFIC_ENLARGE_FACTOR;
             }
         }
     }

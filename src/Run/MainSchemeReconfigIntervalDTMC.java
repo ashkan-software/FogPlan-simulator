@@ -76,11 +76,11 @@ public class MainSchemeReconfigIntervalDTMC {
                     sumCloudContainersDeployedFogDynamicViolation += FDVserviceCounter.getDeployedCloudServices();
                 }
                 sumDelayFogDynamic += FogDynamic.getAvgServiceDelay();
-                sumCostFogDynamic += FogDynamic.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+                sumCostFogDynamic += FogDynamic.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
                 sumViolFogDynamic += Violation.getViolationPercentage(FogDynamic);
 
                 sumDelayFogDynamicViolation += FogDynamicViolation.getAvgServiceDelay();
-                sumCostFogDynamicViolation += FogDynamicViolation.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+                sumCostFogDynamicViolation += FogDynamicViolation.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
                 sumViolFogDynamicViolation += Violation.getViolationPercentage(FogDynamicViolation);
             }
 

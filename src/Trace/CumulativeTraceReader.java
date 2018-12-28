@@ -19,6 +19,8 @@ public class CumulativeTraceReader {
     public static double averageTrafficTrace;
 
     private static double min, max;
+    
+    private final static double SMOOTHING_NUMBER = 0.000000000001d;
 
     public static ArrayList<Double> readTrafficFromFile() throws FileNotFoundException {
 
@@ -48,7 +50,7 @@ public class CumulativeTraceReader {
     private static void normalizeTraceTraffic() {
         findMinAndMax(trafficTrace);
         for (int i = 0; i < trafficTrace.size(); i++) {
-            trafficTrace.set(i, (trafficTrace.get(i) - min + 0.0001) / (max - min) * Parameters.TRAFFIC_NORM_FACTOR);
+            trafficTrace.set(i, (trafficTrace.get(i) - min + SMOOTHING_NUMBER) / (max - min) * Parameters.TRAFFIC_NORM_FACTOR);
         }
 
         averageTrafficTrace = (averageTrafficTrace - min) / (max - min) * Parameters.TRAFFIC_NORM_FACTOR;

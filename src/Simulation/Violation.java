@@ -37,11 +37,16 @@ public class Violation {
         }
     }
 
-    public static double getViolationPercentage(int a, Method method) {
+    private static double getViolationPercentage(int a, Method method) {
         Violation.calcViolation(a, method);
-        return (Math.max(0, method.Vper[a] - (1 - Parameters.q[a])) * 100);
+//        if (method.scheme.type == 4 && method.f == true){
+//            System.out.println(a + "   " + method.Vper[a] * 100);
+//        }
+        
+        return method.Vper[a] * 100;
     }
 
+    
     public static double getViolationPercentage(Method method) {
         double sum = 0;
         for (int a = 0; a < Parameters.numServices; a++) {
@@ -63,7 +68,7 @@ public class Violation {
     }
 
     public static double calcVper(int a, int j, double fogTrafficPercentage, Method method) {
-        if (method.d[a][j] != Double.NaN && method.d[a][j] > Parameters.th[a]) {
+        if (method.d[a][j] > Parameters.th[a]) {
             method.v[a][j] = 1;
             return fogTrafficPercentage;
         } else {

@@ -34,16 +34,16 @@ public class Cost {
         this.NUM_SERVICES = NUM_SERVICES;
 
         CLOUD_UNIT_PROC_COST = new double[NUM_CLOUD_SERVERS];
-        ArrayFiller.generateFixed1DArray(CLOUD_UNIT_PROC_COST, 0.01d);
+        ArrayFiller.generateFixed1DArray(CLOUD_UNIT_PROC_COST, 0.001d);
 
         CLOUD_UNIT_STOR_COST = new double[NUM_CLOUD_SERVERS];
         ArrayFiller.generateFixed1DArray(CLOUD_UNIT_STOR_COST, 0.00000000004d);
 
         FOG_UNIT_PROC_COST = new double[NUM_FOG_NODES];
-        ArrayFiller.generateRandom1DArray(FOG_UNIT_PROC_COST, 0.02d, 0.02d); // 0.02d for optimal and cumulative and DTMC and threshold
+        ArrayFiller.generateRandom1DArray(FOG_UNIT_PROC_COST, 0.001d, 0.001d); 
 
         FOG_UNIT_STOR_COST = new double[NUM_FOG_NODES];
-        ArrayFiller.generateRandom1DArray(FOG_UNIT_STOR_COST, 0.00000000008d, 0.00000000008d); // 00000000008d for optimal and cumulative and DTMC and threshold
+        ArrayFiller.generateRandom1DArray(FOG_UNIT_STOR_COST, 0.00000000004d, 0.00000000004d); // 00000000008d for optimal and cumulative and DTMC and threshold
 
         FOG_CLOUD_COMM_UNIT_COST = new double[NUM_FOG_NODES][NUM_CLOUD_SERVERS];
         ArrayFiller.generateFixed2DArray(FOG_CLOUD_COMM_UNIT_COST, 0.0000000002d);
@@ -55,7 +55,7 @@ public class Cost {
         ArrayFiller.generateFixed1DArray(FOG_CONTROLLER_COMM_UNIT_COST, 0.0000000005d);
 
         SERVICE_PENALY = new double[NUM_SERVICES];
-        ArrayFiller.generateRandom1DArray(SERVICE_PENALY, 5d, 5d); // 2-5 for optimal and cumulative. 20-50 for DTMC
+        ArrayFiller.generateRandom1DArray(SERVICE_PENALY, 2d, 5d); // 2-5 for optimal and cumulative. 20-50 for DTMC
     }
 
     /**
@@ -119,12 +119,12 @@ public class Cost {
         return L_S[a] * FOG_CONTROLLER_COMM_UNIT_COST[j];
     }
 
-    public static double costViol(double time, int a, double Vper[], double q[]) {
-        return Math.max(0, Vper[a] - (1 - q[a])) * SERVICE_PENALY[a] * time;
+    public static double costViol(double time, int a, int j, double Vper[], double q[], double lambda_in[][]) {
+        return Math.max(0, Vper[a] - (1 - q[a])) * lambda_in[a][j] * SERVICE_PENALY[a] * time ;
     }
 
-    public static double costViolPerFogNode(double time, int a, double Vper_aj, double q[], double fogTrafficPercentage) {
-        return Math.max(0, Vper_aj - (1 - q[a]) * fogTrafficPercentage) * SERVICE_PENALY[a] * time;
+    public static double costViolPerFogNode(double time, int a, int j, double Vper_aj, double q[], double fogTrafficPercentage, double lambda_in[][]) {
+        return Math.max(0, Vper_aj - (1 - q[a]) * fogTrafficPercentage) * lambda_in[a][j] * SERVICE_PENALY[a] * time;
     }
 
     /**
@@ -141,7 +141,7 @@ public class Cost {
      * @param h
      * @return
      */
-    public static double calcCost(double time, int[][] x, int[][] xp, int[][] x_backup, double Vper[], double q[], double lambda_in[][], double lambdap_in[][], double lambda_out[][], double[] L_P, double[] L_S, int[][] h) {
+    public static double calcAverageCost(double time, int[][] x, int[][] xp, int[][] x_backup, double Vper[], double q[], double lambda_in[][], double lambdap_in[][], double lambda_out[][], double[] L_P, double[] L_S, int[][] h) {
         double costPC, costPF, costSC, costSF, costCfc, costCff, costDep, costViol;
 
         // cost of processing in cloud
@@ -153,6 +153,7 @@ public class Cost {
                 }
             }
         }
+        costPC = costPC / (NUM_CLOUD_SERVERS * NUM_SERVICES);
 
         // cost of processing in fog
         costPF = 0;
@@ -163,6 +164,7 @@ public class Cost {
                 }
             }
         }
+        costPF = costPF / (NUM_FOG_NODES * NUM_SERVICES);
 
         // cost of storage in cloud
         costSC = 0;
@@ -173,6 +175,7 @@ public class Cost {
                 }
             }
         }
+        costSC = costSC / (NUM_CLOUD_SERVERS * NUM_SERVICES);
 
         // cost of storage in fog
         costSF = 0;
@@ -183,6 +186,7 @@ public class Cost {
                 }
             }
         }
+        costSF = costSF / (NUM_FOG_NODES * NUM_SERVICES);
 
         // cost of communication from fog to cloud
         costCfc = 0;
@@ -191,6 +195,7 @@ public class Cost {
                 costCfc += costCfc(time, j, a, lambda_out, h);
             }
         }
+        costCfc = costCfc / (NUM_FOG_NODES * NUM_SERVICES);
 
         // cost of communication between fog nodes
         costCff = 0;
@@ -204,16 +209,19 @@ public class Cost {
                 }
             }
         }
+        costDep = costDep / (NUM_FOG_NODES * NUM_SERVICES);
+        
         // cost of violation
         costViol = 0;
         for (int a = 0; a < NUM_SERVICES; a++) {
-            costViol += costViol(time, a, Vper, q);
+            for (int j = 0; j < NUM_FOG_NODES; j++) {
+                costViol += costViol(time, a, j, Vper, q, lambda_in);
+            }
         }
-
-//        if (MainDelayCostViolRealTraceCombinedApp.printCost || MainDelayCostViolRealTraceCumulative.printCost) {
+        costViol = costViol / (NUM_FOG_NODES * NUM_SERVICES);
+        
 //            System.out.println("costPC " + (costPC) + " costPF " + (costPF) + " costSC " + (costSC) + " costSF " + (costSF)
 //                    + " costCff " + (costCff) + " costCfc " + (costCfc) + " costViol " + (costViol) + " costDep " + (costDep));
-//        }
         Double c = (costPC + costPF + costSC + costSF + costCff + costCfc + costViol + costDep);
         totalCost += c;
         totalSpentTime += time;
