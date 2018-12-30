@@ -1,5 +1,6 @@
 package Run;
 
+import Scheme.Parameters;
 import DTMC.DTMCconstructor;
 import DTMC.DTMCsimulator;
 import Scheme.ServiceCounter;
@@ -12,14 +13,20 @@ import Simulation.Violation;
  * 
  * @author Ashkan Y.
  */
-public class MainDelayCostViolDTMC {
+public class MainExperimentScalability {
 
     private final static int TOTAL_RUN = 75;
-    private final static int TAU = 15; // time interval between run of the method (s)
+    private final static int TAU = 10; // time interval between run of the method (s)
     private final static int TRAFFIC_CHANGE_INTERVAL = 5; // time interval between run of the method (s)
     
     public static void main(String[] args) {
 
+        Parameters.numCloudServers = 25;
+        Parameters.numFogNodes = 200;
+        Parameters.numServices = 100;
+        Traffic.TRAFFIC_ENLARGE_FACTOR = 100;
+        // Need to change penalty of violation to a higher number 
+        
         Parameters.TAU = TAU;
         Parameters.TRAFFIC_CHANGE_INTERVAL = TRAFFIC_CHANGE_INTERVAL;
         int q = Parameters.TAU / Parameters.TRAFFIC_CHANGE_INTERVAL; // the number of times that traffic changes between each run of the method
@@ -78,19 +85,19 @@ public class MainDelayCostViolDTMC {
             Traffic.setTrafficToGlobalTraffic(AllCloud);
             containersDeployedAllCloud = AllCloud.run(Traffic.COMBINED_APP_REGIONES, false);
             delayAllCloud = AllCloud.getAvgServiceDelay();
-            costAllCloud = AllCloud.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+            costAllCloud = AllCloud.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
             violAllCloud = Violation.getViolationPercentage(AllCloud);
             
             Traffic.setTrafficToGlobalTraffic(AllFog);
             containersDeployedAllFog = AllFog.run(Traffic.COMBINED_APP_REGIONES, false);
             delayAllFog = AllFog.getAvgServiceDelay();
-            costAllFog = AllFog.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+            costAllFog = AllFog.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
             violAllFog = Violation.getViolationPercentage(AllFog);
 
             Traffic.setTrafficToGlobalTraffic(FogStatic);
             containersDeployedFogStatic = FogStatic.run(Traffic.COMBINED_APP_REGIONES, false);
             delayFogStatic = FogStatic.getAvgServiceDelay();
-            costFogStatic = FogStatic.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+            costFogStatic = FogStatic.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
             violFogStatic = Violation.getViolationPercentage(FogStatic);
 
             Traffic.setTrafficToGlobalTraffic(FogDynamic);
@@ -98,13 +105,13 @@ public class MainDelayCostViolDTMC {
                 containersDeployedFogDynamic = FogDynamic.run(Traffic.COMBINED_APP_REGIONES, false);
             }
             delayFogDynamic = FogDynamic.getAvgServiceDelay();
-            costFogDynamic = FogDynamic.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+            costFogDynamic = FogDynamic.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
             violFogDynamic = Violation.getViolationPercentage(FogDynamic);
             
             Traffic.setTrafficToGlobalTraffic(FogStaticViolation);
             containersDeployedFogStaticViolation = FogStaticViolation.run(Traffic.COMBINED_APP_REGIONES, true);
             delayFogStaticViolation = FogStaticViolation.getAvgServiceDelay();
-            costFogStaticViolation = FogStaticViolation.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+            costFogStaticViolation = FogStaticViolation.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
             violFogStaticViolation = Violation.getViolationPercentage(FogStaticViolation);
 
             Traffic.setTrafficToGlobalTraffic(FogDynamicViolation);
@@ -112,7 +119,7 @@ public class MainDelayCostViolDTMC {
                 containersDeployedFogDynamicViolation = FogDynamicViolation.run(Traffic.COMBINED_APP_REGIONES, true);
             }
             delayFogDynamicViolation = FogDynamicViolation.getAvgServiceDelay();
-            costFogDynamicViolation = FogDynamicViolation.getCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+            costFogDynamicViolation = FogDynamicViolation.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
             violFogDynamicViolation = Violation.getViolationPercentage(FogDynamicViolation);
       
             System.out.println((trafficPerNodePerApp * Parameters.numFogNodes * Parameters.numServices) 

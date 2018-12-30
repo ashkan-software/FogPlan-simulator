@@ -1,6 +1,7 @@
 package Trace;
 
-import Run.Parameters;
+import Scheme.Parameters;
+import Simulation.Traffic;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -50,10 +51,10 @@ public class CumulativeTraceReader {
     private static void normalizeTraceTraffic() {
         findMinAndMax(trafficTrace);
         for (int i = 0; i < trafficTrace.size(); i++) {
-            trafficTrace.set(i, (trafficTrace.get(i) - min + SMOOTHING_NUMBER) / (max - min) * Parameters.TRAFFIC_NORM_FACTOR);
+            trafficTrace.set(i, (trafficTrace.get(i) - min + SMOOTHING_NUMBER) / (max - min) * Traffic.TRAFFIC_NORM_FACTOR);
         }
 
-        averageTrafficTrace = (averageTrafficTrace - min) / (max - min) * Parameters.TRAFFIC_NORM_FACTOR;
+        averageTrafficTrace = (averageTrafficTrace - min) / (max - min) * Traffic.TRAFFIC_NORM_FACTOR;
     }
 
     private static void findMinAndMax(ArrayList<Double> trace) {

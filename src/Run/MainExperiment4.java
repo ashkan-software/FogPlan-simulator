@@ -1,126 +1,127 @@
 package Run;
 
+import Scheme.Parameters;
 import DTMC.DTMCconstructor;
 import DTMC.DTMCsimulator;
 import Scheme.ServiceCounter;
 import Scheme.ServiceDeployScheme;
+import Simulation.Delay;
 import Simulation.Method;
 import Simulation.Traffic;
 import Simulation.Violation;
+import Utilities.Statistics;
 
 /**
- * 
- * @author Ashkan Y.
+ *
+ * @author Ashkan Y. This main class runs the scheme for different intervals of
+ * running the method in the scheme
  */
 public class MainExperiment4 {
 
-    private final static int TOTAL_RUN = 75;
-    private final static int TAU = 10; // time interval between run of the method (s)
-    private final static int TRAFFIC_CHANGE_INTERVAL = 5; // time interval between run of the method (s)
-    
-    public static void main(String[] args) {
+    private static int MAX_CHANGE_INTERVAL = 200;
+    private final static int TRAFFIC_CHANGE_INTERVAL = 10; // time interval between run of the method (s)
+    private static int MIN_CHANGE_INTERVAL = 10;
 
-        Parameters.TAU = TAU;
-        Parameters.TRAFFIC_CHANGE_INTERVAL = TRAFFIC_CHANGE_INTERVAL;
-        int q = Parameters.TAU / Parameters.TRAFFIC_CHANGE_INTERVAL; // the number of times that traffic changes between each run of the method
-        Parameters.initialize();
-        
-        
+    private final static int TOTAL_RUN = 600;
+
+    public static void main(String[] args) {
+        Parameters.numCloudServers = 3;
+        Parameters.numFogNodes = 10;
+        Parameters.numServices = 50;
+
+        Traffic.TRAFFIC_ENLARGE_FACTOR = 100;
+
         DTMCconstructor dtmcConstructor = new DTMCconstructor();
         DTMCsimulator trafficRateSetter = new DTMCsimulator(dtmcConstructor.dtmc);
-        
 
-        Method AllCloud = new Method(new ServiceDeployScheme(ServiceDeployScheme.ALL_CLOUD), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
-        Method AllFog = new Method(new ServiceDeployScheme(ServiceDeployScheme.ALL_FOG), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
-        Method FogStatic = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_STATIC, dtmcConstructor.getAverageTrafficRate()), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        int q;
+        // the number of times that traffic changes between each run of the method
+        Parameters.TRAFFIC_CHANGE_INTERVAL = TRAFFIC_CHANGE_INTERVAL;
+        Parameters.initialize();
+
         Method FogDynamic = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
-        
-        Method FogStaticViolation = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_STATIC, dtmcConstructor.getAverageTrafficRate()), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
         Method FogDynamicViolation = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
-        
-        ServiceCounter containersDeployedAllCloud = null;
-        ServiceCounter containersDeployedAllFog = null;
-        ServiceCounter containersDeployedFogStatic = null;
-        ServiceCounter containersDeployedFogDynamic = null ;
-        ServiceCounter containersDeployedFogStaticViolation = null ;
-        ServiceCounter containersDeployedFogDynamicViolation = null;
 
-        double delayAllCloud = 0;
-        double delayAllFog = 0;
-        double delayFogStatic = 0;
-        double delayFogDynamic = 0;
-        double delayFogStaticViolation = 0;
-        double delayFogDynamicViolation = 0;
+        ServiceCounter FDserviceCounter, FDVserviceCounter;
 
-        double costAllCloud = 0;
-        double costAllFog = 0;
-        double costFogStatic = 0;
-        double costFogDynamic = 0;
-        double costFogStaticViolation = 0;
-        double costFogDynamicViolation = 0;
+        double[] fogContainersDeployedFogDynamic = new double[TOTAL_RUN]; // used for getting average
+        double[] cloudContainersDeployedFogDynamic = new double[TOTAL_RUN]; // used for getting average
+        double[] delayFogDynamic = new double[TOTAL_RUN]; // used for getting average
+        double[] costFogDynamic = new double[TOTAL_RUN]; // used for getting average
+        double[] violFogDynamic = new double[TOTAL_RUN]; // used for getting average
 
-        double violAllCloud = 0;
-        double violAllFog = 0;
-        double violFogStatic = 0;
-        double violFogDynamic = 0;
-        double violFogStaticViolation = 0;
-        double violFogDynamicViolation = 0;
+        double[] fogContainersDeployedFogDynamicViolation = new double[TOTAL_RUN]; // used for getting average
+        double[] cloudContainersDeployedFogDynamicViolation = new double[TOTAL_RUN]; // used for getting average
+        double[] delayFogDynamicViolation = new double[TOTAL_RUN]; // used for getting average
+        double[] costFogDynamicViolation = new double[TOTAL_RUN]; // used for getting average
+        double[] violFogDynamicViolation = new double[TOTAL_RUN]; // used for getting average
+
+        double sumTrafficPerNodePerApp = 0d; // used for getting average
 
         double violationSlack = Violation.getViolationSlack();
         double trafficPerNodePerApp;
 
-        System.out.println("Traffic\tD(AC)\tD(AF)\tD(FS)\tD(FD)\tD(FSV)\tD(FDV)\tC(AC)\tC(AF)\tC(FS)\tC(FD)\tC(FSV)\tC(FDV)\tCNT(AC)\tCNT(AF)\tCNT(FS)\tCNT(FD)\tCNT(FSV)\tCNT(FDV)\tV(AC)\tV(AF)\tV(FS)\tV(FD)\tV(FSV)\tV(FDV)\tVS=" + violationSlack);
-        for (int i = 0; i < TOTAL_RUN; i++) {
-            trafficPerNodePerApp = trafficRateSetter.nextRate();
-            
-            Traffic.distributeTraffic(trafficPerNodePerApp);
+        System.out.println("Tau\tTraffic\tDelay\tCost\tContainer\tViol\tDelay(Vonly)\tCost(Vonly)\tContainer(Vonly)\tViol(Vonly)\tViol_Slack=" + violationSlack + "\tThresh=" + Delay.getThresholdAverage());
+        for (int Tau = MIN_CHANGE_INTERVAL; Tau <= MAX_CHANGE_INTERVAL; Tau += 5) {
 
-            Traffic.setTrafficToGlobalTraffic(AllCloud);
-            containersDeployedAllCloud = AllCloud.run(Traffic.COMBINED_APP_REGIONES, false);
-            delayAllCloud = AllCloud.getAvgServiceDelay();
-            costAllCloud = AllCloud.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
-            violAllCloud = Violation.getViolationPercentage(AllCloud);
-            
-            Traffic.setTrafficToGlobalTraffic(AllFog);
-            containersDeployedAllFog = AllFog.run(Traffic.COMBINED_APP_REGIONES, false);
-            delayAllFog = AllFog.getAvgServiceDelay();
-            costAllFog = AllFog.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
-            violAllFog = Violation.getViolationPercentage(AllFog);
+            Parameters.TAU = Tau;
+            q = Parameters.TAU / Parameters.TRAFFIC_CHANGE_INTERVAL;
 
-            Traffic.setTrafficToGlobalTraffic(FogStatic);
-            containersDeployedFogStatic = FogStatic.run(Traffic.COMBINED_APP_REGIONES, false);
-            delayFogStatic = FogStatic.getAvgServiceDelay();
-            costFogStatic = FogStatic.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
-            violFogStatic = Violation.getViolationPercentage(FogStatic);
+            for (int i = 0; i < TOTAL_RUN; i++) {
+                trafficPerNodePerApp = trafficRateSetter.nextRate();
+                Traffic.distributeTraffic(trafficPerNodePerApp);
+                sumTrafficPerNodePerApp += trafficPerNodePerApp;
 
-            Traffic.setTrafficToGlobalTraffic(FogDynamic);
-            if (i % q == 0) {
-                containersDeployedFogDynamic = FogDynamic.run(Traffic.COMBINED_APP_REGIONES, false);
+                Traffic.setTrafficToGlobalTraffic(FogDynamic);
+                Traffic.setTrafficToGlobalTraffic(FogDynamicViolation);
+                if (i % q == 0) {
+                    FDserviceCounter = FogDynamic.run(Traffic.COMBINED_APP_REGIONES, false);
+                    FDVserviceCounter = FogDynamicViolation.run(Traffic.COMBINED_APP_REGIONES, true);
+
+                    fogContainersDeployedFogDynamic[i] = FDserviceCounter.getDeployedFogServices();
+                    cloudContainersDeployedFogDynamic[i] = FDserviceCounter.getDeployedCloudServices();
+
+                    fogContainersDeployedFogDynamicViolation[i] = FDVserviceCounter.getDeployedFogServices();
+                    cloudContainersDeployedFogDynamicViolation[i] = FDVserviceCounter.getDeployedCloudServices();
+                }
+                delayFogDynamic[i] = FogDynamic.getAvgServiceDelay();
+                costFogDynamic[i] = FogDynamic.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+                violFogDynamic[i] = Violation.getViolationPercentage(FogDynamic);
+
+                delayFogDynamicViolation[i] = FogDynamicViolation.getAvgServiceDelay();
+                costFogDynamicViolation[i] = FogDynamicViolation.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
+                violFogDynamicViolation[i] = Violation.getViolationPercentage(FogDynamicViolation);
             }
-            delayFogDynamic = FogDynamic.getAvgServiceDelay();
-            costFogDynamic = FogDynamic.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
-            violFogDynamic = Violation.getViolationPercentage(FogDynamic);
-            
-            Traffic.setTrafficToGlobalTraffic(FogStaticViolation);
-            containersDeployedFogStaticViolation = FogStaticViolation.run(Traffic.COMBINED_APP_REGIONES, true);
-            delayFogStaticViolation = FogStaticViolation.getAvgServiceDelay();
-            costFogStaticViolation = FogStaticViolation.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
-            violFogStaticViolation = Violation.getViolationPercentage(FogStaticViolation);
 
-            Traffic.setTrafficToGlobalTraffic(FogDynamicViolation);
-            if (i % q == 0) {
-                containersDeployedFogDynamicViolation = FogDynamicViolation.run(Traffic.COMBINED_APP_REGIONES, true);
+            System.out.print(Parameters.TAU + "\t" + ((sumTrafficPerNodePerApp * Parameters.numFogNodes * Parameters.numServices) / (TOTAL_RUN))
+                    + "\t" + Statistics.findAverageOfArray(delayFogDynamic)
+                    + "\t" + (Statistics.findAverageOfArray(costFogDynamic) / Parameters.TRAFFIC_CHANGE_INTERVAL)
+                    + "\t" + Statistics.findAverageOfArray(fogContainersDeployedFogDynamic)
+                    + "\t" + Statistics.findAverageOfArray(cloudContainersDeployedFogDynamic)
+                    + "\t" + Statistics.findAverageOfArray(violFogDynamic)
+                    + "\t" + Statistics.findAverageOfArray(delayFogDynamicViolation)
+                    + "\t" + (Statistics.findAverageOfArray(costFogDynamicViolation) / Parameters.TRAFFIC_CHANGE_INTERVAL)
+                    + "\t" + Statistics.findAverageOfArray(fogContainersDeployedFogDynamicViolation)
+                    + "\t" + Statistics.findAverageOfArray(cloudContainersDeployedFogDynamicViolation)
+                    + "\t" + Statistics.findAverageOfArray(violFogDynamicViolation)
+            );
+
+            if (Tau % 20 == 0) {
+                System.out.print(
+                        "\t" + Statistics.findStandardDeviationOfArray(delayFogDynamic)
+                        + "\t" + (Statistics.findStandardDeviationOfArray(costFogDynamic) / Parameters.TRAFFIC_CHANGE_INTERVAL)
+                        + "\t" + Statistics.findStandardDeviationOfArray(fogContainersDeployedFogDynamic)
+                        + "\t" + Statistics.findStandardDeviationOfArray(cloudContainersDeployedFogDynamic)
+                        + "\t" + Statistics.findStandardDeviationOfArray(violFogDynamic)
+                        + "\t" + Statistics.findStandardDeviationOfArray(delayFogDynamicViolation)
+                        + "\t" + (Statistics.findStandardDeviationOfArray(costFogDynamicViolation) / Parameters.TRAFFIC_CHANGE_INTERVAL)
+                        + "\t" + Statistics.findStandardDeviationOfArray(fogContainersDeployedFogDynamicViolation)
+                        + "\t" + Statistics.findStandardDeviationOfArray(cloudContainersDeployedFogDynamicViolation)
+                        + "\t" + Statistics.findStandardDeviationOfArray(violFogDynamicViolation)
+                );
             }
-            delayFogDynamicViolation = FogDynamicViolation.getAvgServiceDelay();
-            costFogDynamicViolation = FogDynamicViolation.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
-            violFogDynamicViolation = Violation.getViolationPercentage(FogDynamicViolation);
-      
-            System.out.println((trafficPerNodePerApp * Parameters.numFogNodes * Parameters.numServices) 
-                    + "\t" + delayAllCloud + "\t" + delayAllFog + "\t" + delayFogStatic + "\t" + delayFogDynamic + "\t" + delayFogStaticViolation + "\t" + delayFogDynamicViolation
-                    + "\t" + (costAllCloud / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costAllFog / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogStatic / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogDynamic / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogStaticViolation / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogDynamicViolation / Parameters.TRAFFIC_CHANGE_INTERVAL)
-                    + "\t" + containersDeployedAllCloud.getDeployedFogServices() + "\t" + containersDeployedAllFog.getDeployedFogServices() + "\t" + containersDeployedFogStatic.getDeployedFogServices() + "\t" + containersDeployedFogDynamic.getDeployedFogServices() + "\t" + containersDeployedFogStaticViolation.getDeployedFogServices() + "\t" + containersDeployedFogDynamicViolation.getDeployedFogServices()
-                    + "\t" + containersDeployedAllCloud.getDeployedCloudServices() + "\t" + containersDeployedAllFog.getDeployedCloudServices() + "\t" + containersDeployedFogStatic.getDeployedCloudServices() + "\t" + containersDeployedFogDynamic.getDeployedCloudServices() + "\t" + containersDeployedFogStaticViolation.getDeployedCloudServices() + "\t" + containersDeployedFogDynamicViolation.getDeployedCloudServices()
-                    + "\t" + violAllCloud + "\t" + violAllFog + "\t" + violFogStatic + "\t" + violFogDynamic+ "\t" + violFogStaticViolation + "\t" + violFogDynamicViolation);
+            System.out.println("");
+            sumTrafficPerNodePerApp = 0d;
 
         }
     }

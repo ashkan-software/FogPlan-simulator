@@ -1,5 +1,6 @@
 package Run;
 
+import Scheme.Parameters;
 import Scheme.ServiceCounter;
 import Scheme.ServiceDeployScheme;
 import Simulation.Method;
@@ -26,6 +27,11 @@ public class MainExperiment1 {
     
     public static void main(String[] args) throws FileNotFoundException {
 
+        Parameters.numCloudServers = 3;
+        Parameters.numFogNodes = 10;
+        Parameters.numServices = 40;
+        Traffic.TRAFFIC_ENLARGE_FACTOR = 5;
+        
         ArrayList<Double> traceList = CumulativeTraceReader.readTrafficFromFile();
 
         TOTAL_RUN = traceList.size();

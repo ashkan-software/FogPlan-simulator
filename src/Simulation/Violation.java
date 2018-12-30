@@ -1,6 +1,6 @@
 package Simulation;
 
-import Run.Parameters;
+import Scheme.Parameters;
 
 /**
  *

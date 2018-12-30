@@ -5,7 +5,7 @@
  */
 package Simulation;
 
-import Run.Parameters;
+import Scheme.Parameters;
 import Utilities.ArrayFiller;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -18,6 +18,8 @@ import java.util.List;
  * This class has the functions and variables related to calculating delay
  */
 public class Traffic {
+    
+    public static double TRAFFIC_NORM_FACTOR = Parameters.KP_min / (Parameters.numServices * Parameters.L_P_max);
 
     protected double lambda_in[][]; // lambda^in_aj
     protected double lambdap_in[][]; // lambda'^in_ak
@@ -31,7 +33,7 @@ public class Traffic {
     public static int COMBINED_APP = 2;
     public static int NOT_COMBINED = 3;
 
-    private static final int TRAFFIC_ENLARGE_FACTOR = Parameters.numServices * Parameters.numFogNodes; // since the traffic is read from the tracefiles, its value might be small. This factor will enlarge the vlaue of the traffic
+    public static int TRAFFIC_ENLARGE_FACTOR = 1; // since the traffic is read from the tracefiles, its value might be small. This factor will enlarge the vlaue of the traffic
 
     public Traffic() {
         lambda_in = new double[Parameters.numServices][Parameters.numFogNodes];
@@ -58,7 +60,7 @@ public class Traffic {
     }
 
     /**
-     * gets incoming traffic to all fog nodes for all services
+     * gets incoming traffic to all fog nodes for a given service
      *
      * @param a index of a given service
      * @return returns an array of FogTrafficIndex, for a given service
@@ -144,7 +146,6 @@ public class Traffic {
     protected static void initializeAvgTrafficForStaticFogPlacementFirstTimePerFogNode(Method method) {
         distributeTraffic(method.scheme.averageRateOfCombinedAppTrafficPerNode, method.traffic.lambda_in);
         enlargeTraffic(method);
-        printTraffic(method);
     }
 
     /**

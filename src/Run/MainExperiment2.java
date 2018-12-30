@@ -1,5 +1,6 @@
 package Run;
 
+import Scheme.Parameters;
 import Scheme.ServiceCounter;
 import Scheme.ServiceDeployScheme;
 import Simulation.Method;
@@ -11,28 +12,31 @@ import java.util.ArrayList;
 
 /**
  *
- * @author Ashkan Y. 
+ * @author Ashkan Y.
  */
 public class MainExperiment2 {
 
-    private static int TOTAL_RUN ; 
-    
+    private static int TOTAL_RUN;
+
     private static int index = 0;
-    
+
     private final static int TAU = 120; // time interval between run of the method (s)
     private final static int TRAFFIC_CHANGE_INTERVAL = 60; // time interval between run of the method (s)
 
-    
     public static void main(String[] args) throws FileNotFoundException {
+
+        Parameters.numCloudServers = 3;
+        Parameters.numFogNodes = 10;
+        Parameters.numServices = 2;
+        Traffic.TRAFFIC_ENLARGE_FACTOR = 10;
 
         ArrayList<Double[]> traceList = CombinedAppTraceReader.readTrafficFromFile();
 
-        
         TOTAL_RUN = traceList.size(); // 4 hours of trace
         Parameters.TAU = TAU;
         Parameters.TRAFFIC_CHANGE_INTERVAL = TRAFFIC_CHANGE_INTERVAL;
         Parameters.initialize();
-        
+
         int q = TAU / TRAFFIC_CHANGE_INTERVAL; // the number of times that traffic changes between each run of the method
 
         Method AllCloud = new Method(new ServiceDeployScheme(ServiceDeployScheme.ALL_CLOUD), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
@@ -41,12 +45,12 @@ public class MainExperiment2 {
         Method FogDynamic = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
         Method FogDynamicViol = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
         Method optimalPlacement = new Method(new ServiceDeployScheme(ServiceDeployScheme.OPTIMAL), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
-        
+
         ServiceCounter containersDeployedAllCloud = null;
         ServiceCounter containersDeployedAllFog = null;
         ServiceCounter containersDeployedFogStatic = null;
-        ServiceCounter containersDeployedFogDynamic = null ;
-        ServiceCounter containersDeployedFogDynamicViol = null ;
+        ServiceCounter containersDeployedFogDynamic = null;
+        ServiceCounter containersDeployedFogDynamicViol = null;
         ServiceCounter containersDeployedOptimalPlacement = null;
 
         double delayAllCloud = 0;
@@ -103,8 +107,7 @@ public class MainExperiment2 {
             delayFogDynamic = FogDynamic.getAvgServiceDelay();
             costFogDynamic = FogDynamic.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
             violFogDynamic = Violation.getViolationPercentage(FogDynamic);
-            
-            
+
             Traffic.setTrafficToGlobalTraffic(FogDynamicViol);
             if (i % q == 0) {
                 containersDeployedFogDynamicViol = FogDynamicViol.run(Traffic.COMBINED_APP, true);
@@ -118,25 +121,24 @@ public class MainExperiment2 {
             delayOptimalPlacement = optimalPlacement.getAvgServiceDelay();
             costOptimalPlacement = optimalPlacement.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
             violOptimalPlacement = Violation.getViolationPercentage(optimalPlacement);
-            
-            
+
             System.out.println((totalTraffic(combinedTrafficPerFogNode) * Parameters.numServices) + "\t" + delayAllCloud + "\t" + delayAllFog + "\t" + delayFogStatic + "\t" + delayFogDynamic + "\t" + delayFogDynamicViol + "\t" + delayOptimalPlacement
-                    + "\t" + (costAllCloud / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costAllFog / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogStatic / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogDynamic / Parameters.TRAFFIC_CHANGE_INTERVAL)  + "\t" + (costFogDynamicViol / Parameters.TRAFFIC_CHANGE_INTERVAL)  + "\t" + (costOptimalPlacement / Parameters.TRAFFIC_CHANGE_INTERVAL)
+                    + "\t" + (costAllCloud / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costAllFog / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogStatic / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogDynamic / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogDynamicViol / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costOptimalPlacement / Parameters.TRAFFIC_CHANGE_INTERVAL)
                     + "\t" + containersDeployedAllCloud.getDeployedFogServices() + "\t" + containersDeployedAllFog.getDeployedFogServices() + "\t" + containersDeployedFogStatic.getDeployedFogServices() + "\t" + containersDeployedFogDynamic.getDeployedFogServices() + "\t" + containersDeployedFogDynamicViol.getDeployedFogServices() + "\t" + containersDeployedOptimalPlacement.getDeployedFogServices()
                     + "\t" + containersDeployedAllCloud.getDeployedCloudServices() + "\t" + containersDeployedAllFog.getDeployedCloudServices() + "\t" + containersDeployedFogStatic.getDeployedCloudServices() + "\t" + containersDeployedFogDynamic.getDeployedCloudServices() + "\t" + containersDeployedFogDynamicViol.getDeployedCloudServices() + "\t" + containersDeployedOptimalPlacement.getDeployedCloudServices()
                     + "\t" + violAllCloud + "\t" + violAllFog + "\t" + violFogStatic + "\t" + violFogDynamic + "\t" + violFogDynamicViol + "\t" + violOptimalPlacement);
 
         }
     }
-    
-    private static Double[] nextRate(ArrayList<Double[]> traceList){
+
+    private static Double[] nextRate(ArrayList<Double[]> traceList) {
         return traceList.get(index++);
     }
 
-     private static double totalTraffic(Double[] traffic){
+    private static double totalTraffic(Double[] traffic) {
         double sum = 0;
         for (int j = 0; j < traffic.length; j++) {
-                sum += traffic[j];
+            sum += traffic[j];
         }
         return sum;
     }

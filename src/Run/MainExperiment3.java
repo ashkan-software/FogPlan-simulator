@@ -1,5 +1,6 @@
 package Run;
 
+import Scheme.Parameters;
 import Scheme.ServiceCounter;
 import Scheme.ServiceDeployScheme;
 import Simulation.Delay;
@@ -7,6 +8,7 @@ import Simulation.Method;
 import Simulation.Traffic;
 import Simulation.Violation;
 import Trace.CombinedAppTraceReader;
+import Utilities.Statistics;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
@@ -28,6 +30,11 @@ public class MainExperiment3 {
 
     public static void main(String[] args) throws FileNotFoundException {
 
+        Parameters.numCloudServers = 3;
+        Parameters.numFogNodes = 10;
+        Parameters.numServices = 20;
+        Traffic.TRAFFIC_ENLARGE_FACTOR = 10;
+        
         Parameters.TAU = TAU;
         Parameters.TRAFFIC_CHANGE_INTERVAL = TRAFFIC_CHANGE_INTERVAL;
         int q = Parameters.TAU / Parameters.TRAFFIC_CHANGE_INTERVAL;
@@ -165,19 +172,18 @@ public class MainExperiment3 {
             }
 
             System.out.print(threshold + "\t" + ((sumTrafficPerNodePerApp * Parameters.numFogNodes * Parameters.numServices) / (TOTAL_RUN))
-                    + "\t" + (findAverageOfArray(delayAllCloud)) + "\t" + (findAverageOfArray(delayAllFog)) + "\t" + (findAverageOfArray(delayFogStatic)) + "\t" + (findAverageOfArray(delayFogDynamic)) + "\t" + (findAverageOfArray(delayFogStaticViolation)) + "\t" + (findAverageOfArray(delayFogDynamicViolation))
-                    + "\t" + ((findAverageOfArray(costAllCloud) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findAverageOfArray(costAllFog) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findAverageOfArray(costFogStatic) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findAverageOfArray(costFogDynamic) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findAverageOfArray(costFogStaticViolation) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findAverageOfArray(costFogDynamicViolation) / Parameters.TRAFFIC_CHANGE_INTERVAL))
-                    + "\t" + (findAverageOfArray(fogcontainersDeployedAllCloud)) + "\t" + (findAverageOfArray(fogcontainersDeployedAllFog)) + "\t" + (findAverageOfArray(fogcontainersDeployedFogStatic)) + "\t" + (findAverageOfArray(fogcontainersDeployedFogDynamic)) + "\t" + (findAverageOfArray(fogcontainersDeployedFogStaticViolation)) + "\t" + (findAverageOfArray(fogcontainersDeployedFogDynamicViolation))
-                    + "\t" + (findAverageOfArray(cloudcontainersDeployedAllCloud)) + "\t" + (findAverageOfArray(cloudcontainersDeployedAllFog)) + "\t" + (findAverageOfArray(cloudcontainersDeployedFogStatic)) + "\t" + (findAverageOfArray(cloudcontainersDeployedFogDynamic)) + "\t" + (findAverageOfArray(cloudcontainersDeployedFogStaticViolation)) + "\t" + (findAverageOfArray(cloudcontainersDeployedFogDynamicViolation))
-                    + "\t" + (findAverageOfArray(violAllCloud)) + "\t" + (findAverageOfArray(violAllFog)) + "\t" + (findAverageOfArray(violFogStatic)) + "\t" + (findAverageOfArray(violFogDynamic)) + "\t" + (findAverageOfArray(violFogStaticViolation)) + "\t" + (findAverageOfArray(violFogDynamicViolation)));
+                    + "\t" + (Statistics.findAverageOfArray(delayAllCloud)) + "\t" + (Statistics.findAverageOfArray(delayAllFog)) + "\t" + (Statistics.findAverageOfArray(delayFogStatic)) + "\t" + (Statistics.findAverageOfArray(delayFogDynamic)) + "\t" + (Statistics.findAverageOfArray(delayFogStaticViolation)) + "\t" + (Statistics.findAverageOfArray(delayFogDynamicViolation))
+                    + "\t" + ((Statistics.findAverageOfArray(costAllCloud) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((Statistics.findAverageOfArray(costAllFog) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((Statistics.findAverageOfArray(costFogStatic) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((Statistics.findAverageOfArray(costFogDynamic) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((Statistics.findAverageOfArray(costFogStaticViolation) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((Statistics.findAverageOfArray(costFogDynamicViolation) / Parameters.TRAFFIC_CHANGE_INTERVAL))
+                    + "\t" + (Statistics.findAverageOfArray(fogcontainersDeployedAllCloud)) + "\t" + (Statistics.findAverageOfArray(fogcontainersDeployedAllFog)) + "\t" + (Statistics.findAverageOfArray(fogcontainersDeployedFogStatic)) + "\t" + (Statistics.findAverageOfArray(fogcontainersDeployedFogDynamic)) + "\t" + (Statistics.findAverageOfArray(fogcontainersDeployedFogStaticViolation)) + "\t" + (Statistics.findAverageOfArray(fogcontainersDeployedFogDynamicViolation))
+                    + "\t" + (Statistics.findAverageOfArray(cloudcontainersDeployedAllCloud)) + "\t" + (Statistics.findAverageOfArray(cloudcontainersDeployedAllFog)) + "\t" + (Statistics.findAverageOfArray(cloudcontainersDeployedFogStatic)) + "\t" + (Statistics.findAverageOfArray(cloudcontainersDeployedFogDynamic)) + "\t" + (Statistics.findAverageOfArray(cloudcontainersDeployedFogStaticViolation)) + "\t" + (Statistics.findAverageOfArray(cloudcontainersDeployedFogDynamicViolation))
+                    + "\t" + (Statistics.findAverageOfArray(violAllCloud)) + "\t" + (Statistics.findAverageOfArray(violAllFog)) + "\t" + (Statistics.findAverageOfArray(violFogStatic)) + "\t" + (Statistics.findAverageOfArray(violFogDynamic)) + "\t" + (Statistics.findAverageOfArray(violFogStaticViolation)) + "\t" + (Statistics.findAverageOfArray(violFogDynamicViolation)));
 
             if (threshold % 5 == 0) {
-                System.out.print(
-                        "\t" + (findStandardDeviationOfArray(delayAllCloud)) + "\t" + (findStandardDeviationOfArray(delayAllFog)) + "\t" + (findStandardDeviationOfArray(delayFogStatic)) + "\t" + (findStandardDeviationOfArray(delayFogDynamic)) + "\t" + (findStandardDeviationOfArray(delayFogStaticViolation)) + "\t" + (findStandardDeviationOfArray(delayFogDynamicViolation))
-                        + "\t" + ((findStandardDeviationOfArray(costAllCloud) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findStandardDeviationOfArray(costAllFog) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findStandardDeviationOfArray(costFogStatic) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findStandardDeviationOfArray(costFogDynamic) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findStandardDeviationOfArray(costFogStaticViolation) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((findStandardDeviationOfArray(costFogDynamicViolation) / Parameters.TRAFFIC_CHANGE_INTERVAL))
-                        + "\t" + (findStandardDeviationOfArray(fogcontainersDeployedAllCloud)) + "\t" + (findStandardDeviationOfArray(fogcontainersDeployedAllFog)) + "\t" + (findStandardDeviationOfArray(fogcontainersDeployedFogStatic)) + "\t" + (findStandardDeviationOfArray(fogcontainersDeployedFogDynamic)) + "\t" + (findStandardDeviationOfArray(fogcontainersDeployedFogStaticViolation)) + "\t" + (findStandardDeviationOfArray(fogcontainersDeployedFogDynamicViolation))
-                        + "\t" + (findStandardDeviationOfArray(cloudcontainersDeployedAllCloud)) + "\t" + (findStandardDeviationOfArray(cloudcontainersDeployedAllFog)) + "\t" + (findStandardDeviationOfArray(cloudcontainersDeployedFogStatic)) + "\t" + (findStandardDeviationOfArray(cloudcontainersDeployedFogDynamic)) + "\t" + (findStandardDeviationOfArray(cloudcontainersDeployedFogStaticViolation)) + "\t" + (findStandardDeviationOfArray(cloudcontainersDeployedFogDynamicViolation))
-                        + "\t" + (findStandardDeviationOfArray(violAllCloud)) + "\t" + (findStandardDeviationOfArray(violAllFog)) + "\t" + (findStandardDeviationOfArray(violFogStatic)) + "\t" + (findStandardDeviationOfArray(violFogDynamic)) + "\t" + (findStandardDeviationOfArray(violFogStaticViolation)) + "\t" + (findStandardDeviationOfArray(violFogDynamicViolation))
+                System.out.print("\t" + (Statistics.findStandardDeviationOfArray(delayAllCloud)) + "\t" + (Statistics.findStandardDeviationOfArray(delayAllFog)) + "\t" + (Statistics.findStandardDeviationOfArray(delayFogStatic)) + "\t" + (Statistics.findStandardDeviationOfArray(delayFogDynamic)) + "\t" + (Statistics.findStandardDeviationOfArray(delayFogStaticViolation)) + "\t" + (Statistics.findStandardDeviationOfArray(delayFogDynamicViolation))
+                        + "\t" + ((Statistics.findStandardDeviationOfArray(costAllCloud) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((Statistics.findStandardDeviationOfArray(costAllFog) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((Statistics.findStandardDeviationOfArray(costFogStatic) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((Statistics.findStandardDeviationOfArray(costFogDynamic) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((Statistics.findStandardDeviationOfArray(costFogStaticViolation) / Parameters.TRAFFIC_CHANGE_INTERVAL)) + "\t" + ((Statistics.findStandardDeviationOfArray(costFogDynamicViolation) / Parameters.TRAFFIC_CHANGE_INTERVAL))
+                        + "\t" + (Statistics.findStandardDeviationOfArray(fogcontainersDeployedAllCloud)) + "\t" + (Statistics.findStandardDeviationOfArray(fogcontainersDeployedAllFog)) + "\t" + (Statistics.findStandardDeviationOfArray(fogcontainersDeployedFogStatic)) + "\t" + (Statistics.findStandardDeviationOfArray(fogcontainersDeployedFogDynamic)) + "\t" + (Statistics.findStandardDeviationOfArray(fogcontainersDeployedFogStaticViolation)) + "\t" + (Statistics.findStandardDeviationOfArray(fogcontainersDeployedFogDynamicViolation))
+                        + "\t" + (Statistics.findStandardDeviationOfArray(cloudcontainersDeployedAllCloud)) + "\t" + (Statistics.findStandardDeviationOfArray(cloudcontainersDeployedAllFog)) + "\t" + (Statistics.findStandardDeviationOfArray(cloudcontainersDeployedFogStatic)) + "\t" + (Statistics.findStandardDeviationOfArray(cloudcontainersDeployedFogDynamic)) + "\t" + (Statistics.findStandardDeviationOfArray(cloudcontainersDeployedFogStaticViolation)) + "\t" + (Statistics.findStandardDeviationOfArray(cloudcontainersDeployedFogDynamicViolation))
+                        + "\t" + (Statistics.findStandardDeviationOfArray(violAllCloud)) + "\t" + (Statistics.findStandardDeviationOfArray(violAllFog)) + "\t" + (Statistics.findStandardDeviationOfArray(violFogStatic)) + "\t" + (Statistics.findStandardDeviationOfArray(violFogDynamic)) + "\t" + (Statistics.findStandardDeviationOfArray(violFogStaticViolation)) + "\t" + (Statistics.findStandardDeviationOfArray(violFogDynamicViolation))
                 );
             }
             System.out.println("");
@@ -198,20 +204,5 @@ public class MainExperiment3 {
         return sum;
     }
 
-    private static double findAverageOfArray(double[] input) {
-        double sum = 0;
-        for (int i = 0; i < input.length; i++) {
-            sum += input[i];
-        }
-        return (sum / input.length);
-    }
 
-    private static double findStandardDeviationOfArray(double[] input) {
-        double average = findAverageOfArray(input);
-        double sumSquare = 0;
-        for (int i = 0; i < input.length; i++) {
-            sumSquare += Math.pow((input[i] - average), 2);
-        }
-        return Math.sqrt(sumSquare / (input.length - 1));
-    }
 }

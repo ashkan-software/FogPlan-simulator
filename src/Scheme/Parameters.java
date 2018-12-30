@@ -1,6 +1,7 @@
-package Run;
+package Scheme;
 
 import Simulation.Cost;
+import Simulation.Traffic;
 import Utilities.ArrayFiller;
 import Utilities.Factorial;
 import Utilities.ReverseMap;
@@ -15,10 +16,10 @@ public class Parameters {
     public static int TAU; // time interval between run of the method (s)
     public static int TRAFFIC_CHANGE_INTERVAL; // time interval between run of the method (s)
 
-    public final static int numCloudServers = 3; // opt 3. DTMC 25. threshold 3
-    public final static int numFogNodes = 10; // opt 10. DTMC 100 (last:200). threshold 10
-    public final static int numServices = 40; // opt 2. DTMC 50 (last:100). threshold 20
-    
+    public static int numCloudServers; // opt 3. DTMC 25. threshold 3
+    public static int numFogNodes; // opt 10. DTMC 100 (last:200). threshold 10
+    public static int numServices; // opt 2. DTMC 50 (last:100). threshold 20
+
     public static double[] ServiceTrafficPercentage;
 
     public static double th[]; // threshold
@@ -45,8 +46,6 @@ public class Parameters {
     public final static double KP_min = 800d;
     public final static double L_P_max = 200d;
 
-    public final static double TRAFFIC_NORM_FACTOR = KP_min / (numServices * L_P_max);
-
     public static int CONTAINER_INIT_DELAY = 50; // 50 ms -> CONTAINER-AS-A-SERVICE AT THE EDGE: TRADE- OFF BETWEEN ENERGY EFFICIENCY AND SERVICE AVAILABILITY AT FOG NANO DATA CENTERS
 
     public static int[][] h; //index of the cloud server to which the traffic for service a is routed from fog node j
@@ -63,6 +62,7 @@ public class Parameters {
     public static double rFContr[]; // transmission rate from fog node j to the fog service controller
 
     private static Cost cost;
+
 
     public static void initialize() {
 

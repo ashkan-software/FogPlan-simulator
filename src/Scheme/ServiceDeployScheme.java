@@ -1,7 +1,6 @@
 
 package Scheme;
 
-import Run.Parameters;
 import Utilities.ArrayFiller;
 
 /**

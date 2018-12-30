@@ -1,6 +1,6 @@
 package Simulation;
 
-import Run.Parameters;
+import Scheme.Parameters;
 import Scheme.ServiceCounter;
 import Scheme.ServiceDeployScheme;
 import java.util.Collections;
@@ -338,6 +338,8 @@ public class Method {
         costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, j, Violation.calcVper(a, j, fogTrafficPercentage, this), Parameters.q, fogTrafficPercentage, traffic.lambda_in);
         futureSavings = costPF + costSF + costViolPerFogNode;
 
+        
+//         System.out.println( " pf" + costPF + " sf"+ costSF + " viol"+costViolPerFogNode);
         // Now if we were to release, this is the loss we would pay
         int k = Parameters.h[a][j];
         releaseFogServiceSafely(a, j);
@@ -350,6 +352,8 @@ public class Method {
         costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, j, Violation.calcVper(a, j, fogTrafficPercentage, this), Parameters.q, fogTrafficPercentage, traffic.lambda_in);
         futureCost = costCfc + costExtraPC + costExtraSC + costViolPerFogNode;
 
+//        System.out.println("cfc" + costCfc + " pc" + costExtraPC + " sc"+ costExtraSC + " viol"+costViolPerFogNode);
+        
         x[a][j] = 1; // revert this back to what it was
         d[a][j] = delay.calcServiceDelay(a, j); // revert things back to what they were
         if (futureSavings > futureCost) {
