@@ -44,10 +44,10 @@ public class Delay {
         PQp = new double[Parameters.numServices][Parameters.numCloudServers];
         
         for (int j = 0; j < Parameters.numFogNodes; j++) {
-            n[j] = 4;
+            n[j] = 4; // number of processors in a fog node
         }
         for (int k = 0; k < Parameters.numCloudServers; k++) {
-            n[k] = 8;
+            n[k] = 8; // number of processors in a cloud server
         }
     }
     

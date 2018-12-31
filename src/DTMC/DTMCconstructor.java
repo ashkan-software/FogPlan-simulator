@@ -1,6 +1,5 @@
 package DTMC;
 
-import Scheme.Parameters;
 import Simulation.Traffic;
 import java.io.File;
 import java.io.FileNotFoundException;

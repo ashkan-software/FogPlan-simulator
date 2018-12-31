@@ -22,7 +22,7 @@ public class MainExperiment3 {
     private static int index = 0;
 
     private static int MAX_THRESHOLD = 80;
-    private static int MIN_THRESHOLD = 8;
+    private static int MIN_THRESHOLD = 4;
     private static int TOTAL_RUN;
 
     private final static int TAU = 20; // time interval between run of the method(s)

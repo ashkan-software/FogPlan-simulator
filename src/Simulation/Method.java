@@ -36,8 +36,6 @@ public class Method {
     private int type;
     protected ServiceDeployScheme scheme;
 
-    public boolean f;
-
     private boolean onlyExperimental = false;
 
     public Method(ServiceDeployScheme scheme, int numFogNodes, int numServices, int numCloudServers) {
@@ -61,14 +59,13 @@ public class Method {
 
         backup_lambda_in = new double[numServices][numFogNodes];
 
-        if (numServices > 40) { // when there are large number of services, the purpose of the code is only experimental, to show how is the performance of the system. (fog resource constraints are not checked)
+        if (numServices > 40) { // when there are large number of services, the purpose is only experimental, to show how is the performance of the system. (fog resource constraints are not checked)
             onlyExperimental = true;
         }
 
     }
 
     public ServiceCounter run(int traceType, boolean minimizeViolation) {
-        f = minimizeViolation;
         backupAllPlacements();
         delay.initialize();
         if (type == ServiceDeployScheme.ALL_CLOUD) {
@@ -204,8 +201,7 @@ public class Method {
         Collections.sort(fogTrafficIndex);
         int listIndex = -1;
         int j = 0;
-        double vper = Vper[a];
-        while (vper > 1 - Parameters.q[a] && listIndex < numFogNodes - 1) {
+        while (Vper[a] > 1 - Parameters.q[a] && listIndex < numFogNodes - 1) {
             listIndex++;
             j = fogTrafficIndex.get(listIndex).getFogIndex();
             if (x[a][j] == 0 && fogResourceConstraintsSatisfied(j)) { // if service a is not implemented on fog node j
@@ -213,7 +209,6 @@ public class Method {
                 x[a][j] = 1;
                 Violation.calcViolation(a, this);
             }
-            vper = Vper[a];
         }
 
         boolean canRelease = true;
@@ -234,7 +229,6 @@ public class Method {
             }
 
         }
-
         deployOrReleaseCloudService(a);
 
     }

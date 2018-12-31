@@ -80,29 +80,29 @@ public class Parameters {
 
         rIF = new double[numFogNodes];
         if (Math.random() < 0.5) {
-            ArrayFiller.generateFixed1DArray(rIF, 54d * 1024d * 1024d); // 54 Mbps
+            ArrayFiller.generateFixed1DArray(rIF, 54d * 1000d * 1000d); // 54 Mbps
         } else {
-            ArrayFiller.generateFixed1DArray(rIF, 51.23d * 1024d * 1024d); // 51.23 Mbps (is the "mixed" rate of one 54Mbps and a 1Gbps)
+            ArrayFiller.generateFixed1DArray(rIF, 51.233d * 1000d * 1000d); // 51.233 Mbps (is the "mixed" rate of one 54Mbps and a 1Gbps link)
         }
 
         dFC = new double[numFogNodes][numCloudServers];
         ArrayFiller.generateRandom2DArray(dFC, 15d, 35d);
 
         rFC = new double[numFogNodes][numCloudServers];
-        ArrayFiller.generateRandom2DArray(rFC, 1024d * 1024d * 1024d, 2438d * 1024d * 1024d);
-        // We assume there are between 6-10 hops lies between fog and cloud. And there links could be 10 Gbps or 100Gbps (up to 2) 1024 is basically the lower band, when all 10 links are 1Gbps (1024 Mb), and that is the "mixed" rate of 10 10Gbps links. 1970 is also a mixed rate of 4 10Gbps links and 2 100Gbps.
+        ArrayFiller.generateRandom2DArray(rFC, 1d * 1000d * 1000d * 1000d, 2.38d * 1000d * 1000d * 1000d);
+        // We assume there are between 6-10 hops lies between fog and cloud. And the links could be 10 Gbps or 100Gbps (up to 2). 1 is basically the lower bound, when all 10 links are 10Gbps, and that is the "mixed" rate of 10 10Gbps links. 2.38Gbps is also a mixed rate of 4 10Gbps links and 2 100Gbps.
 
         rFContr = new double[numFogNodes];
-        ArrayFiller.generateFixed1DArray(rFContr, 10d * 1024d * 1024d * 1024d); // transmission rate of fog nodes to Fog Service Controller is 10Gbps.
+        ArrayFiller.generateFixed1DArray(rFContr, 10d * 1000d * 1000d * 1000d); // transmission rate of fog nodes to Fog Service Controller is 10Gbps.
 
         L_P = new double[numServices];
         ArrayFiller.generateRandom1DArray(L_P, 50d, L_P_max); // Towards QoS-aware Fog Service Placement (they have simuation, and it their simulation, they have 50,100 and 200
 
         L_S = new double[numServices];
-        ArrayFiller.generateRandom1DArray(L_S, 50d * 1024d * 1024d * 8d, 500d * 1024d * 1024d * 8d); // size of a service is 50-500 MBytes
+        ArrayFiller.generateRandom1DArray(L_S, 50d * 1000d * 1000d * 8d, 500d * 1000d * 1000d * 8d); // size of a service is 50-500 MBytes
 
         L_M = new double[numServices];
-        ArrayFiller.generateRandom1DArray(L_M, 2d * 1024d * 1024d * 8d, 400d * 1024d * 1024d * 8d); // required amount of memory for service is 2-400 MBytes
+        ArrayFiller.generateRandom1DArray(L_M, 2d * 1000d * 1000d * 8d, 400d * 1000d * 1000d * 8d); // required amount of memory for service is 2-400 MBytes
 
         KP = new double[numFogNodes];
         ArrayFiller.generateRandom1DArray(KP, KP_min, 1300d); // in MIPS
@@ -113,21 +113,21 @@ public class Parameters {
         // cloud nodes are selected to be 20 times faster
 
         KM = new double[numFogNodes];
-        ArrayFiller.generateRandom1DArray(KM, 8d * 1024d * 1024d * 1024d * 8d, 8d * 1024d * 1024d * 1024d * 8d); // 8GB
+        ArrayFiller.generateRandom1DArray(KM, 8d * 1000d * 1000d * 1000d * 8d, 8d * 1000d * 1000d * 1000d * 8d); // 8GB
 
         KpM = new double[numCloudServers];
-        ArrayFiller.generateRandom1DArray(KpM, 32d * 1024d * 1024d * 1024d * 8d, 32d * 1024d * 1024d * 1024d * 8d); // 32GB
+        ArrayFiller.generateRandom1DArray(KpM, 32d * 1000d * 1000d * 1000d * 8d, 32d * 1000d * 1000d * 1000d * 8d); // 32GB
 
         KS = new double[numFogNodes];
-        ArrayFiller.generateRandom1DArray(KS, 20d * 1024d * 1024d * 1024d * 8d, 20d * 1024d * 1024d * 1024d * 8d); // 20GB
+        ArrayFiller.generateRandom1DArray(KS, 20d * 1000d * 1000d * 1000d * 8d, 20d * 1000d * 1000d * 1000d * 8d); // 20GB
 
         KpS = new double[numCloudServers];
-        ArrayFiller.generateRandom1DArray(KpS, 200d * 1024d * 1024d * 1024d * 200d, 32d * 1024d * 1024d * 1024d * 8d); // 200GB
+        ArrayFiller.generateRandom1DArray(KpS, 200d * 1000d * 1000d * 1000d * 200d, 32d * 1000d * 1000d * 1000d * 8d); // 200GB
 
         // The Impact of Mobile Multimedia Applications on Data Center Consolidation 
         // Augmented reality applications
         l_rq = new double[numServices];
-        ArrayFiller.generateRandom1DArray(l_rq, 10d * 1024d * 8d, 26d * 1024d * 8d); // the request size 10KB-26KB 
+        ArrayFiller.generateRandom1DArray(l_rq, 10d * 1000d * 8d, 26d * 1000d * 8d); // the request size 10KB-26KB 
 
         l_rp = new double[numServices];
         ArrayFiller.generateRandom1DArray(l_rp, 10d * 8d, 20d * 8d); // the request size 10B-20B

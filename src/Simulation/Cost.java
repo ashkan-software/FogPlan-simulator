@@ -23,7 +23,7 @@ public class Cost {
     private static double[][] FOG_FOG_COMM_UNIT_COST;
     private static double[] FOG_CONTROLLER_COMM_UNIT_COST;
 
-    public static double[] SERVICE_PENALY;
+    private static double[] SERVICE_PENALY;
 
     private static double totalSpentTime = 0;
     private static double totalCost = 0;
