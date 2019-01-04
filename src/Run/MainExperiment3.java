@@ -22,10 +22,10 @@ public class MainExperiment3 {
     private static int index = 0;
 
     private static int MAX_THRESHOLD = 80;
-    private static int MIN_THRESHOLD = 4;
+    private static int MIN_THRESHOLD = 8;
     private static int TOTAL_RUN;
-
-    private final static int TAU = 20; // time interval between run of the method(s)
+    
+    private final static int TAU = 10; // time interval between run of the method(s)
     private final static int TRAFFIC_CHANGE_INTERVAL = 10; // time interval between run of the method(s) (10x6sec=60sec)
 
     public static void main(String[] args) throws FileNotFoundException {
@@ -34,7 +34,7 @@ public class MainExperiment3 {
         Parameters.numFogNodes = 10;
         Parameters.numServices = 20;
         Traffic.TRAFFIC_ENLARGE_FACTOR = 10;
-        
+
         Parameters.TAU = TAU;
         Parameters.TRAFFIC_CHANGE_INTERVAL = TRAFFIC_CHANGE_INTERVAL;
         int q = Parameters.TAU / Parameters.TRAFFIC_CHANGE_INTERVAL;
@@ -55,9 +55,9 @@ public class MainExperiment3 {
         ServiceCounter containersDeployedAllCloud;
         ServiceCounter containersDeployedAllFog;
         ServiceCounter containersDeployedFogStatic;
-        ServiceCounter containersDeployedFogDynamic;
+        ServiceCounter containersDeployedFogDynamic = null;
         ServiceCounter containersDeployedFogStaticViolation;
-        ServiceCounter containersDeployedFogDynamicViolation;
+        ServiceCounter containersDeployedFogDynamicViolation = null;
 
         // used for getting average
         double[] fogcontainersDeployedAllCloud = new double[TOTAL_RUN];
@@ -124,6 +124,7 @@ public class MainExperiment3 {
                 delayAllCloud[i] = AllCloud.getAvgServiceDelay();
                 costAllCloud[i] = AllCloud.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
                 violAllCloud[i] = Violation.getViolationPercentage(AllCloud);
+                
 
                 Traffic.setTrafficToGlobalTraffic(AllFog);
                 containersDeployedAllFog = AllFog.run(Traffic.COMBINED_APP, false);
@@ -144,9 +145,9 @@ public class MainExperiment3 {
                 Traffic.setTrafficToGlobalTraffic(FogDynamic);
                 if (i % q == 0) {
                     containersDeployedFogDynamic = FogDynamic.run(Traffic.COMBINED_APP, false);
-                    fogcontainersDeployedFogDynamic[i] = containersDeployedFogDynamic.getDeployedFogServices();
-                    cloudcontainersDeployedFogDynamic[i] = containersDeployedFogDynamic.getDeployedCloudServices();
                 }
+                fogcontainersDeployedFogDynamic[i] = containersDeployedFogDynamic.getDeployedFogServices();
+                cloudcontainersDeployedFogDynamic[i] = containersDeployedFogDynamic.getDeployedCloudServices();
                 delayFogDynamic[i] = FogDynamic.getAvgServiceDelay();
                 costFogDynamic[i] = FogDynamic.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
                 violFogDynamic[i] = Violation.getViolationPercentage(FogDynamic);
@@ -162,9 +163,9 @@ public class MainExperiment3 {
                 Traffic.setTrafficToGlobalTraffic(FogDynamicViolation);
                 if (i % q == 0) {
                     containersDeployedFogDynamicViolation = FogDynamicViolation.run(Traffic.COMBINED_APP, true);
-                    fogcontainersDeployedFogDynamicViolation[i] = containersDeployedFogDynamicViolation.getDeployedFogServices();
-                    cloudcontainersDeployedFogDynamicViolation[i] = containersDeployedFogDynamicViolation.getDeployedCloudServices();
                 }
+                fogcontainersDeployedFogDynamicViolation[i] = containersDeployedFogDynamicViolation.getDeployedFogServices();
+                cloudcontainersDeployedFogDynamicViolation[i] = containersDeployedFogDynamicViolation.getDeployedCloudServices();
                 delayFogDynamicViolation[i] = FogDynamicViolation.getAvgServiceDelay();
                 costFogDynamicViolation[i] = FogDynamicViolation.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
                 violFogDynamicViolation[i] = Violation.getViolationPercentage(FogDynamicViolation);
@@ -203,6 +204,5 @@ public class MainExperiment3 {
         }
         return sum;
     }
-
 
 }

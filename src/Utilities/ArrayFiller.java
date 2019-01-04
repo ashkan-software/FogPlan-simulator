@@ -64,7 +64,7 @@ public class ArrayFiller {
      * @param mean
      * @param variance
      */
-    public static void generateRandomMeanVarinance1DArray(double[] array, double mean, double variance) {
+    public static void generateRandomMeanVainance1DArray(double[] array, double mean, double variance) {
         for (int i = 0; i < array.length; i++) {
             do {
                 array[i] = RG.genNormalRandomMeanVariance(mean, variance);

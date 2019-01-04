@@ -42,7 +42,7 @@ public class MainExperiment4 {
         Method FogDynamic = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
         Method FogDynamicViolation = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
 
-        ServiceCounter FDserviceCounter, FDVserviceCounter;
+        ServiceCounter FDserviceCounter = null, FDVserviceCounter = null;
 
         double[] fogContainersDeployedFogDynamic = new double[TOTAL_RUN]; // used for getting average
         double[] cloudContainersDeployedFogDynamic = new double[TOTAL_RUN]; // used for getting average
@@ -78,12 +78,12 @@ public class MainExperiment4 {
                     FDserviceCounter = FogDynamic.run(Traffic.COMBINED_APP_REGIONES, false);
                     FDVserviceCounter = FogDynamicViolation.run(Traffic.COMBINED_APP_REGIONES, true);
 
-                    fogContainersDeployedFogDynamic[i] = FDserviceCounter.getDeployedFogServices();
-                    cloudContainersDeployedFogDynamic[i] = FDserviceCounter.getDeployedCloudServices();
-
-                    fogContainersDeployedFogDynamicViolation[i] = FDVserviceCounter.getDeployedFogServices();
-                    cloudContainersDeployedFogDynamicViolation[i] = FDVserviceCounter.getDeployedCloudServices();
                 }
+                fogContainersDeployedFogDynamic[i] = FDserviceCounter.getDeployedFogServices();
+                cloudContainersDeployedFogDynamic[i] = FDserviceCounter.getDeployedCloudServices();
+
+                fogContainersDeployedFogDynamicViolation[i] = FDVserviceCounter.getDeployedFogServices();
+                cloudContainersDeployedFogDynamicViolation[i] = FDVserviceCounter.getDeployedCloudServices();
                 delayFogDynamic[i] = FogDynamic.getAvgServiceDelay();
                 costFogDynamic[i] = FogDynamic.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
                 violFogDynamic[i] = Violation.getViolationPercentage(FogDynamic);

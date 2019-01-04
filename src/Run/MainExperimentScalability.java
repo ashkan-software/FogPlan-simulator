@@ -100,9 +100,9 @@ public class MainExperimentScalability {
 //            costFogStatic = FogStatic.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
 //            violFogStatic = Violation.getViolationPercentage(FogStatic);
 
-//            Traffic.setTrafficToGlobalTraffic(FogDynamic);
+            Traffic.setTrafficToGlobalTraffic(FogDynamic);
 //            if (i % q == 0) {
-//                containersDeployedFogDynamic = FogDynamic.run(Traffic.COMBINED_APP_REGIONES, false);
+                containersDeployedFogDynamic = FogDynamic.run(Traffic.COMBINED_APP_REGIONES, false);
 //            }
 //            delayFogDynamic = FogDynamic.getAvgServiceDelay();
 //            costFogDynamic = FogDynamic.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
@@ -114,9 +114,9 @@ public class MainExperimentScalability {
 //            costFogStaticViolation = FogStaticViolation.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
 //            violFogStaticViolation = Violation.getViolationPercentage(FogStaticViolation);
 //
-            Traffic.setTrafficToGlobalTraffic(FogDynamicViolation);
+//            Traffic.setTrafficToGlobalTraffic(FogDynamicViolation);
 //            if (i % q == 0) {
-                containersDeployedFogDynamicViolation = FogDynamicViolation.run(Traffic.COMBINED_APP_REGIONES, true);
+//                containersDeployedFogDynamicViolation = FogDynamicViolation.run(Traffic.COMBINED_APP_REGIONES, true);
 //            }
 //            delayFogDynamicViolation = FogDynamicViolation.getAvgServiceDelay();
 //            costFogDynamicViolation = FogDynamicViolation.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);

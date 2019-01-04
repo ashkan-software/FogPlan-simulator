@@ -28,9 +28,9 @@ public class RG {
      * Generate a uniform random number between [0,1)
      */
     public static double GenUniformRandom(){
-//        s = (k * s) % m;
-//        return s / m;
-        return Math.random();
+        s = (k * s) % m;
+        return s / m;
+//        return Math.random();
     }
     
     /**
@@ -82,7 +82,7 @@ public class RG {
      * Generate a normally distributed random number with the mean 0 and variance 1
      * 
      */
-    public static double genNormalRandom(){
+    private static double genNormalRandom(){
         return r.nextGaussian();
     }
     

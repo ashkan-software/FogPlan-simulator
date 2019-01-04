@@ -4,6 +4,7 @@ import Simulation.Cost;
 import Simulation.Traffic;
 import Utilities.ArrayFiller;
 import Utilities.Factorial;
+import Utilities.RG;
 import Utilities.ReverseMap;
 import java.util.HashSet;
 
@@ -70,7 +71,7 @@ public class Parameters {
         Factorial f = new Factorial();
         globalTraffic = new double[numServices][numFogNodes];
         q = new double[numServices];
-        ArrayFiller.generateRandom1DArray(q, 0.9, 0.99999);
+        ArrayFiller.generateRandom1DArray(q, 0.9, 0.9);
 
         th = new double[numServices];
         ArrayFiller.generateRandom1DArray(th, 10d, 10d); // 10 ms is the threshold (architectural imperatives is my reference for this)
@@ -79,7 +80,7 @@ public class Parameters {
         ArrayFiller.generateRandom1DArray(dIF, 1d, 2d);
 
         rIF = new double[numFogNodes];
-        if (Math.random() < 0.5) {
+        if (RG.GenUniformRandom() < 0.5) {
             ArrayFiller.generateFixed1DArray(rIF, 54d * 1000d * 1000d); // 54 Mbps
         } else {
             ArrayFiller.generateFixed1DArray(rIF, 51.233d * 1000d * 1000d); // 51.233 Mbps (is the "mixed" rate of one 54Mbps and a 1Gbps link)
@@ -135,7 +136,7 @@ public class Parameters {
         h = new int[numServices][numFogNodes];
         for (int a = 0; a < numServices; a++) {
             for (int j = 0; j < numFogNodes; j++) {
-                h[a][j] = (int) (Math.random() * numCloudServers);
+                h[a][j] = (int) (RG.GenUniformRandom() * numCloudServers);
             }
         }
 

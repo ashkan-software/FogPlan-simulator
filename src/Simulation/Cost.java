@@ -1,5 +1,6 @@
 package Simulation;
 
+import Run.MainExperiment3;
 import Scheme.Parameters;
 import Utilities.ArrayFiller;
 
@@ -40,7 +41,7 @@ public class Cost {
         ArrayFiller.generateFixed1DArray(CLOUD_UNIT_STOR_COST, 0.000000000004d);
 
         FOG_UNIT_PROC_COST = new double[NUM_FOG_NODES];
-        ArrayFiller.generateRandom1DArray(FOG_UNIT_PROC_COST, 0.001d, 0.001d); 
+        ArrayFiller.generateRandom1DArray(FOG_UNIT_PROC_COST, 0.001d, 0.001d);
 
         FOG_UNIT_STOR_COST = new double[NUM_FOG_NODES];
         ArrayFiller.generateRandom1DArray(FOG_UNIT_STOR_COST, 0.000000000004d, 0.000000000004d); // 00000000008d for optimal and cumulative and DTMC and threshold
@@ -55,7 +56,7 @@ public class Cost {
         ArrayFiller.generateFixed1DArray(FOG_CONTROLLER_COMM_UNIT_COST, 0.0000000005d);
 
         SERVICE_PENALY = new double[NUM_SERVICES];
-        ArrayFiller.generateRandom1DArray(SERVICE_PENALY, 2d, 5d); // 2-5 for optimal and cumulative. 20-50 for DTMC
+        ArrayFiller.generateRandom1DArray(SERVICE_PENALY, 20d, 50d); // 2-5 for optimal and cumulative. 20-50 for DTMC
     }
 
     /**
@@ -120,7 +121,7 @@ public class Cost {
     }
 
     public static double costViol(double time, int a, int j, double Vper[], double q[], double lambda_in[][]) {
-        return Math.max(0, Vper[a] - (1 - q[a])) * lambda_in[a][j] * SERVICE_PENALY[a] * time ;
+        return Math.max(0, Vper[a] - (1 - q[a])) * lambda_in[a][j] * SERVICE_PENALY[a] * time;
     }
 
     public static double costViolPerFogNode(double time, int a, int j, double Vper_aj, double q[], double fogTrafficPercentage, double lambda_in[][]) {
@@ -210,7 +211,7 @@ public class Cost {
             }
         }
         costDep = costDep / (NUM_FOG_NODES * NUM_SERVICES);
-        
+
         // cost of violation
         costViol = 0;
         for (int a = 0; a < NUM_SERVICES; a++) {
@@ -219,7 +220,6 @@ public class Cost {
             }
         }
         costViol = costViol / (NUM_FOG_NODES * NUM_SERVICES);
-        
 //            System.out.println("costPC " + (costPC) + " costPF " + (costPF) + " costSC " + (costSC) + " costSF " + (costSF)
 //                    + " costCff " + (costCff) + " costCfc " + (costCfc) + " costViol " + (costViol) + " costDep " + (costDep));
         Double c = (costPC + costPF + costSC + costSF + costCff + costCfc + costViol + costDep);

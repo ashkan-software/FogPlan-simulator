@@ -15,7 +15,7 @@ public class DTMCconstructor {
 
     private Scanner in;
     private final int NUM_OF_STATES = 30; // number of states of DTMC
-    private final String FILE_ADDRESS = "/Users/ashkany/Desktop/traffic-pattern.txt";
+    private final String FILE_ADDRESS = "traffic-pattern.txt";
     private static final double SMOOTHING_NUMBER = 0.000000000001d;
 
     private double trafficRateIncrementSize;

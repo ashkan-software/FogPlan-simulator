@@ -69,9 +69,11 @@ public class Method {
         backupAllPlacements();
         delay.initialize();
         if (type == ServiceDeployScheme.ALL_CLOUD) {
+            Traffic.calcNormalizedArrivalRateCloudNodes(this);
             // do not change the placement
             return new ServiceCounter(0, numCloudServers * numServices);
         } else if (type == ServiceDeployScheme.ALL_FOG) {
+            Traffic.calcNormalizedArrivalRateCloudNodes(this);
             // do not change the placement
             return new ServiceCounter(numFogNodes * numServices, 0);
         } else if (type == ServiceDeployScheme.OPTIMAL) {
@@ -332,7 +334,6 @@ public class Method {
         costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, j, Violation.calcVper(a, j, fogTrafficPercentage, this), Parameters.q, fogTrafficPercentage, traffic.lambda_in);
         futureSavings = costPF + costSF + costViolPerFogNode;
 
-        
 //         System.out.println( " pf" + costPF + " sf"+ costSF + " viol"+costViolPerFogNode);
         // Now if we were to release, this is the loss we would pay
         int k = Parameters.h[a][j];
@@ -347,7 +348,6 @@ public class Method {
         futureCost = costCfc + costExtraPC + costExtraSC + costViolPerFogNode;
 
 //        System.out.println("cfc" + costCfc + " pc" + costExtraPC + " sc"+ costExtraSC + " viol"+costViolPerFogNode);
-        
         x[a][j] = 1; // revert this back to what it was
         d[a][j] = delay.calcServiceDelay(a, j); // revert things back to what they were
         if (futureSavings > futureCost) {
