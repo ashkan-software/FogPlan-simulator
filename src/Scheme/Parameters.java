@@ -14,6 +14,7 @@ import java.util.HashSet;
  */
 public class Parameters {
 
+    public static boolean MEASURING_RUNNING_TIME = false;
     public static int TAU; // time interval between run of the method (s)
     public static int TRAFFIC_CHANGE_INTERVAL; // time interval between run of the method (s)
 
@@ -71,7 +72,7 @@ public class Parameters {
         Factorial f = new Factorial();
         globalTraffic = new double[numServices][numFogNodes];
         q = new double[numServices];
-        ArrayFiller.generateRandom1DArray(q, 0.9, 0.9);
+        ArrayFiller.generateRandom1DArray(q, 0.9, 0.99999);
 
         th = new double[numServices];
         ArrayFiller.generateRandom1DArray(th, 10d, 10d); // 10 ms is the threshold (architectural imperatives is my reference for this)

@@ -28,7 +28,7 @@ public class MainExperiment2 {
         Parameters.numCloudServers = 3;
         Parameters.numFogNodes = 10;
         Parameters.numServices = 2;
-        Traffic.TRAFFIC_ENLARGE_FACTOR = 10;
+        Traffic.TRAFFIC_ENLARGE_FACTOR =   1;
 
         ArrayList<Double[]> traceList = CombinedAppTraceReader.readTrafficFromFile();
 
@@ -77,7 +77,7 @@ public class MainExperiment2 {
         double violationSlack = Violation.getViolationSlack();
         Double[] combinedTrafficPerFogNode;
 
-        System.out.println("Traffic\tD(AC)\tD(AF)\tD(FS)\tD(FD)\tD(FDV)\tD(OP)\tC(AC)\tC(AF)\tC(FS)\tC(FD)\tC(FDV)\tC(OP)\tCNT(AC)\tCNT(AF)\tCNT(FS)\tCNT(FD)\tCNT(FDV)\tCNT(OP)\tCCNT(AC)\tCCNT(AF)\tCCNT(FS)\tCCNT(FD)\tCCNT(FDV)\tCCNT(OP)\tV(AC)\tV(AF)\tV(FS)\tV(FD)\tV(FDV)\tV(OP)\tVS=" + violationSlack);
+        System.out.println("RTraffic\tD(AC)\tD(AF)\tD(FS)\tD(FD)\tD(FDV)\tD(OP)\tC(AC)\tC(AF)\tC(FS)\tC(FD)\tC(FDV)\tC(OP)\tCNT(AC)\tCNT(AF)\tCNT(FS)\tCNT(FD)\tCNT(FDV)\tCNT(OP)\tCCNT(AC)\tCCNT(AF)\tCCNT(FS)\tCCNT(FD)\tCCNT(FDV)\tCCNT(OP)\tV(AC)\tV(AF)\tV(FS)\tV(FD)\tV(FDV)\tV(OP)\tVS=" + violationSlack);
         for (int i = 0; i < TOTAL_RUN; i++) {
             combinedTrafficPerFogNode = nextRate(traceList);
             Traffic.distributeTraffic(combinedTrafficPerFogNode);

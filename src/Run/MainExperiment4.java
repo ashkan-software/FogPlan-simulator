@@ -22,14 +22,14 @@ public class MainExperiment4 {
     private final static int TRAFFIC_CHANGE_INTERVAL = 10; // time interval between run of the method (s)
     private static int MIN_CHANGE_INTERVAL = 10;
 
-    private final static int TOTAL_RUN = 600;
+    private final static int TOTAL_RUN = 200;
 
     public static void main(String[] args) {
         Parameters.numCloudServers = 3;
         Parameters.numFogNodes = 10;
         Parameters.numServices = 50;
 
-        Traffic.TRAFFIC_ENLARGE_FACTOR = 100;
+        Traffic.TRAFFIC_ENLARGE_FACTOR = 1;
 
         DTMCconstructor dtmcConstructor = new DTMCconstructor();
         DTMCsimulator trafficRateSetter = new DTMCsimulator(dtmcConstructor.dtmc);
@@ -59,7 +59,7 @@ public class MainExperiment4 {
         double sumTrafficPerNodePerApp = 0d; // used for getting average
 
         double violationSlack = Violation.getViolationSlack();
-        double trafficPerNodePerApp;
+        double trafficPerNodePerService;
 
         System.out.println("Tau\tTraffic\tDelay\tCost\tContainer\tViol\tDelay(Vonly)\tCost(Vonly)\tContainer(Vonly)\tViol(Vonly)\tViol_Slack=" + violationSlack + "\tThresh=" + Delay.getThresholdAverage());
         for (int Tau = MIN_CHANGE_INTERVAL; Tau <= MAX_CHANGE_INTERVAL; Tau += 5) {
@@ -68,9 +68,9 @@ public class MainExperiment4 {
             q = Parameters.TAU / Parameters.TRAFFIC_CHANGE_INTERVAL;
 
             for (int i = 0; i < TOTAL_RUN; i++) {
-                trafficPerNodePerApp = trafficRateSetter.nextRate();
-                Traffic.distributeTraffic(trafficPerNodePerApp);
-                sumTrafficPerNodePerApp += trafficPerNodePerApp;
+                trafficPerNodePerService = trafficRateSetter.nextRate();
+                Traffic.distributeTraffic(trafficPerNodePerService);
+                sumTrafficPerNodePerApp += trafficPerNodePerService;
 
                 Traffic.setTrafficToGlobalTraffic(FogDynamic);
                 Traffic.setTrafficToGlobalTraffic(FogDynamicViolation);

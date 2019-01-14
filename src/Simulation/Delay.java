@@ -9,7 +9,7 @@ import Utilities.Factorial;
  * calculating delay
  */
 public class Delay {
-    
+
     private double[][] rho; // rho_aj
     private double[][] rhop; //rho'_ak
 
@@ -21,28 +21,28 @@ public class Delay {
 
     private double P0[][];
     private double PQ[][];
-    
+
     private double P0p[][];
     private double PQp[][];
-    
+
     private Method method;
-    
+
     public Delay(Method method) {
         this.method = method;
-        
+
         rho = new double[Parameters.numServices][Parameters.numFogNodes];
         rhop = new double[Parameters.numServices][Parameters.numCloudServers];
         f = new double[Parameters.numServices][Parameters.numFogNodes];
         fp = new double[Parameters.numServices][Parameters.numCloudServers];
-        
+
         n = new int[Parameters.numFogNodes];
         np = new int[Parameters.numCloudServers];
-        
+
         P0 = new double[Parameters.numServices][Parameters.numFogNodes];
         P0p = new double[Parameters.numServices][Parameters.numCloudServers];
         PQ = new double[Parameters.numServices][Parameters.numFogNodes];
         PQp = new double[Parameters.numServices][Parameters.numCloudServers];
-        
+
         for (int j = 0; j < Parameters.numFogNodes; j++) {
             n[j] = 4; // number of processors in a fog node
         }
@@ -50,7 +50,7 @@ public class Delay {
             n[k] = 8; // number of processors in a cloud server
         }
     }
-    
+
     public void initialize() {
         for (int a = 0; a < Parameters.numServices; a++) {
             for (int j = 0; j < Parameters.numFogNodes; j++) {
@@ -61,14 +61,14 @@ public class Delay {
             }
         }
     }
-    
+
     private void initFog(int a, int j) {
         calcServiceFractionFog(a, j);
         calcRhoFog(a, j);
         calcP0Fog(a, j);
         calcPQFog(a, j);
     }
-    
+
     private void initCloud(int a, int k) {
         calcServiceFractionCloud(a, k);
         calcRhoCloud(a, k);
@@ -94,23 +94,36 @@ public class Delay {
 //            proc_time = calcProcTimeMM1(heuristic.traffic.arrivalCloud[k], Parameters.KpP[k]); //MM1
             proc_time = calcProcTimeMMCcloud(a, k);
             return (2 * (Parameters.dIF[j] + Parameters.dFC[j][k])) + (proc_time) + (((Parameters.l_rp[a] + Parameters.l_rq[a]) / Parameters.rIF[j] + (Parameters.l_rp[a] + Parameters.l_rq[a]) / Parameters.rFC[j][k]) * 1000d); // this is in ms
-        } 
+        }
     }
-    
+
     private double calcProcTimeMMCcloud(int a, int k) {
         initCloud(a, k);
         if (fp[a][k] == 0) { // if the service is not implemented in cloud
             System.out.println("servcie " + a + " is not implemtend on cloud server " + k); // this is for debug
-            System.out.println("Debug Please! Scheme: "+method.scheme.type); // this is for debug
-            return 3000d; // a big number
+            System.out.println("Debug Please! Scheme: " + method.scheme.type); // this is for debug
+            return Double.MAX_VALUE; // a big number
         }
         return 1 / ((fp[a][k] * Parameters.KpP[k]) / np[k]) + PQp[a][k] / (fp[a][k] * Parameters.KpP[k] - method.traffic.arrivalCloud[a][k]);
     }
-    
+
+    /**
+     * Calculates processing time of a fog node. It is inly called if the
+     * service a is implemented on fog node j.
+     *
+     * @param a
+     * @param j
+     * @return
+     */
     private double calcProcTimeMMCfog(int a, int j) {
         initFog(a, j);
-        if (f[a][j] == 0) { // if the service is not implemented in cloud
-            return 2000d; // a big number
+        if (f[a][j] == 0) { // if the service a is implemented on fog node j, but f_aj = 0, there should be a bug! 
+            System.out.println("Debug Please! Scheme: " + method.scheme.type); // this is for debug
+            return Double.MAX_VALUE; // a big number
+        }
+        if (f[a][j] * Parameters.KP[j] < method.traffic.arrivalFog[a][j]) {
+            System.out.println("jjjj");
+            return 20; // (ms) a big number
         }
         return 1 / ((f[a][j] * Parameters.KP[j]) / n[j]) + PQ[a][j] / (f[a][j] * Parameters.KP[j] - method.traffic.arrivalFog[a][j]);
     }
@@ -127,7 +140,7 @@ public class Delay {
      */
     private void calcPQFog(int a, int j) {
         calcPQ(a, j, n, rho, P0, PQ);
-        
+
     }
 
     /**
@@ -281,13 +294,13 @@ public class Delay {
         }
         return proc_time;
     }
-    
+
     public static void setThresholds(double threshold) {
         for (int a = 0; a < Parameters.numServices; a++) {
             Parameters.th[a] = threshold;
         }
     }
-    
+
     public static double getThresholdAverage() {
         double sum = 0;
         for (int a = 0; a < Parameters.numServices; a++) {
@@ -295,5 +308,5 @@ public class Delay {
         }
         return (sum / Parameters.numServices);
     }
-    
+
 }

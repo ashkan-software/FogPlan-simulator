@@ -39,10 +39,6 @@ public class Violation {
 
     private static double getViolationPercentage(int a, Method method) {
         Violation.calcViolation(a, method);
-//        if (method.scheme.type == 4 && method.f == true){
-//            System.out.println(a + "   " + method.Vper[a] * 100);
-//        }
-        
         return method.Vper[a] * 100;
     }
 

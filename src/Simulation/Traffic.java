@@ -74,7 +74,12 @@ public class Traffic {
         return fogTrafficIndex;
     }
 
-    protected static void calcNormalizedArrivalRateFogNodes(Method method) {
+    protected static void calcNormalizedArrivalRates(Method method) {
+        calcNormalizedArrivalRateFogNodes(method);
+        calcNormalizedArrivalRateCloudNodes(method);
+    }
+    
+    private static void calcNormalizedArrivalRateFogNodes(Method method) {
         for (int a = 0; a < Parameters.numServices; a++) {
             for (int j = 0; j < Parameters.numFogNodes; j++) {
                 calcNormalizedArrivalRateFogNode(a, j, method);
@@ -83,11 +88,11 @@ public class Traffic {
 
     }
 
-    protected static void calcNormalizedArrivalRateFogNode(int a, int j, Method method) {
+    private static void calcNormalizedArrivalRateFogNode(int a, int j, Method method) {
         method.traffic.arrivalFog[a][j] = Parameters.L_P[a] * method.traffic.lambda_in[a][j] * method.x[a][j];
     }
 
-    protected static void calcNormalizedArrivalRateCloudNodes(Method method) {
+    private static void calcNormalizedArrivalRateCloudNodes(Method method) {
         for (int a = 0; a < Parameters.numServices; a++) {
             for (int k = 0; k < Parameters.numCloudServers; k++) {
                 calcArrivalRateCloudForNodesForService(k, a, method);
@@ -97,7 +102,7 @@ public class Traffic {
 
     }
 
-    protected static void calcNormalizedArrivalRateCloudNode(int a, int k, Method method) {
+    private static void calcNormalizedArrivalRateCloudNode(int a, int k, Method method) {
         method.traffic.arrivalCloud[a][k] = Parameters.L_P[a] * method.traffic.lambdap_in[a][k] * method.xp[a][k];
     }
 
@@ -171,8 +176,8 @@ public class Traffic {
         }
     }
 
-    public static void distributeTraffic(double trafficPerNodePerApp) {
-        distributeTraffic(trafficPerNodePerApp, Parameters.globalTraffic);
+    public static void distributeTraffic(double trafficPerNodePerService) {
+        distributeTraffic(trafficPerNodePerService, Parameters.globalTraffic);
     }
 
     private static void distributeTraffic(Double[] combinedTrafficPerFogNode, double[][] targetTraffic) {

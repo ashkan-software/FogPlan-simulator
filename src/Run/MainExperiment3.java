@@ -33,7 +33,7 @@ public class MainExperiment3 {
         Parameters.numCloudServers = 3;
         Parameters.numFogNodes = 10;
         Parameters.numServices = 20;
-        Traffic.TRAFFIC_ENLARGE_FACTOR = 10;
+        Traffic.TRAFFIC_ENLARGE_FACTOR = 1;
 
         Parameters.TAU = TAU;
         Parameters.TRAFFIC_CHANGE_INTERVAL = TRAFFIC_CHANGE_INTERVAL;

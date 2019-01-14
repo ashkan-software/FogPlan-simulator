@@ -30,7 +30,7 @@ public class MainExperiment1 {
         Parameters.numCloudServers = 3;
         Parameters.numFogNodes = 10;
         Parameters.numServices = 40;
-        Traffic.TRAFFIC_ENLARGE_FACTOR = 5;
+        Traffic.TRAFFIC_ENLARGE_FACTOR = 1;
         
         ArrayList<Double> traceList = CumulativeTraceReader.readTrafficFromFile();
 
@@ -83,12 +83,12 @@ public class MainExperiment1 {
         double violOptimalPlacement = 0;
 
         double violationSlack = Violation.getViolationSlack();
-        Double trafficPerNodePerApp;
+        Double trafficPerNodePerService;
 
         System.out.println("Traffic\tD(AC)\tD(AF)\tD(FS)\tD(FD)\tD(FSV)\tD(FDV)\tD(OP)\tC(AC)\tC(AF)\tC(FS)\tC(FD)\tC(FSV)\tC(FDV)\tC(OP)\tCNT(AC)\tCNT(AF)\tCNT(FS)\tCNT(FD)\tCNT(FSV)\tCNT(FDV)\tCNT(OP)\tV(AC)\tV(AF)\tV(FS)\tV(FD)\tV(FSV)\tV(FDV)\tV(OP)\tVS=" + violationSlack);
         for (int i = 0; i < TOTAL_RUN; i++) {
-            trafficPerNodePerApp = nextRate(traceList);
-            Traffic.distributeTraffic(trafficPerNodePerApp);
+            trafficPerNodePerService = nextRate(traceList);
+            Traffic.distributeTraffic(trafficPerNodePerService);
 
             Traffic.setTrafficToGlobalTraffic(AllCloud);
             containersDeployedAllCloud = AllCloud.run(Traffic.COMBINED_APP_REGIONES, false);
@@ -139,7 +139,7 @@ public class MainExperiment1 {
 //            costOptimalPlacement = optimalPlacement.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
 //            violOptimalPlacement = optimalPlacement.getViolationPercentage();
                
-            System.out.println((trafficPerNodePerApp * Parameters.numFogNodes * Parameters.numServices) + "\t" + delayAllCloud + "\t" + delayAllFog + "\t" + delayFogStatic + "\t" + delayFogDynamic + "\t" + delayFogStaticViolation + "\t" + delayFogDynamicViolation + "\t" + delayOptimalPlacement
+            System.out.println((trafficPerNodePerService * Parameters.numFogNodes * Parameters.numServices) + "\t" + delayAllCloud + "\t" + delayAllFog + "\t" + delayFogStatic + "\t" + delayFogDynamic + "\t" + delayFogStaticViolation + "\t" + delayFogDynamicViolation + "\t" + delayOptimalPlacement
                     + "\t" + (costAllCloud / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costAllFog / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogStatic / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogDynamic / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogStaticViolation / Parameters.TRAFFIC_CHANGE_INTERVAL) + "\t" + (costFogDynamicViolation / Parameters.TRAFFIC_CHANGE_INTERVAL)+ "\t" + (costOptimalPlacement / Parameters.TRAFFIC_CHANGE_INTERVAL)
                     + "\t" + containersDeployedAllCloud.getDeployedFogServices() + "\t" + containersDeployedAllFog.getDeployedFogServices() + "\t" + containersDeployedFogStatic.getDeployedFogServices() + "\t" + containersDeployedFogDynamic.getDeployedFogServices() + "\t" + containersDeployedFogStaticViolation.getDeployedFogServices() + "\t" + containersDeployedFogDynamicViolation.getDeployedFogServices() + "\t" + containersDeployedOptimalPlacement.getDeployedFogServices()
                     + "\t" + containersDeployedAllCloud.getDeployedCloudServices() + "\t" + containersDeployedAllFog.getDeployedCloudServices() + "\t" + containersDeployedFogStatic.getDeployedCloudServices() + "\t" + containersDeployedFogDynamic.getDeployedCloudServices() + "\t" + containersDeployedFogStaticViolation.getDeployedCloudServices() + "\t" + containersDeployedFogDynamicViolation.getDeployedCloudServices() + "\t" + containersDeployedOptimalPlacement.getDeployedCloudServices()

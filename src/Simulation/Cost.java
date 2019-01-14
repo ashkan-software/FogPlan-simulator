@@ -26,7 +26,6 @@ public class Cost {
 
     private static double[] SERVICE_PENALY;
 
-    private static double totalSpentTime = 0;
     private static double totalCost = 0;
 
     public Cost(int NUM_CLOUD_SERVERS, int NUM_FOG_NODES, int NUM_SERVICES) {
@@ -56,7 +55,7 @@ public class Cost {
         ArrayFiller.generateFixed1DArray(FOG_CONTROLLER_COMM_UNIT_COST, 0.0000000005d);
 
         SERVICE_PENALY = new double[NUM_SERVICES];
-        ArrayFiller.generateRandom1DArray(SERVICE_PENALY, 20d, 50d); // 2-5 for optimal and cumulative. 20-50 for DTMC
+        ArrayFiller.generateRandom1DArray(SERVICE_PENALY, 40d, 50d); // 2-5 for optimal and cumulative. 40-50 for DTMC
     }
 
     /**
@@ -224,12 +223,8 @@ public class Cost {
 //                    + " costCff " + (costCff) + " costCfc " + (costCfc) + " costViol " + (costViol) + " costDep " + (costDep));
         Double c = (costPC + costPF + costSC + costSF + costCff + costCfc + costViol + costDep);
         totalCost += c;
-        totalSpentTime += time;
         return c;
 
     }
 
-    public static void printAverageCost() {
-        System.out.println("Avg Cost: " + totalCost / totalSpentTime);
-    }
 }
