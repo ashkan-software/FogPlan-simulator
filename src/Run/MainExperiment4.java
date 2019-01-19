@@ -22,14 +22,18 @@ public class MainExperiment4 {
     private final static int TRAFFIC_CHANGE_INTERVAL = 10; // time interval between run of the method (s)
     private static int MIN_CHANGE_INTERVAL = 10;
 
-    private final static int TOTAL_RUN = 200;
+    private final static int TOTAL_RUN = 1000;
 
     public static void main(String[] args) {
         Parameters.numCloudServers = 3;
-        Parameters.numFogNodes = 10;
+        Parameters.numFogNodes = 15;
         Parameters.numServices = 50;
 
-        Traffic.TRAFFIC_ENLARGE_FACTOR = 1;
+        Parameters.initialize();
+        
+        Traffic.TRAFFIC_ENLARGE_FACTOR = 4;
+        
+      
 
         DTMCconstructor dtmcConstructor = new DTMCconstructor();
         DTMCsimulator trafficRateSetter = new DTMCsimulator(dtmcConstructor.dtmc);
@@ -37,13 +41,15 @@ public class MainExperiment4 {
         int q;
         // the number of times that traffic changes between each run of the method
         Parameters.TRAFFIC_CHANGE_INTERVAL = TRAFFIC_CHANGE_INTERVAL;
-        Parameters.initialize();
+        
 
         Method FogDynamic = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
         Method FogDynamicViolation = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
 
         ServiceCounter FDserviceCounter = null, FDVserviceCounter = null;
 
+        Parameters.MEASURING_RUNNING_TIME = false;
+        
         double[] fogContainersDeployedFogDynamic = new double[TOTAL_RUN]; // used for getting average
         double[] cloudContainersDeployedFogDynamic = new double[TOTAL_RUN]; // used for getting average
         double[] delayFogDynamic = new double[TOTAL_RUN]; // used for getting average

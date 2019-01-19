@@ -28,11 +28,11 @@ public class ServiceDeployScheme {
         averageRateOfTrafficPerNodePerService = new Double[Parameters.numServices][Parameters.numFogNodes];
 
         if (type == ALL_FOG) {
-            ArrayFiller.generateFixed2DArray(variable.x, 1);
-            ArrayFiller.generateFixed2DArray(variable.xp, 0);
+            ArrayFiller.fill2DArrayWithConstantNumber(variable.x, 1);
+            ArrayFiller.fill2DArrayWithConstantNumber(variable.xp, 0);
         } else { // in the rest of methods, initially the service is deployed on all cloud servers
-            ArrayFiller.generateFixed2DArray(variable.x, 0);
-            ArrayFiller.generateFixed2DArray(variable.xp, 1);
+            ArrayFiller.fill2DArrayWithConstantNumber(variable.x, 0);
+            ArrayFiller.fill2DArrayWithConstantNumber(variable.xp, 1);
         }
     }
 

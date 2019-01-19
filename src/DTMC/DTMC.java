@@ -4,12 +4,14 @@ import java.util.ArrayList;
 
 /**
  *
- * @author Ashkan Y. This class contains the variables and parameters about the
- Discrete Time Markov Chain (DTMC)
+ * @author Ashkan Y.
+ *
+ * This class contains the variables and parameters of the Discrete Time Markov
+ * Chain (DTMC)
  */
 public class DTMC {
 
-    public int numberOfStates; // total number of states
+    public int numberOfStates; // total number of states of the MC
     public double[] TrafficRateInState; // this is the rate of the process when we are in state x
     public int[][] rate; // this is the transition rate from state x_i to x_j
 

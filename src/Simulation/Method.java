@@ -3,6 +3,7 @@ package Simulation;
 import Scheme.Parameters;
 import Scheme.ServiceCounter;
 import Scheme.ServiceDeployScheme;
+import Utilities.ArrayFiller;
 import java.util.Collections;
 import java.util.List;
 
@@ -45,9 +46,9 @@ public class Method {
 
         this.scheme = scheme;
         type = scheme.type;
-        x = scheme.variable.x;
+        x = ArrayFiller.convertIntegerToInt2DArray(scheme.variable.x);
         x_backup = scheme.variable.x_backup;
-        xp = scheme.variable.xp;
+        xp = ArrayFiller.convertIntegerToInt2DArray(scheme.variable.xp);
         v = scheme.variable.v;
 
         d = scheme.variable.d;
@@ -67,7 +68,8 @@ public class Method {
 
     public ServiceCounter run(int traceType, boolean minimizeViolation) {
         backupAllPlacements();
-        placementUpdated();
+        Traffic.calcNormalizedArrivalRates(this);
+        delay.initialize();
         if (type == ServiceDeployScheme.ALL_CLOUD) {
 
             // do not change the placement
@@ -93,8 +95,7 @@ public class Method {
         double minimumCost = Double.MAX_VALUE, cost;
         for (long combination = 0; combination < numCombinations; combination++) {
             updateDecisionVariablesAccordingToCombination(combination); // updates x, xp
-            placementUpdated();
-//            Traffic.calcNormalizedArrivalRates(this);
+            Traffic.calcNormalizedArrivalRates(this);
             if (Optimization.optimizationConstraintsSatisfied(x, xp, numServices, numFogNodes, numCloudServers, Parameters.L_S,
                     Parameters.L_M, Parameters.KS, Parameters.KM, Parameters.KpS, Parameters.KpM, traffic.lambdap_in)) {
                 cost = getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
@@ -104,9 +105,9 @@ public class Method {
                 }
             }
         }
-        System.out.println("j");
         Optimization.updateDecisionVaraiblesAccordingToBest(x, xp, numServices, numFogNodes, numCloudServers);
-        placementUpdated();
+        Traffic.calcNormalizedArrivalRates(this);
+        delay.initialize();
         return ServiceCounter.countServices(numServices, numFogNodes, numCloudServers, x, xp);
     }
 
@@ -141,12 +142,7 @@ public class Method {
     private ServiceCounter runFogDynamic(boolean minimizeViolation) {
         for (int a = 0; a < numServices; a++) {
             if (minimizeViolation) {
-                if (Parameters.MEASURING_RUNNING_TIME == true) {
-                    MinViolForRealImplementation(a);
-                } else {
-                    MinViol(a);
-                }
-
+                MinViol(a);
             } else {
                 MinCost(a);
             }
@@ -180,6 +176,7 @@ public class Method {
      * @return
      */
     public double getAvgCost(double timeDuration) {
+        delay.initialize();
         updateDelayAndViolation();
         return Cost.calcAverageCost(timeDuration, x, xp, x_backup, Vper, Parameters.q, traffic.lambda_in, traffic.lambdap_in, traffic.lambda_out, Parameters.L_P, Parameters.L_S, Parameters.h);
     }
@@ -214,7 +211,7 @@ public class Method {
             if (x[a][j] == 0 && fogHasFreeResources(j)) { // if service a is not implemented on fog node j
                 // to add CODE: DEPLOY
                 x[a][j] = 1;
-                placementUpdated();
+                placementUpdatedForService(a);
                 Violation.calcViolation(a, this);
             }
         }
@@ -225,13 +222,13 @@ public class Method {
             j = fogTrafficIndex.get(listIndex).getFogIndex();
             if (x[a][j] == 1) { // if service a is implemented on fog node j
                 releaseFogServiceSafely(a, j);
-                placementUpdated();
+                placementUpdatedForService(a);
                 Violation.calcViolation(a, this);
                 if (Vper[a] <= 1 - Parameters.q[a]) {
                     // to add CODE: RELEASE
                 } else {
                     x[a][j] = 1;
-                    placementUpdated();
+                    placementUpdatedForService(a);
                     Violation.calcViolation(a, this);
                     canRelease = false;
                 }
@@ -261,7 +258,7 @@ public class Method {
                 if (deployMakesSense(a, j)) {
                     // to add CODE: DEPLOY
                     x[a][j] = 1;
-                    placementUpdated();
+                    placementUpdatedForService(a);
                     Violation.calcViolation(a, this);
                 }
             }
@@ -274,7 +271,7 @@ public class Method {
                 if (releaseMakesSense(a, j)) {
                     // to add CODE: RELEASE
                     releaseFogServiceSafely(a, j);
-                    placementUpdated();
+                    placementUpdatedForService(a);
                     Violation.calcViolation(a, this);
                 }
             }
@@ -299,25 +296,25 @@ public class Method {
         costExtraPC = Cost.costExtraPC(Parameters.TAU, Parameters.h[a][j], a, Parameters.L_P, traffic.lambda_out[a][j]);
         costExtraSC = Cost.costExtraSC(Parameters.TAU, Parameters.h[a][j], a, Parameters.L_S, xp);
         double fogTrafficPercentage = calcFogTrafficPercentage(a, j);
-        costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, j, Violation.calcVper(a, j, fogTrafficPercentage, this), Parameters.q, fogTrafficPercentage, traffic.lambda_in);
+        costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, j, Violation.calcVperPerNode(a, j, fogTrafficPercentage, this), Parameters.q, traffic.lambda_in);
         futureSavings = costCfc + costExtraPC + costExtraSC + costViolPerFogNode;
 
 //        System.out.println("cfc" + costCfc + " pc" + costExtraPC + " sc"+ costExtraSC + " viol"+costViolPerFogNode);
         // Now if we were to deploy, this is the cost we would pay
         x[a][j] = 1;
-        placementUpdated();
+//        placementUpdatedForService(a);
         d[a][j] = delay.calcServiceDelay(a, j);  // this is just to update the service delay
 
         double costDep, costPF, costSF;
         costDep = Cost.costDep(j, a, Parameters.L_S);
         costPF = Cost.costPF(Parameters.TAU, j, a, Parameters.L_P, traffic.lambda_in);
         costSF = Cost.costSF(Parameters.TAU, j, a, Parameters.L_S);
-        costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, j, Violation.calcVper(a, j, fogTrafficPercentage, this), Parameters.q, fogTrafficPercentage, traffic.lambda_in);
+        costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, j, Violation.calcVperPerNode(a, j, fogTrafficPercentage, this), Parameters.q, traffic.lambda_in);
         futureCost = costDep + costPF + costSF + costViolPerFogNode;
 
 //        System.out.println("dep" + costDep + " pf" + costPF + " sf"+ costSF + " viol"+costViolPerFogNode);
         releaseFogServiceSafely(a, j); // revert this back to what it was
-        placementUpdated();
+//        placementUpdatedForService(a);
         d[a][j] = delay.calcServiceDelay(a, j); // revert things back to what they were
         if (futureSavings > futureCost) {
             return true;
@@ -342,103 +339,32 @@ public class Method {
         costPF = Cost.costPF(Parameters.TAU, j, a, Parameters.L_P, traffic.lambda_in);
         costSF = Cost.costSF(Parameters.TAU, j, a, Parameters.L_S);
         double fogTrafficPercentage = calcFogTrafficPercentage(a, j);
-        costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, j, Violation.calcVper(a, j, fogTrafficPercentage, this), Parameters.q, fogTrafficPercentage, traffic.lambda_in);
+        costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, j, Violation.calcVperPerNode(a, j, fogTrafficPercentage, this), Parameters.q, traffic.lambda_in);
         futureSavings = costPF + costSF + costViolPerFogNode;
 
 //         System.out.println( " pf" + costPF + " sf"+ costSF + " viol"+costViolPerFogNode);
         // Now if we were to release, this is the loss we would pay
         int k = Parameters.h[a][j];
         releaseFogServiceSafely(a, j);
-        placementUpdated();
+//        placementUpdatedForService(a);
         d[a][j] = delay.calcServiceDelay(a, j); // this is just to update the things
 
         double costCfc, costExtraPC, costExtraSC;
         costCfc = Cost.costCfc(Parameters.TAU, j, a, traffic.lambda_out, Parameters.h);
         costExtraPC = Cost.costExtraPC(Parameters.TAU, Parameters.h[a][j], a, Parameters.L_P, traffic.lambda_out[a][j]);
         costExtraSC = Cost.costExtraSC(Parameters.TAU, Parameters.h[a][j], a, Parameters.L_S, xp);
-        costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, j, Violation.calcVper(a, j, fogTrafficPercentage, this), Parameters.q, fogTrafficPercentage, traffic.lambda_in);
+        costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, j, Violation.calcVperPerNode(a, j, fogTrafficPercentage, this), Parameters.q, traffic.lambda_in);
         futureCost = costCfc + costExtraPC + costExtraSC + costViolPerFogNode;
 
 //        System.out.println("cfc" + costCfc + " pc" + costExtraPC + " sc"+ costExtraSC + " viol"+costViolPerFogNode);
         x[a][j] = 1; // revert this back to what it was
-        placementUpdated();
+//        placementUpdatedForService(a);
         d[a][j] = delay.calcServiceDelay(a, j); // revert things back to what they were
         if (futureSavings > futureCost) {
             return true;
         } else {
             return false;
         }
-    }
-
-    private void MinViolForRealImplementation(int a) {
-        List<FogTrafficIndex> fogTrafficIndex = Traffic.getFogIncomingTraffic(a, false, this);
-        Collections.sort(fogTrafficIndex);
-        int listIndex = -1;
-        int j = 0;
-        Violation.calcViolation(a, this);
-        while (Vper[a] > 1 - Parameters.q[a] && listIndex < numFogNodes - 1) {
-            listIndex++;
-            j = fogTrafficIndex.get(listIndex).getFogIndex();
-            if (x[a][j] == 0 && fogHasFreeResources(j)) { // if service a is not implemented on fog node j
-                // to add CODE: DEPLOY
-                x[a][j] = 1;
-                Violation.calcViolation(a, this);
-            }
-        }
-        boolean canRelease = true;
-        listIndex = fogTrafficIndex.size();
-        while (canRelease && listIndex > 0) {
-            listIndex--;
-            j = fogTrafficIndex.get(listIndex).getFogIndex();
-            if (x[a][j] == 1) { // if service a is implemented on fog node j
-                releaseFogServiceSafely(a, j);
-                Violation.calcViolation(a, this);
-                if (Vper[a] <= 1 - Parameters.q[a]) {
-                    // to add CODE: RELEASE
-                } else {
-                    x[a][j] = 1;
-                    Violation.calcViolation(a, this);
-                    canRelease = false;
-                }
-            }
-
-        }
-        deployOrReleaseCloudService(a);
-
-    }
-
-    private void MinCostForRealImplementation(int a) {
-        List<FogTrafficIndex> fogTrafficIndex = Traffic.getFogIncomingTraffic(a, false, this);
-        Collections.sort(fogTrafficIndex); // sorts fog nodes based on incoming traffic
-        int listIndex = -1;
-        int j;
-        Violation.calcViolation(a, this);
-        while (listIndex < numFogNodes - 1) {
-            listIndex++;
-            j = fogTrafficIndex.get(listIndex).getFogIndex();
-            if (x[a][j] == 0 && fogHasFreeResources(j)) { // if service a is not implemented on fog node j
-                if (deployMakesSense(a, j)) {
-                    // to add CODE: DEPLOY
-                    x[a][j] = 1;
-                    placementUpdated();
-                    Violation.calcViolation(a, this);
-                }
-            }
-        }
-        listIndex = numFogNodes;
-        while (listIndex > 0) {
-            listIndex--;
-            j = fogTrafficIndex.get(listIndex).getFogIndex();
-            if (x[a][j] == 1) { // if service a is implemented on fog node j
-                if (releaseMakesSense(a, j)) {
-                    // to add CODE: RELEASE
-                    releaseFogServiceSafely(a, j);
-                    placementUpdated();
-                    Violation.calcViolation(a, this);
-                }
-            }
-        }
-        deployOrReleaseCloudService(a);
     }
 
     /**
@@ -540,7 +466,9 @@ public class Method {
     }
 
     private void deployOrReleaseCloudService(int a) {
-
+        if (Parameters.MEASURING_RUNNING_TIME == true) {
+            Traffic.calcNormalizedArrivalRates(this, a);
+        }
         for (int k = 0; k < numCloudServers; k++) { // If incoming traffic rate to a cloud server for a particular service is 0, the service could be released to save space. On the other hand, even if there is small traffic incoming to a cloud server for a particular service, the service must not be removed from the cloud server
             if (traffic.lambdap_in[a][k] > 0) {
                 xp[a][k] = 1;
@@ -556,11 +484,14 @@ public class Method {
     }
 
     /**
-     * This function should be called every time the placement variables change
+     * This function should be called every time the placement variables for
+     * service a change
      */
-    private void placementUpdated() {
-        Traffic.calcNormalizedArrivalRates(this);
-        delay.initialize();
+    private void placementUpdatedForService(int a) {
+        if (Parameters.MEASURING_RUNNING_TIME == false) {
+            Traffic.calcNormalizedArrivalRates(this, a);
+            delay.initialize(a);
+        }
     }
 
     /**

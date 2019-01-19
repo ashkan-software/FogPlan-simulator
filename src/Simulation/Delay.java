@@ -53,12 +53,16 @@ public class Delay {
 
     public void initialize() {
         for (int a = 0; a < Parameters.numServices; a++) {
-            for (int j = 0; j < Parameters.numFogNodes; j++) {
-                initFog(a, j);
-            }
-            for (int k = 0; k < Parameters.numCloudServers; k++) {
-                initCloud(a, k);
-            }
+            initialize(a);
+        }
+    }
+
+    public void initialize(int a) {
+        for (int j = 0; j < Parameters.numFogNodes; j++) {
+            initFog(a, j);
+        }
+        for (int k = 0; k < Parameters.numCloudServers; k++) {
+            initCloud(a, k);
         }
     }
 
@@ -122,7 +126,7 @@ public class Delay {
             return Double.MAX_VALUE; // a big number
         }
         if (f[a][j] * Parameters.KP[j] < method.traffic.arrivalFog[a][j]) {
-            System.out.println("jjjj");
+//            System.out.println("fog processing delay is large");
             return 20; // (ms) a big number
         }
         return 1 / ((f[a][j] * Parameters.KP[j]) / n[j]) + PQ[a][j] / (f[a][j] * Parameters.KP[j] - method.traffic.arrivalFog[a][j]);

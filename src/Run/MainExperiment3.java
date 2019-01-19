@@ -26,7 +26,7 @@ public class MainExperiment3 {
     private static int TOTAL_RUN;
     
     private final static int TAU = 10; // time interval between run of the method(s)
-    private final static int TRAFFIC_CHANGE_INTERVAL = 10; // time interval between run of the method(s) (10x6sec=60sec)
+    private final static int TRAFFIC_CHANGE_INTERVAL = 10; // time interval between run of the method(s)
 
     public static void main(String[] args) throws FileNotFoundException {
 
@@ -34,12 +34,13 @@ public class MainExperiment3 {
         Parameters.numFogNodes = 10;
         Parameters.numServices = 20;
         Traffic.TRAFFIC_ENLARGE_FACTOR = 1;
-
+        Parameters.initialize();
+        
         Parameters.TAU = TAU;
         Parameters.TRAFFIC_CHANGE_INTERVAL = TRAFFIC_CHANGE_INTERVAL;
         int q = Parameters.TAU / Parameters.TRAFFIC_CHANGE_INTERVAL;
         // the number of times that traffic changes between each run of the mehod
-        Parameters.initialize();
+        
 
         ArrayList<Double[]> traceList = CombinedAppTraceReader.readTrafficFromFile();
         TOTAL_RUN = traceList.size();

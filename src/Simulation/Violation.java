@@ -63,7 +63,7 @@ public class Violation {
         return (1 - Parameters.q[a]) * 100;
     }
 
-    public static double calcVper(int a, int j, double fogTrafficPercentage, Method method) {
+    public static double calcVperPerNode(int a, int j, double fogTrafficPercentage, Method method) {
         if (method.d[a][j] > Parameters.th[a]) {
             method.v[a][j] = 1;
             return fogTrafficPercentage;

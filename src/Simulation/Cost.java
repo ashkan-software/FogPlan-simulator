@@ -14,48 +14,48 @@ public class Cost {
     private static int NUM_CLOUD_SERVERS;
     private static int NUM_FOG_NODES;
 
-    private static double[] CLOUD_UNIT_PROC_COST;
+    private static Double[] CLOUD_UNIT_PROC_COST;
     private static double[] FOG_UNIT_PROC_COST;
 
-    private static double[] CLOUD_UNIT_STOR_COST;
+    private static Double[] CLOUD_UNIT_STOR_COST;
     private static double[] FOG_UNIT_STOR_COST;
 
-    private static double[][] FOG_CLOUD_COMM_UNIT_COST;
-    private static double[][] FOG_FOG_COMM_UNIT_COST;
-    private static double[] FOG_CONTROLLER_COMM_UNIT_COST;
+    private static Double[][] FOG_CLOUD_COMM_UNIT_COST;
+    private static Double[][] FOG_FOG_COMM_UNIT_COST;
+    private static Double[] FOG_CONTROLLER_COMM_UNIT_COST;
 
     private static double[] SERVICE_PENALY;
 
-    private static double totalCost = 0;
+    private static Double totalCost = 0d;
 
     public Cost(int NUM_CLOUD_SERVERS, int NUM_FOG_NODES, int NUM_SERVICES) {
         this.NUM_CLOUD_SERVERS = NUM_CLOUD_SERVERS;
         this.NUM_FOG_NODES = NUM_FOG_NODES;
         this.NUM_SERVICES = NUM_SERVICES;
 
-        CLOUD_UNIT_PROC_COST = new double[NUM_CLOUD_SERVERS];
-        ArrayFiller.generateFixed1DArray(CLOUD_UNIT_PROC_COST, 0.001d);
+        CLOUD_UNIT_PROC_COST = new Double[NUM_CLOUD_SERVERS];
+        ArrayFiller.fill1DArrayWithConstantNumber(CLOUD_UNIT_PROC_COST, 0.002d);
 
-        CLOUD_UNIT_STOR_COST = new double[NUM_CLOUD_SERVERS];
-        ArrayFiller.generateFixed1DArray(CLOUD_UNIT_STOR_COST, 0.000000000004d);
+        CLOUD_UNIT_STOR_COST = new Double[NUM_CLOUD_SERVERS];
+        ArrayFiller.fill1DArrayWithConstantNumber(CLOUD_UNIT_STOR_COST, 0.000000000004d);
 
         FOG_UNIT_PROC_COST = new double[NUM_FOG_NODES];
-        ArrayFiller.generateRandom1DArray(FOG_UNIT_PROC_COST, 0.001d, 0.001d);
+        ArrayFiller.fill1DArrayRandomlyInRange(FOG_UNIT_PROC_COST, 0.002d, 0.002d);
 
         FOG_UNIT_STOR_COST = new double[NUM_FOG_NODES];
-        ArrayFiller.generateRandom1DArray(FOG_UNIT_STOR_COST, 0.000000000004d, 0.000000000004d); // 00000000008d for optimal and cumulative and DTMC and threshold
+        ArrayFiller.fill1DArrayRandomlyInRange(FOG_UNIT_STOR_COST, 0.000000000004d, 0.000000000004d); // 00000000008d for optimal and cumulative and DTMC and threshold
 
-        FOG_CLOUD_COMM_UNIT_COST = new double[NUM_FOG_NODES][NUM_CLOUD_SERVERS];
-        ArrayFiller.generateFixed2DArray(FOG_CLOUD_COMM_UNIT_COST, 0.0000000002d);
+        FOG_CLOUD_COMM_UNIT_COST = new Double[NUM_FOG_NODES][NUM_CLOUD_SERVERS];
+        ArrayFiller.fill2DArrayWithConstantNumber(FOG_CLOUD_COMM_UNIT_COST, 0.0000000002d);
 
-        FOG_FOG_COMM_UNIT_COST = new double[NUM_FOG_NODES][NUM_FOG_NODES];
-        ArrayFiller.generateFixed2DArray(FOG_FOG_COMM_UNIT_COST, 0.0000000002d);
+        FOG_FOG_COMM_UNIT_COST = new Double[NUM_FOG_NODES][NUM_FOG_NODES];
+        ArrayFiller.fill2DArrayWithConstantNumber(FOG_FOG_COMM_UNIT_COST, 0.0000000002d);
 
-        FOG_CONTROLLER_COMM_UNIT_COST = new double[NUM_FOG_NODES];
-        ArrayFiller.generateFixed1DArray(FOG_CONTROLLER_COMM_UNIT_COST, 0.0000000005d);
+        FOG_CONTROLLER_COMM_UNIT_COST = new Double[NUM_FOG_NODES];
+        ArrayFiller.fill1DArrayWithConstantNumber(FOG_CONTROLLER_COMM_UNIT_COST, 0.0000000005d);
 
         SERVICE_PENALY = new double[NUM_SERVICES];
-        ArrayFiller.generateRandom1DArray(SERVICE_PENALY, 40d, 50d); // 2-5 for optimal and cumulative. 40-50 for DTMC
+        ArrayFiller.fill1DArrayRandomlyInRange(SERVICE_PENALY, 10d, 20d); // 10-20 cumulative and optimal. 100-200 for threshold and tau
     }
 
     /**
@@ -123,8 +123,8 @@ public class Cost {
         return Math.max(0, Vper[a] - (1 - q[a])) * lambda_in[a][j] * SERVICE_PENALY[a] * time;
     }
 
-    public static double costViolPerFogNode(double time, int a, int j, double Vper_aj, double q[], double fogTrafficPercentage, double lambda_in[][]) {
-        return Math.max(0, Vper_aj - (1 - q[a]) * fogTrafficPercentage) * lambda_in[a][j] * SERVICE_PENALY[a] * time;
+    public static double costViolPerFogNode(double time, int a, int j, double Vper_aj, double q[], double lambda_in[][]) {
+        return Math.max(0, Vper_aj - (1 - q[a])) * lambda_in[a][j] * SERVICE_PENALY[a] * time;
     }
 
     /**

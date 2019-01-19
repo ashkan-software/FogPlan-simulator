@@ -31,6 +31,7 @@ public class MainExperiment1 {
         Parameters.numFogNodes = 10;
         Parameters.numServices = 40;
         Traffic.TRAFFIC_ENLARGE_FACTOR = 1;
+        Parameters.initialize();
         
         ArrayList<Double> traceList = CumulativeTraceReader.readTrafficFromFile();
 
@@ -39,7 +40,7 @@ public class MainExperiment1 {
         Parameters.TAU = TAU;
         Parameters.TRAFFIC_CHANGE_INTERVAL = TRAFFIC_CHANGE_INTERVAL;
         int q = Parameters.TAU / Parameters.TRAFFIC_CHANGE_INTERVAL; // the number of times that traffic changes between each run of the method
-        Parameters.initialize();
+        
         
         Method AllCloud = new Method(new ServiceDeployScheme(ServiceDeployScheme.ALL_CLOUD), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
         Method AllFog = new Method(new ServiceDeployScheme(ServiceDeployScheme.ALL_FOG), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);

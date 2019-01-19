@@ -3,22 +3,24 @@ package Utilities;
 /**
  *
  * @author Ashkan Y.
+ *
+ * This class contains the functions that are written for filling a arrays with
+ * random numbers, according to certain distributions.
  */
 public class ArrayFiller {
 
-  
-    
     /**
-     * Given an array, it returns as the elements of array random percentages
-     * (the sum of percentages will add up to 100%)
+     * Given an array, it assigns as the elements of the array the probabilities
+     * of a probability density function (PDF). The sum of elements will add up
+     * to 1
      *
      * @param input
      */
-    public static void generateRandomDistributionOnArray(double[] input) {
+    public static void fillRandomPDFInArray(double[] input) {
         int[] weight = new int[input.length];
         double sum = 0;
         for (int a = 0; a < input.length; a++) {
-            weight[a] = (int) RG.genUniformRandomBetween(10, 100);
+            weight[a] = (int) RandomGenerator.genUniformRandomBetween(10, 100);
             sum += weight[a];
         }
         for (int a = 0; a < input.length; a++) {
@@ -26,77 +28,92 @@ public class ArrayFiller {
         }
     }
 
-    
     /**
-     * This function generates random delays in a 2D array, in a specified range
+     * This function fills random numbers in a 2D array, in a specified
+     * range
      *
-     * @param array input array
+     * @param array the input array
      * @param rangeLow the low range of the random numbers generated
      * @param rangehigh the high range of the random numbers generated
      */
-    public static void generateRandom2DArray(double[][] array, double rangeLow, double rangehigh) {
+    public static void fill2DArrayRandomlyInRange(double[][] array, double rangeLow, double rangehigh) {
         for (int i = 0; i < array.length; i++) {
             for (int j = 0; j < array[0].length; j++) {
-                array[i][j] = RG.genUniformRandomBetween(rangeLow, rangehigh);
+                array[i][j] = RandomGenerator.genUniformRandomBetween(rangeLow, rangehigh);
             }
         }
     }
 
     /**
-     * This function generates random numbers in a 1D array, in a specified
+     * This function fills random numbers in a 1D array, in a specified
      * range
      *
-     * @param array
+     * @param array the input array
      * @param rangeLow the low range of the random numbers generated
      * @param rangehigh the high range of the random numbers generated
      */
-    public static void generateRandom1DArray(double[] array, double rangeLow, double rangehigh) {
+    public static void fill1DArrayRandomlyInRange(double[] array, double rangeLow, double rangehigh) {
         for (int i = 0; i < array.length; i++) {
-            array[i] = RG.genUniformRandomBetween(rangeLow, rangehigh);
+            array[i] = RandomGenerator.genUniformRandomBetween(rangeLow, rangehigh);
         }
     }
 
     /**
-     * This function generates random numbers in a 1D array, with a specified
-     * mean and variance
+     * This function fills random numbers in a 1D array, with specified mean
+     * and variance
      *
-     * @param array
-     * @param mean
-     * @param variance
+     * @param array the input array
+     * @param mean the mean of the distribution
+     * @param variance the variance of the distribution
      */
-    public static void generateRandomMeanVainance1DArray(double[] array, double mean, double variance) {
+    public static void fill2DArrayRandomlyWithMeanVariance(double[] array, double mean, double variance) {
         for (int i = 0; i < array.length; i++) {
             do {
-                array[i] = RG.genNormalRandomMeanVariance(mean, variance);
+                array[i] = RandomGenerator.genNormalRandomMeanVariance(mean, variance);
             } while (array[i] < 0);
         }
     }
 
-    public static void generateFixed2DArray(double[][] array, double value) {
+    /**
+     * This function fills a 2D array, with a constant value
+     * @param array the input array
+     * @param value the constant value
+     */
+    public static <T extends Comparable<? super T>> void fill2DArrayWithConstantNumber(T[][] array, T value) {
         for (int i = 0; i < array.length; i++) {
             for (int j = 0; j < array[0].length; j++) {
                 array[i][j] = value;
             }
         }
     }
-    
-    public static void generateFixed1DArray(double[] array, double value) {
+
+    /**
+     * This function fills a 1D array, with a constant value
+     * @param array the input array
+     * @param value the constant value
+     */
+    public static <T extends Comparable<? super T>> void fill1DArrayWithConstantNumber(T[] array, T value) {
         for (int i = 0; i < array.length; i++) {
             array[i] = value;
         }
     }
     
-    public static void generateFixed2DArray(int[][] array, int value) {
-        for (int i = 0; i < array.length; i++) {
-            for (int j = 0; j < array[0].length; j++) {
-                array[i][j] = value;
+    /**
+     * Converts a Integer 2D array to an int 2D array
+     * @param input the input 2D array (Integer type)
+     * @return 
+     */
+    public static int[][] convertIntegerToInt2DArray(Integer[][] input){
+        int[][] output;
+        int rows = input.length;
+        int cols = input[0].length;
+        output = new int[rows][cols];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                output[i][j] = input[i][j];
             }
         }
+        return output;
     }
-    
-    public static void generateFixed1DArray(int[] array, int value) {
-        for (int i = 0; i < array.length; i++) {
-            array[i] = value;
-        }
-    }
+
 }

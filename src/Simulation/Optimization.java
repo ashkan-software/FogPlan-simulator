@@ -116,6 +116,7 @@ public class Optimization {
      * @return
      */
     private static boolean cloudArrivalRateConstraintsSatisfied(int[][] xp, int numServices, int numCloudServers, double lambdap_in[][]) {
+        
         for (int a = 0; a < numServices; a++) {
             for (int k = 0; k < numCloudServers; k++) { // If incoming traffic rate to a cloud server for a particular service is 0, the service could be released to save space. On the other hand, even if there is small traffic incoming to a cloud server for a particular service, the service must not be removed from the cloud server
                 if (xp[a][k] == 0 && lambdap_in[a][k] > 0) {

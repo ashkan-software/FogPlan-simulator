@@ -79,7 +79,7 @@ public class CombinedAppTrace6secReader {
 
     private static void normalizeTraffic(Double[] combinedAppPerFogNode) {
         for (int j = 0; j < Parameters.numFogNodes; j++) {
-            combinedAppPerFogNode[j] = ((combinedAppPerFogNode[j] - min + SMOOTHING_NUMBER) / (max - min)) * Traffic.TRAFFIC_NORM_FACTOR * Parameters.numServices;
+            combinedAppPerFogNode[j] = ((combinedAppPerFogNode[j] - min + SMOOTHING_NUMBER) / (max - min)) * Parameters.TRAFFIC_NORM_FACTOR * Parameters.numServices;
             CumulativeAveragePerFogNode[j] += combinedAppPerFogNode[j];
         }
     }

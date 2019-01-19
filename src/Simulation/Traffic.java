@@ -18,8 +18,6 @@ import java.util.List;
  * This class has the functions and variables related to calculating delay
  */
 public class Traffic {
-    
-    public static double TRAFFIC_NORM_FACTOR = Parameters.KP_min / (Parameters.numServices * Parameters.L_P_max);
 
     protected double lambda_in[][]; // lambda^in_aj
     protected double lambdap_in[][]; // lambda'^in_ak
@@ -41,6 +39,7 @@ public class Traffic {
         lambda_out = new double[Parameters.numServices][Parameters.numFogNodes];
         arrivalCloud = new double[Parameters.numServices][Parameters.numCloudServers];
         arrivalFog = new double[Parameters.numServices][Parameters.numFogNodes];
+
     }
 
     protected static void backupIncomingTraffic(Method method) {
@@ -75,15 +74,21 @@ public class Traffic {
     }
 
     protected static void calcNormalizedArrivalRates(Method method) {
-        calcNormalizedArrivalRateFogNodes(method);
-        calcNormalizedArrivalRateCloudNodes(method);
+        for (int a = 0; a < Parameters.numServices; a++) {
+            calcNormalizedArrivalRates(method, a);
+        }
     }
     
-    private static void calcNormalizedArrivalRateFogNodes(Method method) {
-        for (int a = 0; a < Parameters.numServices; a++) {
-            for (int j = 0; j < Parameters.numFogNodes; j++) {
-                calcNormalizedArrivalRateFogNode(a, j, method);
-            }
+    protected static void calcNormalizedArrivalRates(Method method, int a) {
+        calcNormalizedArrivalRateFogNodes(method, a);
+        calcNormalizedArrivalRateCloudNodes(method, a);
+    }
+
+    
+
+    private static void calcNormalizedArrivalRateFogNodes(Method method, int a) {
+        for (int j = 0; j < Parameters.numFogNodes; j++) {
+            calcNormalizedArrivalRateFogNode(a, j, method);
         }
 
     }
@@ -92,12 +97,10 @@ public class Traffic {
         method.traffic.arrivalFog[a][j] = Parameters.L_P[a] * method.traffic.lambda_in[a][j] * method.x[a][j];
     }
 
-    private static void calcNormalizedArrivalRateCloudNodes(Method method) {
-        for (int a = 0; a < Parameters.numServices; a++) {
-            for (int k = 0; k < Parameters.numCloudServers; k++) {
-                calcArrivalRateCloudForNodesForService(k, a, method);
-                calcNormalizedArrivalRateCloudNode(a, k, method);
-            }
+    private static void calcNormalizedArrivalRateCloudNodes(Method method, int a) {
+        for (int k = 0; k < Parameters.numCloudServers; k++) {
+            calcArrivalRateCloudForNodesForService(k, a, method);
+            calcNormalizedArrivalRateCloudNode(a, k, method);
         }
 
     }
@@ -139,7 +142,7 @@ public class Traffic {
      */
     protected static void initializeAvgTrafficForStaticFogPlacementFirstTimeCombined(Method method) {
         distributeTraffic(method.scheme.averageRateOfTraffic, method.traffic.lambda_in);
-        
+
         enlargeTraffic(method);
     }
 
@@ -169,7 +172,7 @@ public class Traffic {
         double[] fogTrafficPercentage = new double[Parameters.numFogNodes];
         for (int a = 0; a < Parameters.numServices; a++) {
             trafficForCurrentService = totalTraffic * Parameters.ServiceTrafficPercentage[a];
-            ArrayFiller.generateRandomDistributionOnArray(fogTrafficPercentage);
+            ArrayFiller.fillRandomPDFInArray(fogTrafficPercentage);
             for (int j = 0; j < Parameters.numFogNodes; j++) {
                 targetTraffic[a][j] = trafficForCurrentService * fogTrafficPercentage[j];
             }

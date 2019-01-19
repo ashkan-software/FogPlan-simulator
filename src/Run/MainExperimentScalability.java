@@ -26,13 +26,14 @@ public class MainExperimentScalability {
         Parameters.numCloudServers = 3;
         Parameters.numFogNodes = 100;
         Parameters.numServices = 10000;
-        Traffic.TRAFFIC_ENLARGE_FACTOR = 100;
+        Traffic.TRAFFIC_ENLARGE_FACTOR = 1;
         // Need to change penalty of violation to a higher number 
+        Parameters.initialize();
         
         Parameters.TAU = TAU;
         Parameters.TRAFFIC_CHANGE_INTERVAL = TRAFFIC_CHANGE_INTERVAL;
         int q = Parameters.TAU / Parameters.TRAFFIC_CHANGE_INTERVAL; // the number of times that traffic changes between each run of the method
-        Parameters.initialize();
+        
         
         
         

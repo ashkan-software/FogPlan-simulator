@@ -25,20 +25,19 @@ public class MainExperiment2 {
 
     public static void main(String[] args) throws FileNotFoundException {
 
-        Parameters.numCloudServers = 3;
+        Parameters.numCloudServers = 1;
         Parameters.numFogNodes = 10;
         Parameters.numServices = 2;
-        Traffic.TRAFFIC_ENLARGE_FACTOR =   1;
-
+        Traffic.TRAFFIC_ENLARGE_FACTOR = 1;
+        Parameters.initialize();
         ArrayList<Double[]> traceList = CombinedAppTraceReader.readTrafficFromFile();
 
         TOTAL_RUN = traceList.size(); // 4 hours of trace
         Parameters.TAU = TAU;
         Parameters.TRAFFIC_CHANGE_INTERVAL = TRAFFIC_CHANGE_INTERVAL;
-        Parameters.initialize();
-
+        
         int q = TAU / TRAFFIC_CHANGE_INTERVAL; // the number of times that traffic changes between each run of the method
-
+        
         Method AllCloud = new Method(new ServiceDeployScheme(ServiceDeployScheme.ALL_CLOUD), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
         Method AllFog = new Method(new ServiceDeployScheme(ServiceDeployScheme.ALL_FOG), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
         Method FogStatic = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_STATIC, CombinedAppTraceReader.averagePerFogNode), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
@@ -77,7 +76,7 @@ public class MainExperiment2 {
         double violationSlack = Violation.getViolationSlack();
         Double[] combinedTrafficPerFogNode;
 
-        System.out.println("RTraffic\tD(AC)\tD(AF)\tD(FS)\tD(FD)\tD(FDV)\tD(OP)\tC(AC)\tC(AF)\tC(FS)\tC(FD)\tC(FDV)\tC(OP)\tCNT(AC)\tCNT(AF)\tCNT(FS)\tCNT(FD)\tCNT(FDV)\tCNT(OP)\tCCNT(AC)\tCCNT(AF)\tCCNT(FS)\tCCNT(FD)\tCCNT(FDV)\tCCNT(OP)\tV(AC)\tV(AF)\tV(FS)\tV(FD)\tV(FDV)\tV(OP)\tVS=" + violationSlack);
+        System.out.println("Traffic\tD(AC)\tD(AF)\tD(FS)\tD(FD)\tD(FDV)\tD(OP)\tC(AC)\tC(AF)\tC(FS)\tC(FD)\tC(FDV)\tC(OP)\tCNT(AC)\tCNT(AF)\tCNT(FS)\tCNT(FD)\tCNT(FDV)\tCNT(OP)\tCCNT(AC)\tCCNT(AF)\tCCNT(FS)\tCCNT(FD)\tCCNT(FDV)\tCCNT(OP)\tV(AC)\tV(AF)\tV(FS)\tV(FD)\tV(FDV)\tV(OP)\tVS=" + violationSlack);
         for (int i = 0; i < TOTAL_RUN; i++) {
             combinedTrafficPerFogNode = nextRate(traceList);
             Traffic.distributeTraffic(combinedTrafficPerFogNode);

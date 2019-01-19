@@ -1,6 +1,6 @@
 package DTMC;
 
-import Utilities.RG;
+import Utilities.RandomGenerator;
 
 /**
  *
@@ -16,7 +16,7 @@ public class DTMCsimulator {
 
     
     public DTMCsimulator(DTMC dtmc) {
-        currentState = (int) (RG.GenUniformRandom() * dtmc.numberOfStates); // randomly find the current state of the DTMC
+        currentState = (int) (RandomGenerator.genUniformRandom() * dtmc.numberOfStates); // randomly find the current state of the DTMC
         this.dtmc = dtmc;
     }
 
@@ -26,7 +26,7 @@ public class DTMCsimulator {
      * @return
      */
     public double nextRate() {
-        coin = RG.GenUniformRandom(); // toss a coin
+        coin = RandomGenerator.genUniformRandom(); // toss a coin
         for (int i = 0; i < dtmc.next.get(currentState).size(); i++) {
             if (coin < dtmc.nextProbCumulative.get(currentState).get(i)) {
                 nextState = dtmc.next.get(currentState).get(i);
