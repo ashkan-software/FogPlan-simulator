@@ -251,20 +251,22 @@ public class Delay {
         }
     }
 
-   /**
-    * Calculates rho for a service on a cloud node
-    * @param a the index of the service
-    * @param k the index of the cloud server
-    */
+    /**
+     * Calculates rho for a service on a cloud node
+     *
+     * @param a the index of the service
+     * @param k the index of the cloud server
+     */
     private void calcRhoCloud(int a, int k) {
         calcRho(a, k, method.xp, method.traffic.arrivalCloud, fp, Parameters.KpP, rhop);
     }
 
     /**
-    * Calculates rho for a service on a fog node
-    * @param a the index of the service
-    * @param j the index of the fog node
-    */
+     * Calculates rho for a service on a fog node
+     *
+     * @param a the index of the service
+     * @param j the index of the fog node
+     */
     private void calcRhoFog(int a, int j) {
         calcRho(a, j, method.x, method.traffic.arrivalFog, f, Parameters.KP, rho);
     }
@@ -331,7 +333,8 @@ public class Delay {
     }
 
     /**
-     * Calculates processing time of a job if the underlying model of the fog node is M/M/1
+     * Calculates processing time of a job if the underlying model of the fog
+     * node is M/M/1
      *
      * @param arrivalRate total arrival rate of a node
      * @param serviceRate total service rate of a node
@@ -351,7 +354,8 @@ public class Delay {
 
     /**
      * Set all threshold to a specific value
-     * @param threshold 
+     *
+     * @param threshold
      */
     public static void setThresholds(double threshold) {
         for (int a = 0; a < Parameters.numServices; a++) {
@@ -368,6 +372,18 @@ public class Delay {
             sum += Parameters.th[a];
         }
         return (sum / Parameters.numServices);
+    }
+    
+     /**
+     * Calculates the delay of deployment of a service on a fog node.
+     * Deploy delay consists of container download from Fog Service Controller,
+     * and container startup time Everything is in ms.
+     * 
+     * @param a the index of the service
+     * @param j the index of the fog node
+     */
+    private double calcDeployDelay(int a, int j) {
+        return Parameters.L_S[a] / Parameters.rFContr[j] * 1000 + Parameters.CONTAINER_INIT_DELAY;
     }
 
 }
