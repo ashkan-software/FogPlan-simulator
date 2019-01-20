@@ -1,4 +1,4 @@
-package Simulation;
+package Components;
 
 import Scheme.Parameters;
 import Scheme.ServiceCounter;
@@ -296,10 +296,10 @@ public class Method {
         costExtraPC = Cost.costExtraPC(Parameters.TAU, Parameters.h[a][j], a, Parameters.L_P, traffic.lambda_out[a][j]);
         costExtraSC = Cost.costExtraSC(Parameters.TAU, Parameters.h[a][j], a, Parameters.L_S, xp);
         double fogTrafficPercentage = calcFogTrafficPercentage(a, j);
-        costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, j, Violation.calcVperPerNode(a, j, fogTrafficPercentage, this), Parameters.q, traffic.lambda_in);
+        costViolPerFogNode = Cost.costViol(Parameters.TAU, a, j, Violation.calcVperPerNode(a, j, fogTrafficPercentage, this), Parameters.q, traffic.lambda_in);
         futureSavings = costCfc + costExtraPC + costExtraSC + costViolPerFogNode;
 
-//        System.out.println("cfc" + costCfc + " pc" + costExtraPC + " sc"+ costExtraSC + " viol"+costViolPerFogNode);
+//        System.out.println("cfc" + costCfc + " pc" + costExtraPC + " sc"+ costExtraSC + " viol"+costViol);
         // Now if we were to deploy, this is the cost we would pay
         x[a][j] = 1;
 //        placementUpdatedForService(a);
@@ -309,10 +309,10 @@ public class Method {
         costDep = Cost.costDep(j, a, Parameters.L_S);
         costPF = Cost.costPF(Parameters.TAU, j, a, Parameters.L_P, traffic.lambda_in);
         costSF = Cost.costSF(Parameters.TAU, j, a, Parameters.L_S);
-        costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, j, Violation.calcVperPerNode(a, j, fogTrafficPercentage, this), Parameters.q, traffic.lambda_in);
+        costViolPerFogNode = Cost.costViol(Parameters.TAU, a, j, Violation.calcVperPerNode(a, j, fogTrafficPercentage, this), Parameters.q, traffic.lambda_in);
         futureCost = costDep + costPF + costSF + costViolPerFogNode;
 
-//        System.out.println("dep" + costDep + " pf" + costPF + " sf"+ costSF + " viol"+costViolPerFogNode);
+//        System.out.println("dep" + costDep + " pf" + costPF + " sf"+ costSF + " viol"+costViol);
         releaseFogServiceSafely(a, j); // revert this back to what it was
 //        placementUpdatedForService(a);
         d[a][j] = delay.calcServiceDelay(a, j); // revert things back to what they were
@@ -339,10 +339,10 @@ public class Method {
         costPF = Cost.costPF(Parameters.TAU, j, a, Parameters.L_P, traffic.lambda_in);
         costSF = Cost.costSF(Parameters.TAU, j, a, Parameters.L_S);
         double fogTrafficPercentage = calcFogTrafficPercentage(a, j);
-        costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, j, Violation.calcVperPerNode(a, j, fogTrafficPercentage, this), Parameters.q, traffic.lambda_in);
+        costViolPerFogNode = Cost.costViol(Parameters.TAU, a, j, Violation.calcVperPerNode(a, j, fogTrafficPercentage, this), Parameters.q, traffic.lambda_in);
         futureSavings = costPF + costSF + costViolPerFogNode;
 
-//         System.out.println( " pf" + costPF + " sf"+ costSF + " viol"+costViolPerFogNode);
+//         System.out.println( " pf" + costPF + " sf"+ costSF + " viol"+costViol);
         // Now if we were to release, this is the loss we would pay
         int k = Parameters.h[a][j];
         releaseFogServiceSafely(a, j);
@@ -353,10 +353,10 @@ public class Method {
         costCfc = Cost.costCfc(Parameters.TAU, j, a, traffic.lambda_out, Parameters.h);
         costExtraPC = Cost.costExtraPC(Parameters.TAU, Parameters.h[a][j], a, Parameters.L_P, traffic.lambda_out[a][j]);
         costExtraSC = Cost.costExtraSC(Parameters.TAU, Parameters.h[a][j], a, Parameters.L_S, xp);
-        costViolPerFogNode = Cost.costViolPerFogNode(Parameters.TAU, a, j, Violation.calcVperPerNode(a, j, fogTrafficPercentage, this), Parameters.q, traffic.lambda_in);
+        costViolPerFogNode = Cost.costViol(Parameters.TAU, a, j, Violation.calcVperPerNode(a, j, fogTrafficPercentage, this), Parameters.q, traffic.lambda_in);
         futureCost = costCfc + costExtraPC + costExtraSC + costViolPerFogNode;
 
-//        System.out.println("cfc" + costCfc + " pc" + costExtraPC + " sc"+ costExtraSC + " viol"+costViolPerFogNode);
+//        System.out.println("cfc" + costCfc + " pc" + costExtraPC + " sc"+ costExtraSC + " viol"+costViol);
         x[a][j] = 1; // revert this back to what it was
 //        placementUpdatedForService(a);
         d[a][j] = delay.calcServiceDelay(a, j); // revert things back to what they were

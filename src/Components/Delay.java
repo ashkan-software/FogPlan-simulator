@@ -1,12 +1,14 @@
-package Simulation;
+package Components;
 
 import Scheme.Parameters;
 import Utilities.Factorial;
 
 /**
  *
- * @author ashkany This class has the functions and variables related to
- * calculating delay
+ * @author Ashkan Y.
+ *
+ * This class contains all the functions and parameters that are related to the
+ * delay
  */
 public class Delay {
 
@@ -19,14 +21,18 @@ public class Delay {
     private int[] n; // n_j: processing units of fog node j
     private int[] np; // f'_ak: processing units of cloud server k
 
-    private double P0[][];
-    private double PQ[][];
+    private double P0[][]; // P^0 in M/M/c queueing model
+    private double PQ[][]; // P^Q in M/M/c queueing model
 
-    private double P0p[][];
-    private double PQp[][];
+    private double P0p[][]; // P'^0 in M/M/c queueing model
+    private double PQp[][]; // P'^Q in M/M/c queueing model
 
     private Method method;
 
+    /**
+     *
+     * @param method
+     */
     public Delay(Method method) {
         this.method = method;
 
@@ -51,12 +57,20 @@ public class Delay {
         }
     }
 
+    /**
+     * Initializes the delay queueing delay parameters for all services
+     */
     public void initialize() {
         for (int a = 0; a < Parameters.numServices; a++) {
             initialize(a);
         }
     }
 
+    /**
+     * Initializes the delay queueing delay parameters for service a
+     *
+     * @param a the index of the service
+     */
     public void initialize(int a) {
         for (int j = 0; j < Parameters.numFogNodes; j++) {
             initFog(a, j);
@@ -66,6 +80,13 @@ public class Delay {
         }
     }
 
+    /**
+     * Initializes the delay queueing delay parameters for service a on a fog
+     * node j
+     *
+     * @param a the index of the service
+     * @param j the index of the fog node
+     */
     private void initFog(int a, int j) {
         calcServiceFractionFog(a, j);
         calcRhoFog(a, j);
@@ -73,6 +94,13 @@ public class Delay {
         calcPQFog(a, j);
     }
 
+    /**
+     * Initializes the delay queueing delay parameters for a service on a cloud
+     * server j
+     *
+     * @param a the index of the service
+     * @param k the index of the cloud server
+     */
     private void initCloud(int a, int k) {
         calcServiceFractionCloud(a, k);
         calcRhoCloud(a, k);
@@ -81,26 +109,35 @@ public class Delay {
     }
 
     /**
-     * Calculates d_{aj} Also updates the traffic based on x[a][j]
+     * Calculates service delay (d_{aj}).
      *
-     * @param a
-     * @param j
-     * @return
+     * @param a the index of the service
+     * @param j the index of the fog node
      */
     public double calcServiceDelay(int a, int j) {
         double proc_time;
         int k = Parameters.h[a][j];
         if (method.x[a][j] == 1) { // if the service is implelemted at the fog
 //            proc_time = calcProcTimeMM1(heuristic.traffic.arrivalFog[j], Parameters.KP[j]); // MM1
-            proc_time = calcProcTimeMMCfog(a, j);
+            proc_time = calcProcTimeMMCfog(a, j); // MMC
             return (2 * Parameters.dIF[j]) + (proc_time) + ((Parameters.l_rp[a] + Parameters.l_rq[a]) / Parameters.rIF[j] * 1000d); // this is in ms
         } else { // if the service is implelemted in the cloud
 //            proc_time = calcProcTimeMM1(heuristic.traffic.arrivalCloud[k], Parameters.KpP[k]); //MM1
-            proc_time = calcProcTimeMMCcloud(a, k);
+            proc_time = calcProcTimeMMCcloud(a, k); // MMC
             return (2 * (Parameters.dIF[j] + Parameters.dFC[j][k])) + (proc_time) + (((Parameters.l_rp[a] + Parameters.l_rq[a]) / Parameters.rIF[j] + (Parameters.l_rp[a] + Parameters.l_rq[a]) / Parameters.rFC[j][k]) * 1000d); // this is in ms
         }
     }
 
+    /**
+     * Calculates processing time of a service in a cloud server according to an
+     * M/M/c model
+     *
+     * @param a te index of service
+     * @param k the index of cloud server
+     * @return returns the processing time of service a in cloud service k, if
+     * the queue is stable. Otherwise, it will return a big number and prints
+     * and error message
+     */
     private double calcProcTimeMMCcloud(int a, int k) {
         initCloud(a, k);
         if (fp[a][k] == 0) { // if the service is not implemented in cloud
@@ -112,12 +149,14 @@ public class Delay {
     }
 
     /**
-     * Calculates processing time of a fog node. It is inly called if the
-     * service a is implemented on fog node j.
+     * Calculates processing time of a service in a fog node according to an
+     * M/M/c model (It is only called if the service a is implemented on fog
+     * node j.)
      *
-     * @param a
-     * @param j
-     * @return
+     * @param a the index of the service
+     * @param j the index of the fog node
+     * @return returns the processing time of service a in fog node j, if the
+     * queue is stable. Otherwise, it will return a big number.
      */
     private double calcProcTimeMMCfog(int a, int j) {
         initFog(a, j);
@@ -126,21 +165,26 @@ public class Delay {
             return Double.MAX_VALUE; // a big number
         }
         if (f[a][j] * Parameters.KP[j] < method.traffic.arrivalFog[a][j]) {
-//            System.out.println("fog processing delay is large");
             return 20; // (ms) a big number
         }
         return 1 / ((f[a][j] * Parameters.KP[j]) / n[j]) + PQ[a][j] / (f[a][j] * Parameters.KP[j] - method.traffic.arrivalFog[a][j]);
     }
 
     /**
-     * calculates PQ (Erlang's C) for all services on all cloud nodes
+     * calculates P'^Q (Erlang's C) for a service on a cloud server
+     *
+     * @param a the index of the service
+     * @param k the index of the cloud server
      */
     private void calcPQCloud(int a, int k) {
         calcPQ(a, k, np, rhop, P0p, PQp);
     }
 
     /**
-     * calculates PQ (Erlang's C) for all services on all fog nodes
+     * calculates P^Q (Erlang's C) for a service on a fog node
+     *
+     * @param a the index of the service
+     * @param j the index of the fog node
      */
     private void calcPQFog(int a, int j) {
         calcPQ(a, j, n, rho, P0, PQ);
@@ -148,11 +192,11 @@ public class Delay {
     }
 
     /**
-     * calculates PQ (Erlang's C)
+     * calculates PQ (Erlang's C) for a service on a node (either cloud or fog)
      *
-     * @param numNodes
-     * @param numServers
-     * @return PQ
+     * @param a the index of the service
+     * @param i the index of the node
+     * @param numServers number of servers
      */
     private void calcPQ(int a, int i, int[] numServers, double[][] rho, double[][] P0, double[][] PQ) {
         double d1, d2;
@@ -166,26 +210,31 @@ public class Delay {
     }
 
     /**
-     * Calculates P0 for all services on all cloud nodes
+     * calculates P'^0 (Erlang's C) for a service on a cloud server
+     *
+     * @param a the index of the service
+     * @param k the index of the cloud server
      */
     private void calcP0Cloud(int a, int k) {
         calcP0(a, k, np, rhop, P0p);
     }
 
     /**
-     * Calculates P0 for all services on all fog nodes
+     * calculates P^0 (Erlang's C) for a service on a fog node
+     *
+     * @param a the index of the service
+     * @param j the index of the fog node
      */
     private void calcP0Fog(int a, int j) {
         calcP0(a, j, n, rho, P0);
     }
 
     /**
-     * Calculates P0
+     * Calculates P0 for a service on a node (either cloud or fog)
      *
-     * @param numNodes
-     * @param numServers
-     * @param rho
-     * @return P0
+     * @param a the index of the service
+     * @param i the index of the node
+     * @param numServers number of servers
      */
     private void calcP0(int a, int i, int[] numServers, double[][] rho, double[][] P0) {
         double sum = 0;
@@ -202,33 +251,33 @@ public class Delay {
         }
     }
 
-    /**
-     * Calculates rho for all services on all cloud nodes
-     *
-     * @param heuristic
-     */
+   /**
+    * Calculates rho for a service on a cloud node
+    * @param a the index of the service
+    * @param k the index of the cloud server
+    */
     private void calcRhoCloud(int a, int k) {
         calcRho(a, k, method.xp, method.traffic.arrivalCloud, fp, Parameters.KpP, rhop);
     }
 
     /**
-     * Calculates rho for all services on all fog nodes
-     *
-     * @param heuristic
-     */
+    * Calculates rho for a service on a fog node
+    * @param a the index of the service
+    * @param j the index of the fog node
+    */
     private void calcRhoFog(int a, int j) {
         calcRho(a, j, method.x, method.traffic.arrivalFog, f, Parameters.KP, rho);
     }
 
     /**
-     * Calculates rho
+     * Calculates rho for a service on a node (either cloud or fog)
      *
-     * @param numNodes
+     * @param a index of the service
+     * @param i index of the node
      * @param placement either x or xp
      * @param serviceArrivalRate either LAMBDA or LAMBDA'
      * @param f either f or f'
      * @param totalServiceRate either KP or KpP
-     * @param rho
      */
     private void calcRho(int a, int i, int[][] placement, double[][] serviceArrivalRate, double[][] f, double[] totalServiceRate, double[][] rho) {
         if (placement[a][i] != 0) {
@@ -240,9 +289,10 @@ public class Delay {
 
     /**
      * Calculates f' (the fraction of service rate that service a obtains at
-     * cloud node j) for all services on all cloud nodes
+     * cloud node k) a service on a cloud server
      *
-     * @param heuristic
+     * @param a the index of the service
+     * @param k the index of the cloud server
      */
     private void calcServiceFractionCloud(int a, int k) {
         fp[a][k] = calcServiceFraction(method.xp, a, k);
@@ -250,21 +300,21 @@ public class Delay {
 
     /**
      * Calculates f (the fraction of service rate that service a obtains at fog
-     * node j) for all services on all fog nodes
+     * node j) for a service on a fog node
      *
-     * @param heuristic
+     * @param a the index of the service
+     * @param j the index of the fog node
      */
     private void calcServiceFractionFog(int a, int j) {
         f[a][j] = calcServiceFraction(method.x, a, j);
     }
 
     /**
-     * Calculates f_ai
+     * Calculates f_ai for a service on a node (either cloud or fog)
      *
-     * @param placement
-     * @param a
-     * @param i
-     * @return
+     * @param placement either x or xp
+     * @param a index of the service
+     * @param i index of the node
      */
     private double calcServiceFraction(int[][] placement, int a, int i) {
         double f;
@@ -281,7 +331,7 @@ public class Delay {
     }
 
     /**
-     * Calculates processing time of a job if the underlying model is M-M-1
+     * Calculates processing time of a job if the underlying model of the fog node is M/M/1
      *
      * @param arrivalRate total arrival rate of a node
      * @param serviceRate total service rate of a node
@@ -299,12 +349,19 @@ public class Delay {
         return proc_time;
     }
 
+    /**
+     * Set all threshold to a specific value
+     * @param threshold 
+     */
     public static void setThresholds(double threshold) {
         for (int a = 0; a < Parameters.numServices; a++) {
             Parameters.th[a] = threshold;
         }
     }
 
+    /**
+     * Returns the average value of all thresholds
+     */
     public static double getThresholdAverage() {
         double sum = 0;
         for (int a = 0; a < Parameters.numServices; a++) {
