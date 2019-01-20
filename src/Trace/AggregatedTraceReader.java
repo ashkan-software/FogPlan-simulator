@@ -1,7 +1,6 @@
 package Trace;
 
 import Scheme.Parameters;
-import Simulation.Traffic;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -10,19 +9,32 @@ import java.util.Scanner;
 /**
  *
  * @author Ashkan Y.
+ *
+ * This class is for reading the traffic pattern that is for aggregated traffic
+ * of all services over all fog nodes
  */
-public class CumulativeTraceReader {
+public class AggregatedTraceReader {
 
-    private static final String FILE_ADDRESS = "/Users/ashkany/Desktop/traffic-pattern.txt";
+    public static final String FILE_ADDRESS = "traffic-pattern.txt"; // the file traffic pattern must be in the same directory that is used to run the Java jar file from the command line
+    // or leave blank (FILE_ADDRESS = "") if you want to read from console
+    
     private static Scanner in;
 
-    private static ArrayList<Double> trafficTrace;
+    private static ArrayList<Double> trafficTrace; // array list that has the traffic trace
     public static double averageTrafficTrace;
 
-    private static double min, max;
-    
-    private final static double SMOOTHING_NUMBER = 0.000000000001d;
+    private static double min, max; // internally used
 
+    private final static double SMOOTHING_NUMBER = 0.000000000001d; // used so that we will not have absolute 0 as traffic rate
+
+    
+    /**
+     * Reads traffic from the file (addressed in FILE_ADDRESS)
+     *
+     * @return returns the traffic an an arrayList (timestamped) of array of
+     * doubles (each element of array is traffic per fog node)
+     * @throws FileNotFoundException if the file is not found
+     */
     public static ArrayList<Double> readTrafficFromFile() throws FileNotFoundException {
 
         trafficTrace = new ArrayList<>();
@@ -36,6 +48,13 @@ public class CumulativeTraceReader {
         return extractTrafficTrace(in);
     }
 
+    /**
+     * extract the traffic trace from scanner
+     *
+     * @param in the input scanner
+     * @return returns the traffic an an arrayList (timestamped) of array of
+     * doubles (each element of array is traffic per fog node)
+     */
     private static ArrayList<Double> extractTrafficTrace(Scanner in) {
 
         double input;
@@ -48,6 +67,10 @@ public class CumulativeTraceReader {
         return trafficTrace;
     }
 
+    /**
+     * Normalizes traffic values for all timestamps, such that the each traffic
+     * element (per fog node) is not going to be large for the fog queues
+     */
     private static void normalizeTraceTraffic() {
         findMinAndMax(trafficTrace);
         for (int i = 0; i < trafficTrace.size(); i++) {
@@ -57,6 +80,12 @@ public class CumulativeTraceReader {
         averageTrafficTrace = (averageTrafficTrace - min) / (max - min) * Parameters.TRAFFIC_NORM_FACTOR;
     }
 
+    /**
+     * Given a trace file, finds the minimum and maximum of traffic. (internal
+     * parameters for min and max are updated)
+     *
+     * @param trace the traffic trace file
+     */
     private static void findMinAndMax(ArrayList<Double> trace) {
         min = Double.MAX_VALUE;
         max = Double.MIN_VALUE;

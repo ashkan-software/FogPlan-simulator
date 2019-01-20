@@ -43,7 +43,7 @@ public class Cost {
         ArrayFiller.fill1DArrayRandomlyInRange(FOG_UNIT_PROC_COST, 0.002d, 0.002d);
 
         FOG_UNIT_STOR_COST = new double[NUM_FOG_NODES];
-        ArrayFiller.fill1DArrayRandomlyInRange(FOG_UNIT_STOR_COST, 0.000000000004d, 0.000000000004d); // 00000000008d for optimal and cumulative and DTMC and threshold
+        ArrayFiller.fill1DArrayRandomlyInRange(FOG_UNIT_STOR_COST, 0.000000000004d, 0.000000000004d); // 00000000008d for optimal and aggregated and DTMC and threshold
 
         FOG_CLOUD_COMM_UNIT_COST = new Double[NUM_FOG_NODES][NUM_CLOUD_SERVERS];
         ArrayFiller.fill2DArrayWithConstantNumber(FOG_CLOUD_COMM_UNIT_COST, 0.0000000002d);
@@ -55,7 +55,7 @@ public class Cost {
         ArrayFiller.fill1DArrayWithConstantNumber(FOG_CONTROLLER_COMM_UNIT_COST, 0.0000000005d);
 
         SERVICE_PENALY = new double[NUM_SERVICES];
-        ArrayFiller.fill1DArrayRandomlyInRange(SERVICE_PENALY, 10d, 20d); // 10-20 cumulative and optimal. 100-200 for threshold and tau
+        ArrayFiller.fill1DArrayRandomlyInRange(SERVICE_PENALY, 10d, 20d); // 10-20 aggregated and optimal. 100-200 for threshold and tau
     }
 
     /**

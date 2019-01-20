@@ -6,7 +6,7 @@ import Scheme.ServiceDeployScheme;
 import Simulation.Method;
 import Simulation.Traffic;
 import Simulation.Violation;
-import Trace.CumulativeTraceReader;
+import Trace.AggregatedTraceReader;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
@@ -33,7 +33,7 @@ public class MainExperiment1 {
         Traffic.TRAFFIC_ENLARGE_FACTOR = 1;
         Parameters.initialize();
         
-        ArrayList<Double> traceList = CumulativeTraceReader.readTrafficFromFile();
+        ArrayList<Double> traceList = AggregatedTraceReader.readTrafficFromFile();
 
         TOTAL_RUN = traceList.size();
         
@@ -44,10 +44,10 @@ public class MainExperiment1 {
         
         Method AllCloud = new Method(new ServiceDeployScheme(ServiceDeployScheme.ALL_CLOUD), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
         Method AllFog = new Method(new ServiceDeployScheme(ServiceDeployScheme.ALL_FOG), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
-        Method FogStatic = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_STATIC, CumulativeTraceReader.averageTrafficTrace), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method FogStatic = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_STATIC, AggregatedTraceReader.averageTrafficTrace), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
         Method FogDynamic = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
         
-        Method FogStaticViolation = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_STATIC, CumulativeTraceReader.averageTrafficTrace), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method FogStaticViolation = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_STATIC, AggregatedTraceReader.averageTrafficTrace), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
         Method FogDynamicViolation = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
         Method optimalPlacement = new Method(new ServiceDeployScheme(ServiceDeployScheme.OPTIMAL), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
         
