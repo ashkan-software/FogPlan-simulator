@@ -10,7 +10,7 @@ import Utilities.ArrayFiller;
 public class ServiceDeployScheme {
 
     public static final int ALL_CLOUD = 1;
-    public static final int ALL_FOG = 2;
+    public static final int ALL_FOG = 2; // all fog is not used in the paper (only experimental)
     public static final int FOG_STATIC = 3;
     public static final int FOG_DYNAMIC = 4;
     public static final int OPTIMAL = 5;

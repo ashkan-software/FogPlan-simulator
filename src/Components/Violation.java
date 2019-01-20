@@ -4,16 +4,18 @@ import Scheme.Parameters;
 
 /**
  *
- * @author ashkany This class has the functions and variables related to
- * calculating SLA violation
+ * @author Ashkan Y.
+ *
+ * This class contains the functions and variables related to calculating SLA
+ * violation
  */
 public class Violation {
 
     /**
-     * Calculate SLA Violation Percentage. (Percentage of IoT requests that do
+     * Calculate delay Violation Percentage. (Percentage of IoT requests that do
      * not meet the delay requirement for service a (V^%_a))ˇ
      *
-     * @param a
+     * @param a the index of the service
      * @param method
      */
     public static void calcViolation(int a, Method method) throws UnsupportedOperationException {
@@ -37,12 +39,22 @@ public class Violation {
         }
     }
 
+    /**
+     * Gets the percentage of the delay violations for a particular service
+     *
+     * @param a the index of the service
+     * @param method
+     */
     private static double getViolationPercentage(int a, Method method) {
         Violation.calcViolation(a, method);
         return method.Vper[a] * 100;
     }
 
-    
+    /**
+     * Gets the average percentage of delay violations of all services
+     *
+     * @param method
+     */
     public static double getViolationPercentage(Method method) {
         double sum = 0;
         for (int a = 0; a < Parameters.numServices; a++) {
@@ -51,18 +63,36 @@ public class Violation {
         return (sum / Parameters.numServices);
     }
 
+    /**
+     * Calculates violation slack for all services
+     */
     public static double getViolationSlack() {
         double sum = 0;
         for (int a = 0; a < Parameters.numServices; a++) {
-            sum += getViolationSlack(a);
+            sum += calcViolationSlack(a);
         }
         return (sum / Parameters.numServices);
     }
 
-    private static double getViolationSlack(int a) {
+    /**
+     * Calculates the slack that a given service has for violating delay
+     *
+     * @param a the index of the service
+     */
+    private static double calcViolationSlack(int a) {
         return (1 - Parameters.q[a]) * 100;
     }
 
+    /**
+     * Calculates the delay violation percentage for a given service on a given
+     * fog node
+     *
+     * @param a the index of the service
+     * @param j the index of the fog node
+     * @param fogTrafficPercentage the percentage of the traffic for service a
+     * that is incoming to fog node j
+     * @param method the method used for service provisioning
+     */
     public static double calcVperPerNode(int a, int j, double fogTrafficPercentage, Method method) {
         if (method.d[a][j] > Parameters.th[a]) {
             method.v[a][j] = 1;

@@ -1,7 +1,7 @@
 package Trace;
 
 import Scheme.Parameters;
-import Simulation.Traffic;
+import Components.Traffic;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;

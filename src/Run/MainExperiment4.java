@@ -5,10 +5,10 @@ import DTMC.DTMCconstructor;
 import DTMC.DTMCsimulator;
 import Scheme.ServiceCounter;
 import Scheme.ServiceDeployScheme;
-import Simulation.Delay;
-import Simulation.Method;
-import Simulation.Traffic;
-import Simulation.Violation;
+import Components.Delay;
+import Components.Method;
+import Components.Traffic;
+import Components.Violation;
 import Utilities.Statistics;
 
 /**

@@ -3,18 +3,36 @@ package Components;
 /**
  *
  * @author Ashkan Y.
+ *
+ * This class contains the functions for the (INLP) optimization problem
  */
 public class Optimization {
-    
+
     public static int[][] bestX;
     public static int[][] bestXp;
-    
-    public static void init(int numServices, int numFogNodes, int numCloudServers){
+
+    /**
+     * Initializes the best service allocation matrices
+     *
+     * @param numServices number of services
+     * @param numFogNodes number of fog nodes
+     * @param numCloudServers number of cloud servers
+     */
+    public static void init(int numServices, int numFogNodes, int numCloudServers) {
         bestX = new int[numServices][numFogNodes];
         bestXp = new int[numServices][numCloudServers];
     }
 
-    public static void updateBestDecisionVaraibles(int[][] x, int[][] xp, int numServices, int numFogNodes, int numCloudServers){
+    /**
+     * Updates the variables for best service allocation matrices
+     *
+     * @param x the fog service allocation matrix
+     * @param xp the cloud service allocation matrix
+     * @param numServices
+     * @param numFogNodes
+     * @param numCloudServers
+     */
+    public static void updateBestDecisionVaraibles(int[][] x, int[][] xp, int numServices, int numFogNodes, int numCloudServers) {
         for (int a = 0; a < numServices; a++) {
             for (int j = 0; j < numFogNodes; j++) {
                 bestX[a][j] = x[a][j];
@@ -22,19 +40,20 @@ public class Optimization {
             for (int k = 0; k < numCloudServers; k++) {
                 bestXp[a][k] = xp[a][k];
             }
-            
         }
     }
-    
+
     /**
-     * updates x and xp
-     * @param x
-     * @param xp
+     * Updates the service allocation matrices (x and xp) according to the best
+     * parameters
+     *
+     * @param x the fog service allocation matrix
+     * @param xp the cloud service allocation matrix
      * @param numServices
      * @param numFogNodes
-     * @param numCloudServers 
+     * @param numCloudServers
      */
-    public static void updateDecisionVaraiblesAccordingToBest(int[][] x, int[][] xp, int numServices, int numFogNodes, int numCloudServers){
+    public static void updateDecisionVaraiblesAccordingToBest(int[][] x, int[][] xp, int numServices, int numFogNodes, int numCloudServers) {
         for (int a = 0; a < numServices; a++) {
             for (int j = 0; j < numFogNodes; j++) {
                 x[a][j] = bestX[a][j];
@@ -44,7 +63,24 @@ public class Optimization {
             }
         }
     }
-    
+
+    /**
+     * Checks if the constraints of the optimization problem are satisfied
+     *
+     * @param x the fog service allocation matrix
+     * @param xp the cloud service allocation matrix
+     * @param numServices
+     * @param numFogNodes
+     * @param numCloudServers
+     * @param L_S storage size of service a, in bytes
+     * @param L_M required amount of memory for service a (in bytes)
+     * @param KS storage capacity of fog node j, in bytes
+     * @param KM memory capacity of fog node j, in bytes
+     * @param KpS storage capacity of cloud server k, in bytes
+     * @param KpM memory capacity of cloud server k, in bytes
+     * @param lambdap_in incoming traffic rate to cloud server `k' for service
+     * `a` (request/second)
+     */
     public static boolean optimizationConstraintsSatisfied(int[][] x, int[][] xp, int numServices, int numFogNodes, int numCloudServers, double[] L_S, double[] L_M, double KS[], double KM[], double KpS[], double KpM[], double lambdap_in[][]) {
         if (!fogResourceConstraintsSatisfied(x, numServices, numFogNodes, L_S, L_M, KS, KM)) {
             return false;
@@ -53,7 +89,6 @@ public class Optimization {
             return false;
         }
         // equations 16, 17, and 18 are already implemented in calcServiceDelay().
-        
         if (!cloudArrivalRateConstraintsSatisfied(xp, numServices, numCloudServers, lambdap_in)) {
             return false;
         }
@@ -61,9 +96,15 @@ public class Optimization {
     }
 
     /**
-     * Equation 14
+     * Checks if Equation 15 is satisfied
      *
-     * @return
+     * @param x the fog service allocation matrix
+     * @param numServices
+     * @param numFogNodes
+     * @param L_S storage size of service a, in bytes
+     * @param L_M required amount of memory for service a (in bytes)
+     * @param KS storage capacity of fog node j, in bytes
+     * @param KM memory capacity of fog node j, in bytes
      */
     private static boolean fogResourceConstraintsSatisfied(int[][] x, int numServices, int numFogNodes, double[] L_S, double[] L_M, double KS[], double KM[]) {
         double utilziedFogStorage, utilziedFogMemory;
@@ -84,9 +125,15 @@ public class Optimization {
     }
 
     /**
-     * Equation 15
+     * Checks if Equation 16 is satisfied
      *
-     * @return
+     * @param xp the cloud service allocation matrix
+     * @param numServices
+     * @param numCloudServers
+     * @param L_S storage size of service a, in bytes
+     * @param L_M required amount of memory for service a (in bytes)
+     * @param KpS storage capacity of cloud server k, in bytes
+     * @param KpM memory capacity of cloud server k, in bytes
      */
     private static boolean cloudResourceConstraintsSatisfied(int[][] xp, int numServices, int numCloudServers, double[] L_S, double[] L_M, double KpS[], double KpM[]) {
         double utilziedCloudStorage, utilziedCloudMemory;
@@ -107,16 +154,16 @@ public class Optimization {
     }
 
     /**
-     * Equation 19
-     *
-     * @param xp
+     * Checks if Equation 20 is satisfied
+     * 
+     * @param xp the cloud service allocation matrix
      * @param numServices
      * @param numCloudServers
-     * @param lambdap_in
-     * @return
+     * @param lambdap_in incoming traffic rate to cloud server `k' for service
+     * `a` (request/second)
+     * @return 
      */
     private static boolean cloudArrivalRateConstraintsSatisfied(int[][] xp, int numServices, int numCloudServers, double lambdap_in[][]) {
-        
         for (int a = 0; a < numServices; a++) {
             for (int k = 0; k < numCloudServers; k++) { // If incoming traffic rate to a cloud server for a particular service is 0, the service could be released to save space. On the other hand, even if there is small traffic incoming to a cloud server for a particular service, the service must not be removed from the cloud server
                 if (xp[a][k] == 0 && lambdap_in[a][k] > 0) {
@@ -125,12 +172,9 @@ public class Optimization {
                 if (xp[a][k] == 1 && lambdap_in[a][k] == 0) {
                     return false;
                 }
-
             }
-
         }
         return true;
     }
-    
-   
+
 }

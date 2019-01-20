@@ -1,7 +1,7 @@
 package Scheme;
 
-import Simulation.Cost;
-import Simulation.Traffic;
+import Components.Cost;
+import Components.Traffic;
 import Utilities.ArrayFiller;
 import Utilities.Factorial;
 import Utilities.RandomGenerator;
