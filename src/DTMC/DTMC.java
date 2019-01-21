@@ -15,26 +15,41 @@ public class DTMC {
     public double[] TrafficRateInState; // this is the rate of the process when we are in state x
     public int[][] rate; // this is the transition rate from state x_i to x_j
 
-    protected ArrayList<ArrayList<Integer>> next;
-    protected ArrayList<ArrayList<Double>> nextProbCumulative;
+    protected ArrayList<ArrayList<Integer>> next; // array list containing the probability (non-zero) of going to the next state from each state
+    protected ArrayList<ArrayList<Double>> nextProbCumulative; //
     private int[] totalRate; // stores the sum of the rates in one row in the rate matrix
 
+    /**
+     * Constructor of Discrete Time Markov Chain (DTMC)
+     *
+     * @param numberOfStates the number of states
+     */
     public DTMC(int numberOfStates) {
         this.numberOfStates = numberOfStates;
     }
 
-    public void setTransitionRates(int[][] rate) {
+    /**
+     * Sets the transition rates of the DTMC to specific rates in a 2D array
+     *
+     * @param rate
+     */
+    protected void setTransitionRates(int[][] rate) {
         this.rate = rate;
     }
 
-    public void setTrafficRateInState(double[] TrafficRateInState) {
+    /**
+     * Sets the traffic rates for the states to the values of a specific array
+     *
+     * @param TrafficRateInState
+     */
+    protected void setTrafficRateInState(double[] TrafficRateInState) {
         this.TrafficRateInState = TrafficRateInState;
     }
 
     /**
-     * Prints the transition rates
+     * Prints the transition rates of the DTMC
      */
-    public void printTransitionRates() {
+    protected void printTransitionRates() {
         for (int i = 0; i < numberOfStates; i++) {
             for (int j = 0; j < numberOfStates; j++) {
                 System.out.print(rate[i][j] + " ");
@@ -44,26 +59,28 @@ public class DTMC {
     }
 
     /**
-     * Prints the traffic rates (traffic rates are the states basically)
+     * Prints the traffic rates of each states of the DTMC
      */
-    public void printTrafficRateInState() {
+    protected void printTrafficRateInState() {
         for (int i = 0; i < numberOfStates; i++) {
             System.out.print(TrafficRateInState[i] + " ");
         }
         System.out.println("");
     }
 
-    public void configNextArrays() {
-        // Total
-        totalRate = new int[numberOfStates];
-        for (int i = 0; i < numberOfStates; i++) {
-            totalRate[i] = 0;
-            for (int j = 0; j < numberOfStates; j++) {
-                totalRate[i] += rate[i][j];
-            }
-        }
+    /**
+     * Sets up the arrays
+     */
+    protected void configArrays() {
+        configTotalArray();
+        configNextArray();
+        configNextCumulativeArray();
+    }
 
-        // Next
+    /**
+     * Sets up the next array
+     */
+    private void configNextArray() {
         next = new ArrayList<>();
         for (int i = 0; i < numberOfStates; i++) {
             ArrayList<Integer> innerList = new ArrayList<>();
@@ -74,8 +91,26 @@ public class DTMC {
             }
             next.add(innerList);
         }
+    }
 
-        // Next Probability Cumulative
+    /**
+     * Sets up the total array
+     */
+    private void configTotalArray() {
+        totalRate = new int[numberOfStates];
+        for (int i = 0; i < numberOfStates; i++) {
+            totalRate[i] = 0;
+            for (int j = 0; j < numberOfStates; j++) {
+                totalRate[i] += rate[i][j];
+            }
+        }
+        configNextArray();
+    }
+
+    /**
+     * Sets up the next cumulative array
+     */
+    private void configNextCumulativeArray() {
         nextProbCumulative = new ArrayList<>();
         for (int i = 0; i < numberOfStates; i++) {
             ArrayList<Double> innerList = new ArrayList<>();
@@ -97,7 +132,7 @@ public class DTMC {
     /**
      * Prints the totalRate array elements
      */
-    public void printTotalRate() {
+    protected void printTotalRate() {
         for (int i = 0; i < numberOfStates; i++) {
             System.out.print(totalRate[i] + " ");
         }
@@ -107,7 +142,7 @@ public class DTMC {
     /**
      * Prints the Next array elements
      */
-    public void printNext() {
+    protected void printNext() {
         for (int i = 0; i < numberOfStates; i++) {
             System.out.print(next.get(i) + " ");
         }
