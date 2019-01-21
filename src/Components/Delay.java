@@ -118,11 +118,11 @@ public class Delay {
         double proc_time;
         int k = Parameters.h[a][j];
         if (method.x[a][j] == 1) { // if the service is implelemted at the fog
-//            proc_time = calcProcTimeMM1(heuristic.traffic.arrivalFog[j], Parameters.KP[j]); // MM1
+//            proc_time = calcProcTimeMM1(heuristic.traffic.arrivalInstructionsFog[j], Parameters.KP[j]); // MM1
             proc_time = calcProcTimeMMCfog(a, j); // MMC
             return (2 * Parameters.dIF[j]) + (proc_time) + ((Parameters.l_rp[a] + Parameters.l_rq[a]) / Parameters.rIF[j] * 1000d); // this is in ms
         } else { // if the service is implelemted in the cloud
-//            proc_time = calcProcTimeMM1(heuristic.traffic.arrivalCloud[k], Parameters.KpP[k]); //MM1
+//            proc_time = calcProcTimeMM1(heuristic.traffic.arrivalInstructionsCloud[k], Parameters.KpP[k]); //MM1
             proc_time = calcProcTimeMMCcloud(a, k); // MMC
             return (2 * (Parameters.dIF[j] + Parameters.dFC[j][k])) + (proc_time) + (((Parameters.l_rp[a] + Parameters.l_rq[a]) / Parameters.rIF[j] + (Parameters.l_rp[a] + Parameters.l_rq[a]) / Parameters.rFC[j][k]) * 1000d); // this is in ms
         }
@@ -145,7 +145,7 @@ public class Delay {
             System.out.println("Debug Please! Scheme: " + method.scheme.type); // this is for debug
             return Double.MAX_VALUE; // a big number
         }
-        return 1 / ((fp[a][k] * Parameters.KpP[k]) / np[k]) + PQp[a][k] / (fp[a][k] * Parameters.KpP[k] - method.traffic.arrivalCloud[a][k]);
+        return 1 / ((fp[a][k] * Parameters.KpP[k]) / np[k]) + PQp[a][k] / (fp[a][k] * Parameters.KpP[k] - method.traffic.arrivalInstructionsCloud[a][k]);
     }
 
     /**
@@ -164,10 +164,10 @@ public class Delay {
             System.out.println("Debug Please! Scheme: " + method.scheme.type); // this is for debug
             return Double.MAX_VALUE; // a big number
         }
-        if (f[a][j] * Parameters.KP[j] < method.traffic.arrivalFog[a][j]) {
+        if (f[a][j] * Parameters.KP[j] < method.traffic.arrivalInstructionsFog[a][j]) {
             return 20; // (ms) a big number
         }
-        return 1 / ((f[a][j] * Parameters.KP[j]) / n[j]) + PQ[a][j] / (f[a][j] * Parameters.KP[j] - method.traffic.arrivalFog[a][j]);
+        return 1 / ((f[a][j] * Parameters.KP[j]) / n[j]) + PQ[a][j] / (f[a][j] * Parameters.KP[j] - method.traffic.arrivalInstructionsFog[a][j]);
     }
 
     /**
@@ -258,7 +258,7 @@ public class Delay {
      * @param k the index of the cloud server
      */
     private void calcRhoCloud(int a, int k) {
-        calcRho(a, k, method.xp, method.traffic.arrivalCloud, fp, Parameters.KpP, rhop);
+        calcRho(a, k, method.xp, method.traffic.arrivalInstructionsCloud, fp, Parameters.KpP, rhop);
     }
 
     /**
@@ -268,7 +268,7 @@ public class Delay {
      * @param j the index of the fog node
      */
     private void calcRhoFog(int a, int j) {
-        calcRho(a, j, method.x, method.traffic.arrivalFog, f, Parameters.KP, rho);
+        calcRho(a, j, method.x, method.traffic.arrivalInstructionsFog, f, Parameters.KP, rho);
     }
 
     /**

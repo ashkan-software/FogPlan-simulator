@@ -88,7 +88,7 @@ public class Method {
      */
     public ServiceCounter run(int traceType, boolean isMinViol) {
         backupAllPlacements();
-        Traffic.calcNormalizedArrivalRates(this); // normalizes arrival rates
+        Traffic.calcArrivalRatesOfInstructions(this); // normalizes arrival rates
         delay.initialize();
         if (type == ServiceDeployScheme.ALL_CLOUD) {
             // do not change the placement
@@ -118,7 +118,7 @@ public class Method {
         double minimumCost = Double.MAX_VALUE, cost;
         for (long combination = 0; combination < numCombinations; combination++) { // tries all different compinations of x_aj and xp_ak
             updateDecisionVariablesAccordingToCombination(combination); // updates x, xp
-            Traffic.calcNormalizedArrivalRates(this); // updates traffic rates
+            Traffic.calcArrivalRatesOfInstructions(this); // updates traffic rates
             if (Optimization.optimizationConstraintsSatisfied(x, xp, numServices, numFogNodes, numCloudServers, Parameters.L_S,
                     Parameters.L_M, Parameters.KS, Parameters.KM, Parameters.KpS, Parameters.KpM, traffic.lambdap_in)) {
                 cost = getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
@@ -129,7 +129,7 @@ public class Method {
             }
         }
         Optimization.updateDecisionVaraiblesAccordingToBest(x, xp, numServices, numFogNodes, numCloudServers); // retrieve the best placement
-        Traffic.calcNormalizedArrivalRates(this); // updates the traffic rates
+        Traffic.calcArrivalRatesOfInstructions(this); // updates the traffic rates
         delay.initialize();
         return ServiceCounter.countServices(numServices, numFogNodes, numCloudServers, x, xp);
     }
@@ -147,7 +147,7 @@ public class Method {
             firstTimeRunDone = true; // it does not run the algorithm after the first time
             if (traceType == Traffic.NOT_COMBINED) {
                 Traffic.initializeAvgTrafficForStaticFogPlacementFirstTimePerServicePerFogNode(this);
-            } else if (traceType == Traffic.COMBINED_APP_REGIONES) {
+            } else if (traceType == Traffic.AGGREGATED) {
                 Traffic.initializeAvgTrafficForStaticFogPlacementFirstTimeCombined(this); // now lambda values are based on average
             } else { // if (traceType == COMBINED_APP)
                 Traffic.initializeAvgTrafficForStaticFogPlacementFirstTimePerFogNode(this);
@@ -512,7 +512,7 @@ public class Method {
      */
     private void deployOrReleaseCloudService(int a) {
         if (Parameters.MEASURING_RUNNING_TIME == true) {
-            Traffic.calcNormalizedArrivalRates(this, a);
+            Traffic.calcArrivalRatesOfInstructions(this, a);
         }
         for (int k = 0; k < numCloudServers; k++) { // If incoming traffic rate to a cloud server for a particular service is 0, the service could be released to save space. On the other hand, even if there is small traffic incoming to a cloud server for a particular service, the service must not be removed from the cloud server
             if (traffic.lambdap_in[a][k] > 0) {
@@ -546,7 +546,7 @@ public class Method {
      */
     private void placementUpdatedForService(int a) {
         if (Parameters.MEASURING_RUNNING_TIME == false) {
-            Traffic.calcNormalizedArrivalRates(this, a);
+            Traffic.calcArrivalRatesOfInstructions(this, a);
             delay.initialize(a);
         }
     }
