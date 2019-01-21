@@ -3,7 +3,7 @@ package Run;
 import Scheme.Parameters;
 import DTMC.DTMCconstructor;
 import DTMC.DTMCsimulator;
-import Scheme.ServiceDeployScheme;
+import Scheme.ServiceDeployMethod;
 import Components.Method;
 import Components.Traffic;
 import Components.Violation;
@@ -38,8 +38,8 @@ public class MainExperiment5 {
         DTMCconstructor dtmcConstructor = new DTMCconstructor();
         DTMCsimulator trafficRateSetter = new DTMCsimulator(dtmcConstructor.dtmc);
 
-        Method MinCost = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
-        Method MinViol = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method MinCost = new Method(new ServiceDeployMethod(ServiceDeployMethod.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method MinViol = new Method(new ServiceDeployMethod(ServiceDeployMethod.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
 
         double violationSlack = Violation.getViolationSlack();
         double trafficPerNodePerApp;

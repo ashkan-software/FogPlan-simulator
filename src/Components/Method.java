@@ -1,8 +1,8 @@
 package Components;
 
 import Scheme.Parameters;
-import Scheme.ServiceCounter;
-import Scheme.ServiceDeployScheme;
+import Scheme.DeployedServices;
+import Scheme.ServiceDeployMethod;
 import Utilities.ArrayFiller;
 import java.util.Collections;
 import java.util.List;
@@ -19,7 +19,7 @@ public class Method {
 
     protected double[][] backup_lambda_in;
 
-    private ServiceCounter fogStaticDeployedContainers; // the number of containers deployed when using Static Fog
+    private DeployedServices fogStaticDeployedContainers; // the number of containers deployed when using Static Fog
 
     private boolean firstTimeRunDone = false; // a boolean that is used in Static Fog to keep track of the first time that the algorithm should run
 
@@ -39,7 +39,7 @@ public class Method {
     protected Delay delay; // instance of delay class
 
     private int type; // type of the method (e.g. All Cloud vs. Min-Cost)
-    protected ServiceDeployScheme scheme;
+    protected ServiceDeployMethod scheme;
 
     private boolean onlyExperimental = false;
 
@@ -51,7 +51,7 @@ public class Method {
      * @param numServices
      * @param numCloudServers
      */
-    public Method(ServiceDeployScheme scheme, int numFogNodes, int numServices, int numCloudServers) {
+    public Method(ServiceDeployMethod scheme, int numFogNodes, int numServices, int numCloudServers) {
 
         traffic = new Traffic();
         delay = new Delay(this);
@@ -86,19 +86,19 @@ public class Method {
      * @param isMinViol boolean showing if Min-Viol is running
      * @return returns the number of deployed fog and cloud services
      */
-    public ServiceCounter run(int traceType, boolean isMinViol) {
+    public DeployedServices run(int traceType, boolean isMinViol) {
         backupAllPlacements();
         Traffic.calcArrivalRatesOfInstructions(this); // normalizes arrival rates
         delay.initialize();
-        if (type == ServiceDeployScheme.ALL_CLOUD) {
+        if (type == ServiceDeployMethod.ALL_CLOUD) {
             // do not change the placement
-            return new ServiceCounter(0, numCloudServers * numServices);
-        } else if (type == ServiceDeployScheme.ALL_FOG) { // all fog is not used in the paper (only experimental)
+            return new DeployedServices(0, numCloudServers * numServices);
+        } else if (type == ServiceDeployMethod.ALL_FOG) { // all fog is not used in the paper (only experimental)
             // do not change the placement
-            return new ServiceCounter(numFogNodes * numServices, 0);
-        } else if (type == ServiceDeployScheme.OPTIMAL) {
+            return new DeployedServices(numFogNodes * numServices, 0);
+        } else if (type == ServiceDeployMethod.OPTIMAL) {
             return runOptimal();
-        } else if (type == ServiceDeployScheme.FOG_STATIC) { // FOG_STATIC
+        } else if (type == ServiceDeployMethod.FOG_STATIC) { // FOG_STATIC
             Traffic.backupIncomingTraffic(this);
             return runFogStatic(traceType, isMinViol);
         } else { // FOG_DYNAMIC
@@ -111,7 +111,7 @@ public class Method {
      *
      * @return returns the number of deployed fog and cloud services
      */
-    private ServiceCounter runOptimal() {
+    private DeployedServices runOptimal() {
 
         Optimization.init(numServices, numFogNodes, numCloudServers);
         long numCombinations = (long) Math.pow(2, numServices * (numFogNodes + numCloudServers)); // x_aj and xp_ak
@@ -131,7 +131,7 @@ public class Method {
         Optimization.updateDecisionVaraiblesAccordingToBest(x, xp, numServices, numFogNodes, numCloudServers); // retrieve the best placement
         Traffic.calcArrivalRatesOfInstructions(this); // updates the traffic rates
         delay.initialize();
-        return ServiceCounter.countServices(numServices, numFogNodes, numCloudServers, x, xp);
+        return DeployedServices.countDeployedServices(numServices, numFogNodes, numCloudServers, x, xp);
     }
 
     /**
@@ -142,7 +142,7 @@ public class Method {
      * @param isMinViol boolean showing if Min-Viol is running
      * @return returns the number of deployed fog and cloud services
      */
-    private ServiceCounter runFogStatic(int traceType, boolean isMinViol) {
+    private DeployedServices runFogStatic(int traceType, boolean isMinViol) {
         if (!firstTimeRunDone) { // if it is the first time
             firstTimeRunDone = true; // it does not run the algorithm after the first time
             if (traceType == Traffic.NOT_COMBINED) {
@@ -159,7 +159,7 @@ public class Method {
                     MinCost(a);
                 }
             }
-            fogStaticDeployedContainers = ServiceCounter.countServices(numServices, numFogNodes, numCloudServers, x, xp);
+            fogStaticDeployedContainers = DeployedServices.countDeployedServices(numServices, numFogNodes, numCloudServers, x, xp);
             Traffic.restoreIncomingTraffic(this);
             return fogStaticDeployedContainers;
         } else {
@@ -175,7 +175,7 @@ public class Method {
      * @param isMinViol boolean showing if Min-Viol is running
      * @return returns the number of deployed fog and cloud services
      */
-    private ServiceCounter runFogDynamic(boolean isMinViol) {
+    private DeployedServices runFogDynamic(boolean isMinViol) {
         for (int a = 0; a < numServices; a++) {
             if (isMinViol) {
                 MinViol(a);
@@ -183,7 +183,7 @@ public class Method {
                 MinCost(a);
             }
         }
-        return ServiceCounter.countServices(numServices, numFogNodes, numCloudServers, x, xp);
+        return DeployedServices.countDeployedServices(numServices, numFogNodes, numCloudServers, x, xp);
 
     }
 

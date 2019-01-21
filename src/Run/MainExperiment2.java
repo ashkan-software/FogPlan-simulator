@@ -1,8 +1,8 @@
 package Run;
 
 import Scheme.Parameters;
-import Scheme.ServiceCounter;
-import Scheme.ServiceDeployScheme;
+import Scheme.DeployedServices;
+import Scheme.ServiceDeployMethod;
 import Components.Method;
 import Components.Traffic;
 import Components.Violation;
@@ -41,19 +41,19 @@ public class MainExperiment2 {
 
         int q = TAU / TRAFFIC_CHANGE_INTERVAL; // the number of times that traffic changes between each run of the method
 
-        Method AllCloud = new Method(new ServiceDeployScheme(ServiceDeployScheme.ALL_CLOUD), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
-        Method AllFog = new Method(new ServiceDeployScheme(ServiceDeployScheme.ALL_FOG), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
-        Method FogStatic = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_STATIC, CombinedAppTraceReader.averageTrafficPerFogNode), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
-        Method MinCost = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
-        Method MinViol = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
-        Method optimalPlacement = new Method(new ServiceDeployScheme(ServiceDeployScheme.OPTIMAL), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method AllCloud = new Method(new ServiceDeployMethod(ServiceDeployMethod.ALL_CLOUD), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method AllFog = new Method(new ServiceDeployMethod(ServiceDeployMethod.ALL_FOG), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method FogStatic = new Method(new ServiceDeployMethod(ServiceDeployMethod.FOG_STATIC, CombinedAppTraceReader.averageTrafficPerFogNode), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method MinCost = new Method(new ServiceDeployMethod(ServiceDeployMethod.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method MinViol = new Method(new ServiceDeployMethod(ServiceDeployMethod.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method optimalPlacement = new Method(new ServiceDeployMethod(ServiceDeployMethod.OPTIMAL), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
 
-        ServiceCounter containersDeployedAllCloud = null;
-        ServiceCounter containersDeployedAllFog = null;
-        ServiceCounter containersDeployedFogStatic = null;
-        ServiceCounter containersDeployedMinCost = null;
-        ServiceCounter containersDeployedMinViol = null;
-        ServiceCounter containersDeployedOptimalPlacement = null;
+        DeployedServices containersDeployedAllCloud = null;
+        DeployedServices containersDeployedAllFog = null;
+        DeployedServices containersDeployedFogStatic = null;
+        DeployedServices containersDeployedMinCost = null;
+        DeployedServices containersDeployedMinViol = null;
+        DeployedServices containersDeployedOptimalPlacement = null;
 
         double delayAllCloud = 0;
         double delayAllFog = 0;

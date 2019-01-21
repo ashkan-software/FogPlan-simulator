@@ -212,7 +212,7 @@ public class Traffic {
      * @param method the method that is using the traffic
      */
     protected static void initializeAvgTrafficForStaticFogPlacementFirstTimePerFogNode(Method method) {
-        distributeTraffic(method.scheme.averageRateOfCombinedAppTrafficPerNode, method.traffic.lambda_in);
+        distributeTraffic(method.scheme.averageRateOfAggregatedServiceTrafficPerFogNode, method.traffic.lambda_in);
         enlargeTrafficFog(method);
     }
 
@@ -224,7 +224,7 @@ public class Traffic {
      * @param method the method that is using the traffic
      */
     protected static void initializeAvgTrafficForStaticFogPlacementFirstTimePerServicePerFogNode(Method method) {
-        setTraffic(method.scheme.averageRateOfTrafficPerNodePerService, method.traffic.lambda_in);
+        setTraffic(method.scheme.averageRateOfTrafficPerFogNodePerService, method.traffic.lambda_in);
         enlargeTrafficFog(method);
     }
 

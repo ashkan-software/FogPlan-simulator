@@ -1,8 +1,8 @@
 package Run;
 
 import Scheme.Parameters;
-import Scheme.ServiceCounter;
-import Scheme.ServiceDeployScheme;
+import Scheme.DeployedServices;
+import Scheme.ServiceDeployMethod;
 import Components.Delay;
 import Components.Method;
 import Components.Traffic;
@@ -45,20 +45,20 @@ public class MainExperiment3 {
         ArrayList<Double[]> traceList = CombinedAppTraceReader.readTrafficFromFile();
         TOTAL_RUN = traceList.size();
 
-        Method AllCloud = new Method(new ServiceDeployScheme(ServiceDeployScheme.ALL_CLOUD), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
-        Method AllFog = new Method(new ServiceDeployScheme(ServiceDeployScheme.ALL_FOG), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
-        Method FogStatic = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_STATIC, CombinedAppTraceReader.averageTrafficPerFogNode), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
-        Method MinCost = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method AllCloud = new Method(new ServiceDeployMethod(ServiceDeployMethod.ALL_CLOUD), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method AllFog = new Method(new ServiceDeployMethod(ServiceDeployMethod.ALL_FOG), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method FogStatic = new Method(new ServiceDeployMethod(ServiceDeployMethod.FOG_STATIC, CombinedAppTraceReader.averageTrafficPerFogNode), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method MinCost = new Method(new ServiceDeployMethod(ServiceDeployMethod.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
 
-        Method FogStaticViolation = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_STATIC, CombinedAppTraceReader.averageTrafficPerFogNode), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
-        Method MinViol = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method FogStaticViolation = new Method(new ServiceDeployMethod(ServiceDeployMethod.FOG_STATIC, CombinedAppTraceReader.averageTrafficPerFogNode), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method MinViol = new Method(new ServiceDeployMethod(ServiceDeployMethod.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
 
-        ServiceCounter containersDeployedAllCloud;
-        ServiceCounter containersDeployedAllFog;
-        ServiceCounter containersDeployedFogStatic;
-        ServiceCounter containersDeployedMinCost = null;
-        ServiceCounter containersDeployedFogStaticViolation;
-        ServiceCounter containersDeployedMinViol = null;
+        DeployedServices containersDeployedAllCloud;
+        DeployedServices containersDeployedAllFog;
+        DeployedServices containersDeployedFogStatic;
+        DeployedServices containersDeployedMinCost = null;
+        DeployedServices containersDeployedFogStaticViolation;
+        DeployedServices containersDeployedMinViol = null;
 
         // used for getting average
         double[] fogcontainersDeployedAllCloud = new double[TOTAL_RUN];

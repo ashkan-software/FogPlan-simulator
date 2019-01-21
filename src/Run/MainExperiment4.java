@@ -3,8 +3,8 @@ package Run;
 import Scheme.Parameters;
 import DTMC.DTMCconstructor;
 import DTMC.DTMCsimulator;
-import Scheme.ServiceCounter;
-import Scheme.ServiceDeployScheme;
+import Scheme.DeployedServices;
+import Scheme.ServiceDeployMethod;
 import Components.Delay;
 import Components.Method;
 import Components.Traffic;
@@ -41,10 +41,11 @@ public class MainExperiment4 {
         int q; // the number of times that traffic changes between each run of the method
         Parameters.TRAFFIC_CHANGE_INTERVAL = TRAFFIC_CHANGE_INTERVAL;
 
-        Method MinCost = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
-        Method MinViol = new Method(new ServiceDeployScheme(ServiceDeployScheme.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method MinCost = new Method(new ServiceDeployMethod(ServiceDeployMethod.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
+        Method MinViol = new Method(new ServiceDeployMethod(ServiceDeployMethod.FOG_DYNAMIC), Parameters.numFogNodes, Parameters.numServices, Parameters.numCloudServers);
 
-        ServiceCounter MCserviceCounter = null, MVserviceCounter = null;
+        DeployedServices MCDeployedServices = null;
+        DeployedServices MVDeployedServices = null;
 
         Parameters.MEASURING_RUNNING_TIME = false;
         
@@ -79,15 +80,15 @@ public class MainExperiment4 {
                 Traffic.setTrafficToGlobalTraffic(MinCost);
                 Traffic.setTrafficToGlobalTraffic(MinViol);
                 if (i % q == 0) {
-                    MCserviceCounter = MinCost.run(Traffic.AGGREGATED, false);
-                    MVserviceCounter = MinViol.run(Traffic.AGGREGATED, true);
+                    MCDeployedServices = MinCost.run(Traffic.AGGREGATED, false);
+                    MVDeployedServices = MinViol.run(Traffic.AGGREGATED, true);
 
                 }
-                fogContainersDeployedMinCost[i] = MCserviceCounter.getDeployedFogServices();
-                cloudContainersDeployedMinCost[i] = MCserviceCounter.getDeployedCloudServices();
+                fogContainersDeployedMinCost[i] = MCDeployedServices.getDeployedFogServices();
+                cloudContainersDeployedMinCost[i] = MCDeployedServices.getDeployedCloudServices();
 
-                fogContainersDeployedMinViol[i] = MVserviceCounter.getDeployedFogServices();
-                cloudContainersDeployedMinViol[i] = MVserviceCounter.getDeployedCloudServices();
+                fogContainersDeployedMinViol[i] = MVDeployedServices.getDeployedFogServices();
+                cloudContainersDeployedMinViol[i] = MVDeployedServices.getDeployedCloudServices();
                 delayMinCost[i] = MinCost.getAvgServiceDelay();
                 costMinCost[i] = MinCost.getAvgCost(Parameters.TRAFFIC_CHANGE_INTERVAL);
                 violMinCost[i] = Violation.getViolationPercentage(MinCost);
