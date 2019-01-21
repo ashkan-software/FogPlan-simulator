@@ -6,6 +6,6 @@ Simulator Software for QoS-aware Dynamic Fog Service Provisioning (QDFSP)
 - Use the following command to run it
 
 `
-java -jar "/path/to/FogServiceController/dist/FogServiceController.jar" traffic-trace.txt
+java -jar "/path/to/FogServiceController.jar" traffic-trace.txt
 `
 - Rich explanation is included in the comments
