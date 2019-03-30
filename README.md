@@ -12,8 +12,9 @@ java -jar "/path/to/FogServiceController.jar" traffic-trace.txt
 - Rich explanation is included in the comments
 
 ## How to cite
+If you've used this framework in your research, please cite the [paper](https://arxiv.org/abs/1802.00800) as follows:
 
-`
+````
 @article{fogplan,
   title={FogPlan: A Lightweight QoS-aware Dynamic Fog Service Provisioning Framework},
   author={Yousefpour, Ashkan and Patil, Ashish and Ishigaki, Genya and Kim, Inwoong and Wang, Xi and Cankaya, Hakki C and Zhang, Qiong and Xie, Weisheng and Jue, Jason P},
@@ -21,4 +22,4 @@ java -jar "/path/to/FogServiceController.jar" traffic-trace.txt
   year={2019},
   publisher={IEEE}
 }
-`
+````
